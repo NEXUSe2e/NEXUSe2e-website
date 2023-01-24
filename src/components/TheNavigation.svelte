@@ -19,145 +19,145 @@ import NavigationList from "./NavigationList.svelte"
 
 const navItems = [
   {
-    route: '/',
+    route: '/NEXUSe2e-website/',
     text: 'Home'
   },
   {
-    route: '/product',
+    route: '/NEXUSe2e-website/product',
     text: 'Product',
     subroutes: [
       {
-        route: '/product/features',
+        route: '/NEXUSe2e-website/product/features',
         text: 'Features'
       },
       {
-        route: '/product/scenarios',
+        route: '/NEXUSe2e-website/product/scenarios',
         text: 'Scenarios'
       }
     ]
   },
   {
-    route: '/service',
+    route: '/NEXUSe2e-website/service',
     text: 'Service'
   },
   {
-    route: '/documentation',
+    route: '/NEXUSe2e-website/documentation',
     text: 'Documentation',
     subroutes: [
       {
-        route: '/documentation/installation',
+        route: '/NEXUSe2e-website/documentation/installation',
         text: 'Installation',
         subroutes: [
           {
-            route: '/documentation/installation/system-requirements',
+            route: '/NEXUSe2e-website/documentation/installation/system-requirements',
             text: 'System Requirements'
           },
           {
-            route: '/documentation/installation/setting-up',
+            route: '/NEXUSe2e-website/documentation/installation/setting-up',
             text: 'Setting up NEXUSe2e'
           },
           {
-            route: '/documentation/installation/setting-up-for-mobile',
+            route: '/NEXUSe2e-website/documentation/installation/setting-up-for-mobile',
             text: 'Setting up NEXUSe2e for Mobile Admin App'
           },
           {
-            route: '/documentation/installation/external-config',
+            route: '/NEXUSe2e-website/documentation/installation/external-config',
             text: 'External Configuration Folder'
           }
         ]
       },
       {
-        route: '/documentation/upgrade',
+        route: '/NEXUSe2e-website/documentation/upgrade',
         text: 'Upgrade',
         subroutes: [
           {
-            route: '/documentation/upgrade/checklist',
+            route: '/NEXUSe2e-website/documentation/upgrade/checklist',
             text: 'Upgrade Checklist'
           },
           {
-            route: '/documentation/upgrade/from-4-to-4',
+            route: '/NEXUSe2e-website/documentation/upgrade/from-4-to-4',
             text: 'NEXUSe2e from 4.x to 4.x'
           }
         ]
       },
       {
-        route: '/documentation/configuration',
+        route: '/NEXUSe2e-website/documentation/configuration',
         text: 'Configuration',
         subroutes: [
           {
-            route: '/documentation/configuration/alter-url',
+            route: '/NEXUSe2e-website/documentation/configuration/alter-url',
             text: 'How to Alter the NEXUSe2e URL'
           },
           {
-            route: '/documentation/configuration/mssql-auth',
+            route: '/NEXUSe2e-website/documentation/configuration/mssql-auth',
             text: 'Integrated Authentication with MSSQL'
           },
           {
-            route: '/documentation/configuration/windows-service',
+            route: '/NEXUSe2e-website/documentation/configuration/windows-service',
             text: 'Windows Service'
           },
           {
-            route: '/documentation/configuration/backend-integration',
+            route: '/NEXUSe2e-website/documentation/configuration/backend-integration',
             text: 'NEXUSe2e Backend Integration'
           },
           {
-            route: '/documentation/configuration/xsd-schema-validation',
+            route: '/NEXUSe2e-website/documentation/configuration/xsd-schema-validation',
             text: 'XSD - Schema Validation'
           },
           {
-            route: '/documentation/configuration/log4j-logging',
+            route: '/NEXUSe2e-website/documentation/configuration/log4j-logging',
             text: 'Logging with Log4j 2'
           }
         ]
       },
       {
-        route: '/documentation/security',
+        route: '/NEXUSe2e-website/documentation/security',
         text: 'Security',
         subroutes: [
           {
-            route: '/documentation/security/client-auth',
+            route: '/NEXUSe2e-website/documentation/security/client-auth',
             text: 'Client Authentication'
           },
           {
-            route: '/documentation/security/secure-endpoint-config',
+            route: '/NEXUSe2e-website/documentation/security/secure-endpoint-config',
             text: 'Configure a secure web service endpoint'
           },
           {
-            route: '/documentation/security/ssl',
+            route: '/NEXUSe2e-website/documentation/security/ssl',
             text: 'SSL'
           }
         ]
       },
       {
-        route: '/documentation/messaging',
+        route: '/NEXUSe2e-website/documentation/messaging',
         text: 'Messaging',
         subroutes: [
           {
-            route: '/documentation/messaging/first-steps',
+            route: '/NEXUSe2e-website/documentation/messaging/first-steps',
             text: 'First Steps in Messaging'
           },
           {
-            route: '/documentation/messaging/testing-connectivity',
+            route: '/NEXUSe2e-website/documentation/messaging/testing-connectivity',
             text: 'Testing Connectivity'
           },
           {
-            route: '/documentation/messaging/unconfigured-content-type',
+            route: '/NEXUSe2e-website/documentation/messaging/unconfigured-content-type',
             text: 'Unconfigured Content Type'
           },
           {
-            route: '/documentation/messaging/http-plain-messaging',
+            route: '/NEXUSe2e-website/documentation/messaging/http-plain-messaging',
             text: 'HTTP Plain Messaging'
           },
           {
-            route: '/documentation/messaging/backend-web-service-integration',
+            route: '/NEXUSe2e-website/documentation/messaging/backend-web-service-integration',
             text: 'Backend Web Service Integration'
           },
           {
-            route: '/documentation/messaging/purging',
+            route: '/NEXUSe2e-website/documentation/messaging/purging',
             text: 'Conversation / Message Purging'
           },
           {
-            route: '/documentation/messaging/comet',
+            route: '/NEXUSe2e-website/documentation/messaging/comet',
             text: 'NEXUSe2e - comet'
           }
         ]
