@@ -55,140 +55,140 @@
 
   const routeComponents = [
     {
-      path: '/',
+      path: '/NEXUSe2e-website/',
       component: Home
     },
 /*
  * Product Paths
 */
     {
-      path: '/product',
+      path: '/NEXUSe2e-website/product',
       component: Product
     },
     {
-      path: '/product/features',
+      path: '/NEXUSe2e-website/product/features',
       component: Features
     },
     {
-      path: '/product/scenarios',
+      path: '/NEXUSe2e-website/product/scenarios',
       component: Scenarios
     },
 /**
  * Service Paths
 */
     {
-      path: '/service',
+      path: '/NEXUSe2e-website/service',
       component: Service
     },
 /**
  * Documentation Paths
 */
     {
-      path: '/documentation',
+      path: '/NEXUSe2e-website/documentation',
       component: Documentation
     },
     {
-      path: '/documentation/installation',
+      path: '/NEXUSe2e-website/documentation/installation',
       component: Installation
     },
     {
-      path: '/documentation/installation/system-requirements',
+      path: '/NEXUSe2e-website/documentation/installation/system-requirements',
       component: SystemRequirements
     },
     {
-      path: '/documentation/installation/setting-up',
+      path: '/NEXUSe2e-website/documentation/installation/setting-up',
       component: SettingUp
     },
     {
-      path: '/documentation/installation/setting-up-for-mobile',
+      path: '/NEXUSe2e-website/documentation/installation/setting-up-for-mobile',
       component: SettingUpForMobile
     },
     {
-      path: '/documentation/installation/external-config',
+      path: '/NEXUSe2e-website/documentation/installation/external-config',
       component: ExternalConfig
     },
     {
-      path: '/documentation/upgrade',
+      path: '/NEXUSe2e-website/documentation/upgrade',
       component: Upgrade
     },
     {
-      path: '/documentation/upgrade/checklist',
+      path: '/NEXUSe2e-website/documentation/upgrade/checklist',
       component: Checklist
     },
     {
-      path: '/documentation/upgrade/from-4-to-4',
+      path: '/NEXUSe2e-website/documentation/upgrade/from-4-to-4',
       component: From4To4
     },
     {
-      path: '/documentation/configuration/',
+      path: '/NEXUSe2e-website/documentation/configuration/',
       component: Configuration
     },
     {
-      path: '/documentation/configuration/alter-url',
+      path: '/NEXUSe2e-website/documentation/configuration/alter-url',
       component: AlterUrl
     },
     {
-      path: '/documentation/configuration/mssql-auth',
+      path: '/NEXUSe2e-website/documentation/configuration/mssql-auth',
       component: MssqlAuth
     },
     {
-      path: '/documentation/configuration/windows-service',
+      path: '/NEXUSe2e-website/documentation/configuration/windows-service',
       component: WindowsService
     },
     {
-      path: '/documentation/configuration/backend-integration',
+      path: '/NEXUSe2e-website/documentation/configuration/backend-integration',
       component: BackendIntegration
     },
     {
-      path: '/documentation/configuration/xsd-schema-validation',
+      path: '/NEXUSe2e-website/documentation/configuration/xsd-schema-validation',
       component: XsdSchemaValidation
     },
     {
-      path: '/documentation/configuration/log4j-logging',
+      path: '/NEXUSe2e-website/documentation/configuration/log4j-logging',
       component: Log4jLogging
     },
     {
-      path: '/documentation/security',
+      path: '/NEXUSe2e-website/documentation/security',
       component: Security
     },
     {
-      path: '/documentation/security/client-auth',
+      path: '/NEXUSe2e-website/documentation/security/client-auth',
       component: ClientAuth
     },
     {
-      path: '/documentation/security/secure-endpoint-config',
+      path: '/NEXUSe2e-website/documentation/security/secure-endpoint-config',
       component: SecureEndpointConfig
     },
     {
-      path: '/documentation/security/ssl',
+      path: '/NEXUSe2e-website/documentation/security/ssl',
       component: Ssl
     },
     {
-      path: '/documentation/messaging',
+      path: '/NEXUSe2e-website/documentation/messaging',
       component: Messaging
     },
     {
-      path: '/documentation/messaging/first-steps',
+      path: '/NEXUSe2e-website/documentation/messaging/first-steps',
       component: FirstSteps
     },
     {
-      path: '/documentation/messaging/testing-connectivity',
+      path: '/NEXUSe2e-website/documentation/messaging/testing-connectivity',
       component: TestingConnectivity
     },
     {
-      path: '/documentation/messaging/unconfigured-content-type',
+      path: '/NEXUSe2e-website/documentation/messaging/unconfigured-content-type',
       component: UnconfiguredContentType
     },
     {
-      path: '/documentation/messaging/http-plain-messaging',
+      path: '/NEXUSe2e-website/documentation/messaging/http-plain-messaging',
       component: HttpPlainMessaging
     },
     {
-      path: '/documentation/messaging/backend-web-service-integration',
+      path: '/NEXUSe2e-website/documentation/messaging/backend-web-service-integration',
       component: BackendWebServiceIntegration
     },
     {
-      path: '/documentation/messaging/purging',
+      path: '/NEXUSe2e-website/documentation/messaging/purging',
       component: Purging
     },
 
@@ -196,18 +196,18 @@
  * Download Paths
 */
     {
-      path: '/downloads',
+      path: '/NEXUSe2e-website/downloads',
       component: Downloads
     },
 /**
  * Contact and Imprint Paths
 */
     {
-      path: '/contact',
+      path: '/NEXUSe2e-website/contact',
       component: Contact
     },
     {
-      path: '/imprint',
+      path: '/NEXUSe2e-website/imprint',
       component: Imprint
     }
   ]
