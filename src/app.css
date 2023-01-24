@@ -1,0 +1,65 @@
+:root {
+  --color-brand: rgba(230, 96, 9);
+  --color-brand-light: rgba(230, 96, 9, 0.2);
+
+  --color-gray: #333333;
+
+  font-family: Arial;
+}
+
+* {
+  box-sizing: border-box !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+
+  width: 100wh;
+  height: 100vh;
+}
+
+#app {
+  height: 100%;
+  width: 100%;
+}
+
+main {
+  height: 100%;
+  width: 100%;
+
+  display: flex;
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #ffffff;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb {
+  background: var(--color-brand);
+}
+
+.img {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.phone {
+  color: var(--color-brand);
+  text-decoration: none;
+}
+
+.email {
+  color: var(--color-brand);
+}
+
+.standard-link {
+  text-decoration: none;
+  color: var(--color-brand);
+}
