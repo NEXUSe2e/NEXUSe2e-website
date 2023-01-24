@@ -165,18 +165,18 @@ const navItems = [
     ]
   },
   {
-    route: '/downloads',
+    route: '/NEXUSe2e-website/downloads',
     text: 'Downloads'
   }
 ]
 
 const legalPoints = [
   {
-    route: '/contact',
+    route: '/NEXUSe2e-website/contact',
     text: 'Contact'
   },
   {
-    route: '/imprint',
+    route: '/NEXUSe2e-website/imprint',
     text: 'Legal Notices / Impressum'
   }
 ]
