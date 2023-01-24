@@ -3,7 +3,7 @@ import path from 'path'
 import { defineConfig } from 'vite'
 
 export default defineConfig({
-  base: '/nexuse2e-website/',
+  base: '/NEXUSe2e-website/',
   plugins: [svelte()],
   resolve: {
     alias: {
