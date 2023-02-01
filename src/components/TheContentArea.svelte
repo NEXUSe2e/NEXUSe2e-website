@@ -20,7 +20,6 @@
   import ExternalConfig from "../views/documentation/installation/externalConfig/ExternalConfig.svelte"
   import Installation from '../views/documentation/installation/Installation.svelte'
   import SettingUp from "../views/documentation/installation/settingUp/SettingUp.svelte"
-  import SettingUpForMobile from "../views/documentation/installation/settingUpForMobile/SettingUpForMobile.svelte"
   import SystemRequirements from "../views/documentation/installation/systemRequirements/SystemRequirements.svelte"
 
   import Checklist from "../views/documentation/upgrade/checklist/Checklist.svelte"
@@ -98,10 +97,6 @@
     {
       path: '/NEXUSe2e-website/documentation/installation/setting-up',
       component: SettingUp
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/installation/setting-up-for-mobile',
-      component: SettingUpForMobile
     },
     {
       path: '/NEXUSe2e-website/documentation/installation/external-config',

@@ -57,10 +57,6 @@ const navItems = [
             text: 'Setting up NEXUSe2e'
           },
           {
-            route: '/NEXUSe2e-website/documentation/installation/setting-up-for-mobile',
-            text: 'Setting up NEXUSe2e for Mobile Admin App'
-          },
-          {
             route: '/NEXUSe2e-website/documentation/installation/external-config',
             text: 'External Configuration Folder'
           }
