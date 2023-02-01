@@ -1,9 +1,9 @@
 <div>{@html marked.parse(markdown1)}</div>
-<img src={img_1} alt="directory structure" class="img" />
+<img src={img_1} alt="directory structure" class="img" style="max-height:300px; width:auto"/>
 <div>{@html marked.parse(markdown2)}</div>
-<img src={img_2} alt="Service JVM Parameters" class="img" />
+<img src={img_2} alt="Service JVM Parameters" class="img" style="max-height:500px; width:auto" />
 <div>{@html marked.parse(markdown3)}</div>
-<img src={img_3} alt="Service Login" class="img" />
+<img src={img_3} alt="Service Login" class="img" style="max-height:500px; width:auto" />
 
 <script>
   import { marked } from 'marked'
