@@ -11,8 +11,8 @@
   import Home from '../views/home/Home.svelte'
 
   import Features from '../views/solution/features/Features.svelte'
-  import Solution from '../views/solution/Solution.svelte'
   import Scenarios from '../views/solution/scenarios/Scenarios.svelte'
+  import Solution from '../views/solution/Solution.svelte'
   
   import Service from '../views/service/Service.svelte'
 
@@ -206,8 +206,14 @@
 <style>
 #router {
   height: calc(100% - 8rem);
-  padding: 1rem;
+  padding: 1.5rem;
 
   overflow-y: scroll;
+}
+
+@media screen and (min-width: 640px) {
+  #router {
+    padding-inline: 2.5rem;
+  }
 }
 </style>
