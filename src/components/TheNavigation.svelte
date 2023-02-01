@@ -23,15 +23,15 @@ const navItems = [
     text: 'Home'
   },
   {
-    route: '/NEXUSe2e-website/product',
-    text: 'Product',
+    route: '/NEXUSe2e-website/solution',
+    text: 'Solution',
     subroutes: [
       {
-        route: '/NEXUSe2e-website/product/features',
+        route: '/NEXUSe2e-website/solution/features',
         text: 'Features'
       },
       {
-        route: '/NEXUSe2e-website/product/scenarios',
+        route: '/NEXUSe2e-website/solution/scenarios',
         text: 'Scenarios'
       }
     ]

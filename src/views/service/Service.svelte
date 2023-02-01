@@ -8,18 +8,22 @@
 
   ---
 
-  ## Professional Services provided by evolving systems consulting
+  ## Professional Services provided by evolving systems consulting GmbH
 
-  The developers of NEXUSe2e are part of the Skaylink GmbH, a German IT and business consultancy, which specializes in:
-  - IT strategy consulting and organizational consulting
-  - IT architecture and projects
-  - Collaboration, eBusiness and process integration
+  The developers of NEXUSe2e are part of the evolving systems consulting GmbH, a German IT and business consultancy, which specializes in:
+  - IT Consulting
+  - Project Management
+  - Transition Management
+  - Software Development for custom solutions
 
   **We are all ease for your requirements. Please contact us with your individual request.**
 
   ## Installation & Update
-  - We install NEXUSe2e on your machines.
-  - We install software updates for you, and upgrade your machines to the latest version of NEXUSe2e.
+
+  All installations are tailored to your needs. Our goal is to enable your team to use NEXUSe2e and feel comfortable with it. 
+
+  - We offer to install NEXUSe2e on your machines.
+  - We offer to install software updates for you, and upgrade your machines to the latest version of NEXUSe2e.
   - We offer remote or on site service.
 
   ## Integration & Consulting
@@ -32,16 +36,8 @@
 
   ## Support
 
-  **Standard**
-  - We monitor the operation of your NEXUSe2e instances remotely.
   - We answer your questions and give you a hand on operational problems.
   - We assist you in using and configuring NEXUSe2e.
-  - We help you to develop your own NEXUSe2e components.
+  - We help you to develop your own NEXUSe2e components.`
 
-  **Enterprise**
-  - In addition to the standard support service you gain access to the clustering code of NEXUSe2e, which enables you to set up a scalable network of NEXUSe2e nodes.
-  - With the clustering code you    
-    - distribute the load of your transactions to several machines, and in addition to that
-    - ensure availability in case of failure
-`
 </script>

@@ -10,9 +10,9 @@
   import { Route, Router } from "svelte-routing"
   import Home from '../views/home/Home.svelte'
 
-  import Features from '../views/product/features/Features.svelte'
-  import Product from '../views/product/Product.svelte'
-  import Scenarios from '../views/product/scenarios/Scenarios.svelte'
+  import Features from '../views/solution/features/Features.svelte'
+  import Solution from '../views/solution/Solution.svelte'
+  import Scenarios from '../views/solution/scenarios/Scenarios.svelte'
   
   import Service from '../views/service/Service.svelte'
 
@@ -62,15 +62,15 @@
  * Product Paths
 */
     {
-      path: '/NEXUSe2e-website/product',
-      component: Product
+      path: '/NEXUSe2e-website/solution',
+      component: Solution
     },
     {
-      path: '/NEXUSe2e-website/product/features',
+      path: '/NEXUSe2e-website/solution/features',
       component: Features
     },
     {
-      path: '/NEXUSe2e-website/product/scenarios',
+      path: '/NEXUSe2e-website/solution/scenarios',
       component: Scenarios
     },
 /**

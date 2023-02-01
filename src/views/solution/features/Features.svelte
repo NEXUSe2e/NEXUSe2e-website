@@ -23,7 +23,7 @@
   - Communication with partners can follow different standards (transport, identifiers, security settings)
   
   ## Security
-  - Data encryption on the transport level (e.g. SSL, S/MIME)
+  - Data encryption on the transport level (e.g. TLS, S/MIME)
   - Validation of partner/client certificates
   - Built-in certificate and key management
   
@@ -34,7 +34,7 @@
   - Customizable report look and feel
   
   ## User Interface
-  - Web interface compatible with standard web browsers (IE, Firefox, Safari, Opera)
+  - Web interface compatible with standard web browsers 
   - Fine grained role model and user authentication
   
   ## Configuration
@@ -44,11 +44,10 @@
   ## Deployment and Operation
   - JEE web application (distributed as a WAR file)
   - Bundled in-process database for testing
-  - Compatible with most SQL compliant database systems (MS SQL Server, Oracle, DB2, MySQL, PostgreSQL, Derby etc.)
+  - Compatible with most SQL compliant database systems. For production purposes we suggest to use MS SQL Server,PostgreSQL or MySQL. For testing and evaluation the in-process Derby database is always an option.
   
   ## Maintenance
   - Easy extensibility through component oriented design
-  - Online update mechanism (desktop version)
   
   ## Monitoring
   - System availability check through HTTP and Web service interfaces (e.g. for load balancer integration)
@@ -59,15 +58,13 @@
   ## Available Communication/Messaging Protocols
   - ebXML 1.0
   - ebXML 2.0
-  - agGateway Web services
   - Email (SMTP, POP3, IMAP)
-  - FTP/FTPS
   - SFTP
-  - Web services
+  - SOAP 
   
   ## Back-End/Lagacy Systems Integration
-  - HTTP connector
-  - Web services connector
+  - plain HTTP connector
+  - SOAP connector
   - JDBC connector
   - File system connector
   

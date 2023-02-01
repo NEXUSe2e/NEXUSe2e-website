@@ -16,9 +16,8 @@
 
 const text_2 = `
   ## NEXUSe2e 5.9 and Java 11
-  Java 11 is the current Java Long Time Support (LTS) version. The newly released NEXUSe2e versions are now supporting this Java version.
-
-  All the newly released NEXUSe2e versions will support Java 11. This is especially important for the TLS related security settings. With upcoming TLS 1.3 requirements an up to date java JVM is required. Regarding Oracle licensing, NEXUSe2e is not tested with Oracle JDK any more. All local test and development instances are running on OpenJDK.
+  
+  All the newly released NEXUSe2e versions will support Java 11. This is especially important for the TLS related security settings. With upcoming TLS 1.3 requirements an up to date java JVM is required. Regarding Oracle licensing, NEXUSe2e is not tested with Oracle JDK any more. All local test and development instances are running on OpenJDK as production instances would now require an oracle JDK license to run. 
   `
 
 </script>

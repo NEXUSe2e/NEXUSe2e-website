@@ -1,20 +1,20 @@
 <div>
   {@html marked.parse(markdown)}
-  <img src={ProductImage} alt="nexus product" class="img">
+  <img src={ProductImage} alt="NEXUSe2e solution" class="img">
   
 </div>
 
 <script>
   import { marked } from 'marked'
-  import ProductImage from './product.jpg'
+  import ProductImage from './solution.jpg'
   
   const markdown = `
-  # Product
+  # The Solution
 
   ---
   
 
-  NEXUSe2e server provides reliable business messaging using standard protocols (e.g. ebXML, SOAP, HTTP, SMTP, FTP, etc.) to integrate business processes that span multiple companies.
+  NEXUSe2e server provides reliable business messaging using standard protocols (e.g. ebXML, SOAP, HTTPS, SMTP, SFTP, etc.) to integrate business processes that span multiple companies.
 
   Because of its component-based architecture, it can be easily extended to support virtually any other protocol--be it standardized or proprietary.
 
