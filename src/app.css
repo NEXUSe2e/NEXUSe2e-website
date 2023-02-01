@@ -46,11 +46,6 @@ main {
   background: var(--color-brand);
 }
 
-.img {
-  width: 100%;
-  max-width: 1000px;
-}
-
 .phone {
   color: var(--color-brand);
   text-decoration: none;

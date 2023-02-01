@@ -1,12 +1,13 @@
 <div>{@html marked.parse(markdown1)}</div>
-<img src={img_1} alt="directory structure" class="img" style="max-height:300px; width:auto"/>
+<ImgContainer img={img_1} alt="directory structure"/>
 <div>{@html marked.parse(markdown2)}</div>
-<img src={img_2} alt="Service JVM Parameters" class="img" style="max-height:500px; width:auto" />
+<ImgContainer img={img_2} alt="Service JVM Parameters"/>
 <div>{@html marked.parse(markdown3)}</div>
-<img src={img_3} alt="Service Login" class="img" style="max-height:500px; width:auto" />
+<ImgContainer img={img_3} alt="Service Login"/>
 
 <script>
   import { marked } from 'marked'
+  import ImgContainer from '../../../../components/ImgContainer.svelte'
   import img_1 from './mssqlAuth1.png'
   import img_2 from './mssqlAuth2.png'
   import img_3 from './mssqlAuth3.png'
