@@ -69,11 +69,7 @@ const navItems = [
           {
             route: '/NEXUSe2e-website/documentation/upgrade/checklist',
             text: 'Upgrade Checklist'
-          },
-          {
-            route: '/NEXUSe2e-website/documentation/upgrade/from-4-to-4',
-            text: 'NEXUSe2e from 4.x to 4.x'
-          }
+          }          
         ]
       },
       {

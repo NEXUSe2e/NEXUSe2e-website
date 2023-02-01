@@ -23,7 +23,6 @@
   import SystemRequirements from "../views/documentation/installation/systemRequirements/SystemRequirements.svelte"
 
   import Checklist from "../views/documentation/upgrade/checklist/Checklist.svelte"
-  import From4To4 from "../views/documentation/upgrade/from4To4/From4To4.svelte"
   import Upgrade from "../views/documentation/upgrade/Upgrade.svelte"
 
   import AlterUrl from "../views/documentation/configuration/alterUrl/AlterUrl.svelte"
@@ -109,10 +108,6 @@
     {
       path: '/NEXUSe2e-website/documentation/upgrade/checklist',
       component: Checklist
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/upgrade/from-4-to-4',
-      component: From4To4
     },
     {
       path: '/NEXUSe2e-website/documentation/configuration/',
