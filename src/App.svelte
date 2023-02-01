@@ -1,7 +1,7 @@
 <script>
-import TheAppbar from "./components/TheAppbar.svelte"
-import TheContentArea from './components/TheContentArea.svelte'
-import TheNavigationDrawer from "./components/TheNavigationDrawer.svelte"
+import TheAppbar from "@/components/TheAppbar.svelte"
+import TheContentArea from '@/components/TheContentArea.svelte'
+import TheNavigationDrawer from "@/components/TheNavigationDrawer.svelte"
 
 </script>
 

@@ -16,8 +16,8 @@
 
 <script>
   import NexusLogo from '@/assets/imgs/logo.png'
+  import { drawerActive } from "@/stores/drawer"
   import { navigate } from "svelte-routing"
-  import { drawerActive } from "../stores/drawer"
 
   import TheNavigation from "./TheNavigation.svelte"
 

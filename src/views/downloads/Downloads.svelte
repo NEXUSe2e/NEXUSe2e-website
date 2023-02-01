@@ -10,7 +10,7 @@
 </div>
 
 <script>
-  import VersionCard from '../../components/VersionCard.svelte'
+  import VersionCard from '@/components/VersionCard.svelte'
   import versions from './versions'
 
 </script>

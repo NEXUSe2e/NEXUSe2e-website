@@ -55,8 +55,8 @@
 </div>
 
 <script>
+  import Icon from '@/components/Icon.svelte'
   import { marked } from 'marked'
-  import Icon from '../components/Icon.svelte'
 
   export let version
 

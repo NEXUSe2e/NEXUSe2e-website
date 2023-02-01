@@ -173,7 +173,7 @@ const legalPoints = [
   }
 ]
 
-let activeItem = '/home'
+let activeItem = '/NEXUSe2e/solution'
 
 function setActive({ detail }) {
   activeItem = detail

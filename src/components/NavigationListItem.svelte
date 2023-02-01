@@ -22,8 +22,8 @@
 </li>
 
 <script>
+import { drawerActive } from '@/stores/drawer'
 import { createEventDispatcher } from 'svelte'
-import { drawerActive } from '../stores/drawer'
 import NavigationListItem from './NavigationListItem.svelte'
 
 const dispatch = createEventDispatcher();

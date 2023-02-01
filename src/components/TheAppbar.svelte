@@ -13,7 +13,7 @@
 
 <script>
   import NexusHeader from '@/assets/imgs/nexus_header.png'
-  import { drawerActive } from '../stores/drawer'
+  import { drawerActive } from '@/stores/drawer'
 
 
   function toggleDrawer() {
