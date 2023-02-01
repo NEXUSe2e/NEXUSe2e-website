@@ -17,7 +17,7 @@
 <script>
   import NexusLogo from '@/assets/imgs/logo.png'
   import { drawerActive } from "@/stores/drawer"
-  import { navigate } from "svelte-routing"
+  import { push } from 'svelte-spa-router'
 
   import TheNavigation from "./TheNavigation.svelte"
 
@@ -26,7 +26,7 @@
   }
 
   function backToHome() {
-    navigate('/NEXUSe2e-website')
+    push('/')
   }
 </script>
 

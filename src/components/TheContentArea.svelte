@@ -1,13 +1,9 @@
 <div id="router">
-  <Router>
-    {#each routeComponents as routeComponent}
-      <Route path={routeComponent.path} component={routeComponent.component} />
-    {/each}
-  </Router>
+  <Router {routes} />
 </div>
 
 <script>
-  import { Route, Router } from "svelte-routing"
+  import Router from "svelte-spa-router"
   import Home from '../views/home/Home.svelte'
 
   import Features from '../views/solution/features/Features.svelte'
@@ -51,156 +47,56 @@
   import Contact from '../views/contact/Contact.svelte'
   import Imprint from '../views/imprint/Imprint.svelte'
 
-  const routeComponents = [
-    {
-      path: '/NEXUSe2e-website/',
-      component: Home
-    },
+  const routes = {
+    '/': Home,
 /*
  * Product Paths
 */
-    {
-      path: '/NEXUSe2e-website/solution',
-      component: Solution
-    },
-    {
-      path: '/NEXUSe2e-website/solution/features',
-      component: Features
-    },
-    {
-      path: '/NEXUSe2e-website/solution/scenarios',
-      component: Scenarios
-    },
+    '/solution': Solution,
+    '/solution/features': Features,
+    '/solution/scenarios': Scenarios,
 /**
  * Service Paths
 */
-    {
-      path: '/NEXUSe2e-website/service',
-      component: Service
-    },
+    '/service': Service,
 /**
  * Documentation Paths
 */
-    {
-      path: '/NEXUSe2e-website/documentation',
-      component: Documentation
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/installation',
-      component: Installation
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/installation/system-requirements',
-      component: SystemRequirements
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/installation/setting-up',
-      component: SettingUp
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/installation/external-config',
-      component: ExternalConfig
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/upgrade',
-      component: Upgrade
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/upgrade/checklist',
-      component: Checklist
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/',
-      component: Configuration
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/alter-url',
-      component: AlterUrl
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/mssql-auth',
-      component: MssqlAuth
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/windows-service',
-      component: WindowsService
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/backend-integration',
-      component: BackendIntegration
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/xsd-schema-validation',
-      component: XsdSchemaValidation
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/configuration/log4j-logging',
-      component: Log4jLogging
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/security',
-      component: Security
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/security/client-auth',
-      component: ClientAuth
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/security/secure-endpoint-config',
-      component: SecureEndpointConfig
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/security/ssl',
-      component: Ssl
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging',
-      component: Messaging
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/first-steps',
-      component: FirstSteps
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/testing-connectivity',
-      component: TestingConnectivity
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/unconfigured-content-type',
-      component: UnconfiguredContentType
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/http-plain-messaging',
-      component: HttpPlainMessaging
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/backend-web-service-integration',
-      component: BackendWebServiceIntegration
-    },
-    {
-      path: '/NEXUSe2e-website/documentation/messaging/purging',
-      component: Purging
-    },
-
+    '/documentation': Documentation,
+    '/documentation/installation': Installation,
+    '/documentation/installation/system-requirements': SystemRequirements,
+    '/documentation/installation/setting-up': SettingUp,
+    '/documentation/installation/external-config': ExternalConfig,
+    '/documentation/upgrade': Upgrade,
+    '/documentation/upgrade/checklist': Checklist,
+    '/documentation/configuration/': Configuration,
+    '/documentation/configuration/alter-url': AlterUrl,
+    '/documentation/configuration/mssql-auth': MssqlAuth,
+    '/documentation/configuration/windows-service': WindowsService,
+    '/documentation/configuration/backend-integration': BackendIntegration,
+    '/documentation/configuration/xsd-schema-validation': XsdSchemaValidation,
+    '/documentation/configuration/log4j-logging': Log4jLogging,
+    '/documentation/security': Security,
+    '/documentation/security/client-auth': ClientAuth,
+    '/documentation/security/secure-endpoint-config': SecureEndpointConfig,
+    '/documentation/security/ssl': Ssl,
+    '/documentation/messaging': Messaging,
+    '/documentation/messaging/first-steps': FirstSteps,
+    '/documentation/messaging/testing-connectivity': TestingConnectivity,
+    '/documentation/messaging/unconfigured-content-type': UnconfiguredContentType,
+    '/documentation/messaging/http-plain-messaging': HttpPlainMessaging,
+    '/documentation/messaging/backend-web-service-integration': BackendWebServiceIntegration,
+    '/documentation/messaging/purging': Purging,
 /**
  * Download Paths
 */
-    {
-      path: '/NEXUSe2e-website/downloads',
-      component: Downloads
-    },
+    '/downloads': Downloads,
 /**
  * Contact and Imprint Paths
 */
-    {
-      path: '/NEXUSe2e-website/contact',
-      component: Contact
-    },
-    {
-      path: '/NEXUSe2e-website/imprint',
-      component: Imprint
-    }
-  ]
+    '/contact': Contact,
+    '/imprint':Imprint
+  }
 </script>
 
 <style>

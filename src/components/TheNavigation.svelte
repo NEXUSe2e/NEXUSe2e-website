@@ -14,7 +14,7 @@
 </nav>
 
 <script>
-import { navigate } from "svelte-routing"
+import { push } from 'svelte-spa-router'
 import NavigationList from "./NavigationList.svelte"
 
 const navItems = [
@@ -173,11 +173,11 @@ const legalPoints = [
   }
 ]
 
-let activeItem = '/NEXUSe2e/solution'
+let activeItem = '/'
 
 function setActive({ detail }) {
   activeItem = detail
-  navigate(`/NEXUSe2e-website${detail}`)
+  push(detail)
 }
 </script>
 
