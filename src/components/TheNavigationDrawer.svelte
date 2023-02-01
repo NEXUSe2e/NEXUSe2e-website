@@ -26,7 +26,7 @@
   }
 
   function backToHome() {
-    navigate('/')
+    navigate('/NEXUSe2e-website')
   }
 </script>
 
