@@ -14,13 +14,13 @@
   </ul>
   <hr>
   {#if version.knownIssues && version.knownIssues.length > 0}
-  <h4>Known Issues</h4>
-  <ul>
-    {#each version.knownIssues as issue}
-      <li class="version-card__change">{@html marked.parse(issue)}</li>
-    {/each}
-  </ul>
-  <hr>
+    <h4>Known Issues</h4>
+    <ul>
+      {#each version.knownIssues as issue}
+        <li class="version-card__change">{@html marked.parse(issue)}</li>
+      {/each}
+    </ul>
+    <hr>
   {/if}
   <h4>Checksums</h4>
   <div class="version-card__checksum">
@@ -47,9 +47,11 @@
     </div>
     
   </div>
-  <hr>
-  <h4>Downloads</h4>
-  <a href={`${BASE_URL}/${version.download}`} target="_blank" class="version-card__download" rel="noreferrer">.war via GitHub</a>
+  {#if version.download}
+    <hr>
+    <h4>Downloads</h4>
+    <a href={`${BASE_URL}/${version.download}`} target="_blank" class="version-card__download" rel="noreferrer">.war via GitHub</a>
+  {/if}
 </div>
 
 <script>

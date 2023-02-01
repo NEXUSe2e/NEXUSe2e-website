@@ -44,7 +44,6 @@ const versions: Version[] = [
     version: 'NEXUSe2e 5.9.11',
     md5: '8E547BF1B85D871A283C73FCEB67BC86',
     sha256: 'EAB34A337ECD3E300AA2EBDC3657674D5CF2E9E4ED176C4D2340DFAE56FB2C0B',
-    download: 'v5.9.11/nexuse2e-webapp-5.9.11.war',
     changes: [
       'Implemented HttpResponses for synchronous messaging',
       'Fixed deadlock when synchronously receiving messages',
