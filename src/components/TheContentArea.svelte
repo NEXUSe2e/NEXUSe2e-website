@@ -47,21 +47,23 @@
   import Contact from '../views/contact/Contact.svelte'
   import Imprint from '../views/imprint/Imprint.svelte'
 
+  import NotFound from '../views/NotFound.svelte'
+
   const routes = {
     '/': Home,
-/*
- * Product Paths
-*/
+    /*
+     * Product Paths
+    */
     '/solution': Solution,
     '/solution/features': Features,
     '/solution/scenarios': Scenarios,
-/**
- * Service Paths
-*/
+    /**
+     * Service Paths
+    */
     '/service': Service,
-/**
- * Documentation Paths
-*/
+    /**
+     * Documentation Paths
+    */
     '/documentation': Documentation,
     '/documentation/installation': Installation,
     '/documentation/installation/system-requirements': SystemRequirements,
@@ -87,15 +89,19 @@
     '/documentation/messaging/http-plain-messaging': HttpPlainMessaging,
     '/documentation/messaging/backend-web-service-integration': BackendWebServiceIntegration,
     '/documentation/messaging/purging': Purging,
-/**
- * Download Paths
-*/
+    /**
+     * Download Paths
+    */
     '/downloads': Downloads,
-/**
- * Contact and Imprint Paths
-*/
+    /**
+     * Contact and Imprint Paths
+    */
     '/contact': Contact,
-    '/imprint':Imprint
+    '/imprint':Imprint,
+    /**
+     * Fallback for false routes
+    */
+   '*': NotFound
   }
 </script>
 
