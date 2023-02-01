@@ -19,137 +19,137 @@ import NavigationList from "./NavigationList.svelte"
 
 const navItems = [
   {
-    route: '/NEXUSe2e-website/',
+    route: '/',
     text: 'Home'
   },
   {
-    route: '/NEXUSe2e-website/solution',
+    route: '/solution',
     text: 'Solution',
     subroutes: [
       {
-        route: '/NEXUSe2e-website/solution/features',
+        route: '/solution/features',
         text: 'Features'
       },
       {
-        route: '/NEXUSe2e-website/solution/scenarios',
+        route: '/solution/scenarios',
         text: 'Scenarios'
       }
     ]
   },
   {
-    route: '/NEXUSe2e-website/service',
+    route: '/service',
     text: 'Service'
   },
   {
-    route: '/NEXUSe2e-website/documentation',
+    route: '/documentation',
     text: 'Documentation',
     subroutes: [
       {
-        route: '/NEXUSe2e-website/documentation/installation',
+        route: '/documentation/installation',
         text: 'Installation',
         subroutes: [
           {
-            route: '/NEXUSe2e-website/documentation/installation/system-requirements',
+            route: '/documentation/installation/system-requirements',
             text: 'System Requirements'
           },
           {
-            route: '/NEXUSe2e-website/documentation/installation/setting-up',
+            route: '/documentation/installation/setting-up',
             text: 'Setting up NEXUSe2e'
           },
           {
-            route: '/NEXUSe2e-website/documentation/installation/external-config',
+            route: '/documentation/installation/external-config',
             text: 'External Configuration Folder'
           }
         ]
       },
       {
-        route: '/NEXUSe2e-website/documentation/upgrade',
+        route: '/documentation/upgrade',
         text: 'Upgrade',
         subroutes: [
           {
-            route: '/NEXUSe2e-website/documentation/upgrade/checklist',
+            route: '/documentation/upgrade/checklist',
             text: 'Upgrade Checklist'
           }          
         ]
       },
       {
-        route: '/NEXUSe2e-website/documentation/configuration',
+        route: '/documentation/configuration',
         text: 'Configuration',
         subroutes: [
           {
-            route: '/NEXUSe2e-website/documentation/configuration/alter-url',
+            route: '/documentation/configuration/alter-url',
             text: 'How to Alter the NEXUSe2e URL'
           },
           {
-            route: '/NEXUSe2e-website/documentation/configuration/mssql-auth',
+            route: '/documentation/configuration/mssql-auth',
             text: 'Integrated Authentication with MSSQL'
           },
           {
-            route: '/NEXUSe2e-website/documentation/configuration/windows-service',
+            route: '/documentation/configuration/windows-service',
             text: 'Windows Service'
           },
           {
-            route: '/NEXUSe2e-website/documentation/configuration/backend-integration',
+            route: '/documentation/configuration/backend-integration',
             text: 'NEXUSe2e Backend Integration'
           },
           {
-            route: '/NEXUSe2e-website/documentation/configuration/xsd-schema-validation',
+            route: '/documentation/configuration/xsd-schema-validation',
             text: 'XSD - Schema Validation'
           },
           {
-            route: '/NEXUSe2e-website/documentation/configuration/log4j-logging',
+            route: '/documentation/configuration/log4j-logging',
             text: 'Logging with Log4j 2'
           }
         ]
       },
       {
-        route: '/NEXUSe2e-website/documentation/security',
+        route: '/documentation/security',
         text: 'Security',
         subroutes: [
           {
-            route: '/NEXUSe2e-website/documentation/security/client-auth',
+            route: '/documentation/security/client-auth',
             text: 'Client Authentication'
           },
           {
-            route: '/NEXUSe2e-website/documentation/security/secure-endpoint-config',
+            route: '/documentation/security/secure-endpoint-config',
             text: 'Configure a secure web service endpoint'
           },
           {
-            route: '/NEXUSe2e-website/documentation/security/ssl',
+            route: '/documentation/security/ssl',
             text: 'SSL'
           }
         ]
       },
       {
-        route: '/NEXUSe2e-website/documentation/messaging',
+        route: '/documentation/messaging',
         text: 'Messaging',
         subroutes: [
           {
-            route: '/NEXUSe2e-website/documentation/messaging/first-steps',
+            route: '/documentation/messaging/first-steps',
             text: 'First Steps in Messaging'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/testing-connectivity',
+            route: '/documentation/messaging/testing-connectivity',
             text: 'Testing Connectivity'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/unconfigured-content-type',
+            route: '/documentation/messaging/unconfigured-content-type',
             text: 'Unconfigured Content Type'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/http-plain-messaging',
+            route: '/documentation/messaging/http-plain-messaging',
             text: 'HTTP Plain Messaging'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/backend-web-service-integration',
+            route: '/documentation/messaging/backend-web-service-integration',
             text: 'Backend Web Service Integration'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/purging',
+            route: '/documentation/messaging/purging',
             text: 'Conversation / Message Purging'
           },
           {
-            route: '/NEXUSe2e-website/documentation/messaging/comet',
+            route: '/documentation/messaging/comet',
             text: 'NEXUSe2e - comet'
           }
         ]
@@ -157,18 +157,18 @@ const navItems = [
     ]
   },
   {
-    route: '/NEXUSe2e-website/downloads',
+    route: '/downloads',
     text: 'Downloads'
   }
 ]
 
 const legalPoints = [
   {
-    route: '/NEXUSe2e-website/contact',
+    route: '/contact',
     text: 'Contact'
   },
   {
-    route: '/NEXUSe2e-website/imprint',
+    route: '/imprint',
     text: 'Legal Notices / Impressum'
   }
 ]
@@ -177,7 +177,7 @@ let activeItem = '/home'
 
 function setActive({ detail }) {
   activeItem = detail
-  navigate(detail)
+  navigate(`/NEXUSe2e-website${detail}`)
 }
 </script>
 
