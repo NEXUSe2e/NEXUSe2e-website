@@ -9,7 +9,7 @@ export let alt = ''
 
 export let height = '300'
 
-export let position = ''
+export let position = 'center'
 
 $: justify = { 'left': 'flex-start', center: 'center', right: 'flex-end' }[position]
 </script>
