@@ -1,6 +1,7 @@
 <div>
   {@html marked.parse(markdown)}
   <img src={ProductImage} alt="nexus product" class="img">
+  
 </div>
 
 <script>
@@ -11,6 +12,7 @@
   # Product
 
   ---
+  
 
   NEXUSe2e server provides reliable business messaging using standard protocols (e.g. ebXML, SOAP, HTTP, SMTP, FTP, etc.) to integrate business processes that span multiple companies.
 
@@ -20,4 +22,5 @@
 
   <br>
   `
+   
 </script>

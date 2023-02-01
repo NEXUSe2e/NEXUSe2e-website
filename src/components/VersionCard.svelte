@@ -60,7 +60,7 @@
 
   export let latest
 
-  const BASE_URL = 'https://github.com/solutionsdirekt/NEXUSe2e/releases/download'
+  const BASE_URL = 'https://github.com/NEXUSe2e/NEXUSe2e/releases/download'
 
   const copyToClipboard = (hash) => {
     navigator.clipboard.writeText(hash).then(() => {
