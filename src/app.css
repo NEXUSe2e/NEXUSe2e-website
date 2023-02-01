@@ -1,6 +1,7 @@
 :root {
   --color-brand: rgba(230, 96, 9);
   --color-brand-light: rgba(230, 96, 9, 0.2);
+  --color-brand-secondary: rgba(255, 145, 76);
 
   --color-gray: #333333;
 

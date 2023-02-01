@@ -70,12 +70,12 @@
 
   .the-app-bar__heading-header {
     background-color: var(--color-brand);
-    padding: 0.25rem 1.5rem;
+    padding: 0.25rem 2rem;
     margin-bottom: 0.25rem;
   }
 
   .the-app-bar__heading-sub-header {
-    background-color: var(--color-brand);
+    background-color: var(--color-brand-secondary);
     padding: 0.25rem 2rem;
     width: 75%;
     margin-left: auto;
