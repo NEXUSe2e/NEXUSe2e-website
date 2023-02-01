@@ -15,7 +15,7 @@
 </div>
 
 <script>
-  import NexusLogo from '@/assets/imgs/nexus_logo.png'
+  import NexusLogo from '@/assets/imgs/logo.png'
   import { navigate } from "svelte-routing"
   import { drawerActive } from "../stores/drawer"
 
