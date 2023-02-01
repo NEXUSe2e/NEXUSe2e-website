@@ -14,7 +14,7 @@
 </nav>
 
 <script>
-import { push } from 'svelte-spa-router'
+import { location, push } from 'svelte-spa-router'
 import NavigationList from "./NavigationList.svelte"
 
 const navItems = [
@@ -173,7 +173,7 @@ const legalPoints = [
   }
 ]
 
-let activeItem = '/'
+let activeItem = $location
 
 function setActive({ detail }) {
   activeItem = detail
