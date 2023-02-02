@@ -44,7 +44,6 @@
 
   .the-navigation-drawer__overlay.active {
     left: 0;
-    background-color: rgba(51, 51, 51, 0.8);
   }
 
   .the-navigation-drawer__logo {
@@ -62,6 +61,7 @@
 
     display: flex;
     flex-direction: column;
+    box-shadow: 2rem 0px 40px 0px rgba(51,51,51,0.5);
   }
 
   .the-navigation-drawer__content {
@@ -72,6 +72,7 @@
   @media screen and (min-width: 640px) {
     aside#the-navigation-drawer {
       width: 16rem;
+      box-shadow: none;
     }
 
     .the-navigation-drawer__overlay {
