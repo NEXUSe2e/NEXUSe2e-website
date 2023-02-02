@@ -16,18 +16,16 @@
 ## Definition
 
 NEXUSe2e integration is based on a Service and Pipeline system which contains Pipelets. Services and Pipelets are a simple implementation of a predefined interface and contain only a few lines of code. Some use the standard implementation or tweak the existing samples to achieve their custom implementation. If you have an integration in mind  that is not out of the box, it is always a good idea to describe your plans to us, maybe there is a solution allready in place.
-Default Integration
+### Default Integration
 
 The integration is mostly very specific for the different customers and it is difficult to sum this up into a general Text. There are basically four easy options to go with, which can be altered to specific needs:
 
  
 
-Simple File Transfer
+#### Simple File Transfer
 
 Files are dropped in specified directories which are scanned regularly. NEXUSe2e sends the file to a specified combination of Partner, choreography and action.
-
 For every combination a dedicated directory scanner service is needed.
-
 An example of a configured directory scanner service could look like this:
 
   `
@@ -40,7 +38,7 @@ Simple file transfer is not very efficient and has some side effects like file l
 
  
 
-Plain HTTP
+#### Plain HTTP
 
 The message will be carried by the post body and the URL parameters are used as routing information.
 
@@ -50,13 +48,13 @@ The result you will receive is a 200 if the routing information is logically cor
 
  
 
-Web Service Call
+#### Web Service Call
 
 You can also communicate directly with your backend, this is fully integrated in the default configuration since NEXUSe2e 5.3.0 and can be activated manually pre 5.3.0. Find the corresponding tutorial for pre 5.3.0 here and post 5.3.0 here.
 
  
 
-Database Integration
+#### Database Integration
 
 The last not very common option is using a database integration. There is a service and corresponding pipelet which provide a basic integration for inbound and outbound messages, based on the content of the specified table. From high level, it’s the same as file transfer but not storee in the file system but a database table. This Table is not part of NEXUSe2e and must be create manually and requires a predefined layout which is not configurable.
 
