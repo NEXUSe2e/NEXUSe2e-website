@@ -37,7 +37,7 @@ Make sure you have set a JAVA_HOME in your Windows environmental variables.
       C:\\apache-tomcat\\bin> service.bat install NEXUSe2eFAQ
       (Insert your preferred name instead of NEXUSe2eFAQ)
 
-- If the cmd is not started as administrator you will be asked for permission to execute this process with administration rights.
+- If the cmd is not started as administrator you will be asked for permission to execute this process with administration rights.  
 - After that you should see something similar in your cmd:
 
 
@@ -46,6 +46,7 @@ Make sure you have set a JAVA_HOME in your Windows environmental variables.
   const markdown2 = `
 
 - Next, switch in the bin directory of your Tomcat and rename the "Tomcatw.exe" to wahtever you named your service. Make sure you include the "w.exe".
+
 - Execute your "NEXUSe2eFAQw.exe".
      
 
