@@ -32,7 +32,7 @@
   import ClientAuth from "../views/documentation/security/clientAuth/ClientAuth.svelte"
   import SecureEndpointConfig from "../views/documentation/security/secureEndpointConfig/SecureEndpointConfig.svelte"
   import Security from "../views/documentation/security/Security.svelte"
-  import Ssl from "../views/documentation/security/ssl/SSL.svelte"
+
 
   import BackendWebServiceIntegration from "../views/documentation/messaging/backendWebServiceIntegration/BackendWebServiceIntegration.svelte"
   import FirstSteps from "../views/documentation/messaging/firstSteps/FirstSteps.svelte"
@@ -81,7 +81,7 @@
     '/documentation/security': Security,
     '/documentation/security/client-auth': ClientAuth,
     '/documentation/security/secure-endpoint-config': SecureEndpointConfig,
-    '/documentation/security/ssl': Ssl,
+   
     '/documentation/messaging': Messaging,
     '/documentation/messaging/first-steps': FirstSteps,
     '/documentation/messaging/testing-connectivity': TestingConnectivity,

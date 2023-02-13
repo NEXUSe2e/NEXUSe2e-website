@@ -113,10 +113,6 @@ const navItems = [
           {
             route: '/documentation/security/secure-endpoint-config',
             text: 'Configure a secure web service endpoint'
-          },
-          {
-            route: '/documentation/security/ssl',
-            text: 'SSL'
           }
         ]
       },
@@ -147,10 +143,6 @@ const navItems = [
           {
             route: '/documentation/messaging/purging',
             text: 'Conversation / Message Purging'
-          },
-          {
-            route: '/documentation/messaging/comet',
-            text: 'NEXUSe2e - comet'
           }
         ]
       },
