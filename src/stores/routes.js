@@ -1,19 +1,35 @@
+import { wrap } from 'svelte-spa-router/wrap'
+
 export const navItems = [
   {
     route: '/',
-    text: 'Home'
+    text: 'Home',
+    component: wrap({
+      asyncComponent: () => import('@/views/home/Home.svelte')
+    })
   },
   {
     route: '/solution',
     text: 'Solution',
+    component: wrap({
+      asyncComponent: () => import('@/views/solution/Solution.svelte')
+    }),
     subroutes: [
       {
         route: '/solution/features',
-        text: 'Features'
+        text: 'Features',
+        component: wrap({
+          asyncComponent: () =>
+            import('@/views/solution/features/Features.svelte')
+        })
       },
       {
         route: '/solution/scenarios',
-        text: 'Scenarios'
+        text: 'Scenarios',
+        component: wrap({
+          asyncComponent: () =>
+            import('@/views/solution/scenarios/Scenarios.svelte')
+        })
       }
     ]
   },
