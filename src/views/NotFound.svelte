@@ -1,6 +1,6 @@
 <div class="not-found">
   <h1 class="not-found__header">Site not found</h1>
-  <p class="not-found__text">The requested page was not found. <a class="standard-link" href="#/">Back</a> </p>
+  <p class="not-found__text">The requested page was not found. <a href="#/">Back</a> </p>
 </div>
 
 <style>

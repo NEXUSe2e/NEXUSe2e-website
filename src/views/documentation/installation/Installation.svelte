@@ -1,12 +1,22 @@
-<div>{@html marked.parse(markdown)}</div>
+<h1>Installation</h1>
+<hr />
+<SubrouteNavigation subroutes={subroutes} />
 
 <script>
-  import { marked } from 'marked'
+import SubrouteNavigation from "@/components/SubrouteNavigation.svelte"
 
-  const markdown = `
-  # Installation
-
-  <hr>
-  
-  `
+const subroutes = [
+  {
+    text: 'System Requirements',
+    link: '/documentation/installation/system-requirements'
+  },
+  {
+    text: 'Setting up NEXUSe2e',
+    link: '/documentation/installation/setting-up'
+  },    
+  {
+    text: 'External Configuration',
+    link: '/documentation/installation/external-config'
+  }
+]
 </script>
