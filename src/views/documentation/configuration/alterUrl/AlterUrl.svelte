@@ -1,10 +1,11 @@
 <div>{@html marked.parse(markdown1)}</div>
-<img src={img_1} alt="nexus on java 11" class="img" />
+<ImgContainer img={img_1} alt="nexus on java 11" height="200px"/>
 <div>{@html marked.parse(markdown2)}</div>
-<img src={img_2} alt="nexus on java 11" class="img" />
+<ImgContainer img={img_2} alt="nexus on java 11" height="200px"/>
 <div>{@html marked.parse(markdown3)}</div>
 
 <script>
+  import ImgContainer from '@/components/ImgContainer.svelte'
   import { marked } from 'marked'
   import img_1 from './alterURL1.jpg'
   import img_2 from './alterURL2.jpg'

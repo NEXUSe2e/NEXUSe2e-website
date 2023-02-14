@@ -1,10 +1,10 @@
 <div>
   {@html marked.parse(markdown)}
-  <img src={ProductImage} alt="NEXUSe2e solution" class="img">
-  
+  <ImgContainer img={ProductImage} alt="NEXUSe2e solution" height="400px"/>
 </div>
 
 <script>
+  import ImgContainer from '@/components/ImgContainer.svelte'
   import { marked } from 'marked'
   import ProductImage from './solution.jpg'
   

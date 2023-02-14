@@ -1,10 +1,11 @@
 <div>
   {@html marked.parse(text_1)}
-  <img src={img_1} alt="nexus on java 11" class="img" />
+  <ImgContainer img={img_1} alt="nexus on java 11" height="200px"/>
   {@html marked.parse(text_2)}
 </div>
 
 <script>
+  import ImgContainer from '@/components/ImgContainer.svelte'
   import { marked } from 'marked'
   import img_1 from './nexus_on_java_11.jpg'
   
