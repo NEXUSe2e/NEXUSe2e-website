@@ -59,7 +59,6 @@ Open the pipeline that you want to validate outgoing XML files.
   `
   const markdown3 = `
   
-
 This is all that needs to be done, your outgoing XML files will now be validated against your XSD file.
 Frontend Validation
 
