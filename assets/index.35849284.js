@@ -179,7 +179,7 @@ Please report this to https://github.com/markedjs/marked.`,e.silent)return"<p>An
   - We offer remote or on site service.
 
   ## Integration & Consulting
-  - We design an realize integration with your business partners based on your individual requirements.
+  - We design and realize integration with your business partners based on your individual requirements.
   - We develop the connection to the interfaces of your backend systems, whether those are standardized or proprietary.
   - We realize the connection to your business partners, whether they make use of standardized or proprietary frontend protocols.
 
@@ -206,7 +206,7 @@ If you have just freshly installed NEXUSe2e, you will now want to make your conf
 Then to get NEXUSe2e to use your external configuration, provide a JVM option named externalconfig which points to the folder holding your external configuration files.
 How you do this varies a bit depending on how you installed your instance and what operating system you are using:
 
-- If you have NEXUSe2e installed as a windows service, you need to go into the configuration program (located under \\bin\\ in your tomcat-folder, called <servicename>w.exe .e.g. tomcatw.exe of you not change the service name while installing tomcat), navigate to the tab 'Java', and under 'Java Options' add an entry for the parameter.
+- If you have NEXUSe2e installed as a windows service, you need to go into the configuration program (located under \\bin\\ in your tomcat-folder, called <servicename>w.exe .e.g. tomcatw.exe if you did not change the service name while installing tomcat), navigate to the tab 'Java', and under 'Java Options' add an entry for the parameter.
 - If you start your instance from the command line (e.g. via a script) or running linux you need to provide or edit your setenv.bat or setenv.sh file (located under \\bin\\ in your tomcat-folder). Windows uses the .bat file. Add the parameter here.
 
 **Example:**  
@@ -235,16 +235,16 @@ How you do this varies a bit depending on how you installed your instance and wh
   - Java 11 or higher <a href="https://jdk.java.net/archive/" target="_blank">Link</a>
   - Tomcat 9  <a href="https://tomcat.apache.org/" target="_blank">Link</a>
  
-  NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
-  - An SQL database that can be accessed through JDCB (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
+  NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank" class="standard-link">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
+  - An SQL database that can be accessed through JDBC (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
   
   ### Installing Your Server
   - Download the WAR file from the Download section or directly from github <a href="https://github.com/NEXUSe2e/NEXUSe2e/releases" target="_blank">Releases</a>.
   - Deploy the WAR file in your servlet container.
   
-  >To deploy the WAR file please follow the instructions of your Servlet container/Web application server. For Tomcat the deployment is as easy as copying the WAR file into the *\\<Tomcat root>/\\<webapps>* directory and starting Tomcat. This will expand the WAR and start the Web application.
+  >To deploy the WAR file please follow the instructions of your Servlet container/Web application server. For Tomcat the deployment is as easy as copying the WAR file into the *\\<Tomcat root>\\webapps* directory and starting Tomcat. This will expand the WAR and start the Web application.
 
-  >The shipped configuration inside the WAR file will create a Derby database and pre-populate it with a basic sample configuration on first startup. The database will be created in the directory *\\<NEXUSe2e Web app root>/WEB-INF/config/database/derby* and be named *NEXUSe2eDB*. This database is for testing purposes only.
+  >The shipped configuration inside the WAR file will create a Derby database and pre-populate it with a basic sample configuration on first startup. The database will be created in the directory *\\<Tomcat root>\\NEXUSe2eDB*. This database is for testing purposes only.
 
   - Log in to the admin interface and configure the server.
 
@@ -398,7 +398,7 @@ You can also communicate directly with your backend, this is fully integrated in
 
 #### Database Integration
 
-The last not very common option is using a database integration. There is a service and corresponding pipelet which provide a basic integration for inbound and outbound messages, based on the content of the specified table. From high level, it\u2019s the same as file transfer but not storee in the file system but a database table. This Table is not part of NEXUSe2e and must be create manually and requires a predefined layout which is not configurable.
+The last not very common option is using a database integration. There is a service and corresponding pipelet which provide a basic integration for inbound and outbound messages, based on the content of the specified table. From high level, it\u2019s the same as file transfer but not stored in the file system but a database table. This table is not part of NEXUSe2e and must be created manually and requires a predefined layout which is not configurable.
 
 Another downside of this intermediate database table is the burst load you will generate on your partners systems. Every time the database is being polled it will generate burst of messages. The polling time is configurable for sure, but you have also keep an eye on your export services which should be somewhat synchronized with the NEXUSe2e service. Otherwise you can run into some interesting locking situations.
 
@@ -417,7 +417,7 @@ Another downside of this intermediate database table is the burst load you will 
 
   Logging in NEXUSe2e is implemented using Log4j 2 (starting with NEXUSe2e version 5.11.1).
 
-All logging is configured via the log4j2.xml file located in the WEB-INFclasses folder, including database and email logging that was configured through the Notifiers section in the ui of previous NEXUSe2e verions.
+All logging is configured via the log4j2.xml file located in the \\WEB-INF\\classes\\ folder, including database and email logging that was configured through the Notifiers section in the ui of previous NEXUSe2e verions.
 
 Other than the database logging appender, all logging uses out-of-the-box log4j2 appenders and any Log4j 2 appender can be added. For more configuration options visit the [Apache Log4j 2 website](https://logging.apache.org/log4j/2.x/manual/configuration.html#Appenders). 
 
@@ -505,7 +505,7 @@ Make sure you have set a JAVA_HOME in your Windows environmental variables.
 
   `,`
 
-- Next, switch in the bin directory of your Tomcat and rename the "Tomcatw.exe" to wahtever you named your service. Make sure you include the "w.exe".
+- Next, switch in the bin directory of your Tomcat and rename the "Tomcatw.exe" to whatever you named your service. Make sure you include the "w.exe".
 
 - Execute your "NEXUSe2eFAQw.exe".
      
@@ -554,14 +554,15 @@ Execute following command:
 This should be it, you can check your Windows Services to make sure it is removed.
 
   `]}class cr extends O{constructor(e){super(),B(this,e,lr,ar,H,{})}}const ur="/assets/xsd1.bfc416fb.png",dr="/assets/xsd2.84300edc.png",hr="/assets/xsd3.dda4fff4.png",fr="/assets/xsd4.4bea371d.png";function pr(r){let e,t=v.parse(r[0])+"",n,i,o,s,a=v.parse(r[1])+"",l,c,u,m,w=v.parse(r[2])+"",p,f,U,$,j=v.parse(r[3])+"",q,F,L,A,X=v.parse(r[4])+"",W;return i=new G({props:{img:ur,alt:"service",height:"200px"}}),c=new G({props:{img:dr,alt:"service",height:"500px"}}),f=new G({props:{img:hr,alt:"service",height:"500px"}}),F=new G({props:{img:fr,alt:"service",height:"500px"}}),{c(){e=g("div"),n=y(),D(i.$$.fragment),o=y(),s=g("div"),l=y(),D(c.$$.fragment),u=y(),m=g("div"),p=y(),D(f.$$.fragment),U=y(),$=g("div"),q=y(),D(F.$$.fragment),L=y(),A=g("div")},m(b,z){h(b,e,z),e.innerHTML=t,h(b,n,z),P(i,b,z),h(b,o,z),h(b,s,z),s.innerHTML=a,h(b,l,z),P(c,b,z),h(b,u,z),h(b,m,z),m.innerHTML=w,h(b,p,z),P(f,b,z),h(b,U,z),h(b,$,z),$.innerHTML=j,h(b,q,z),P(F,b,z),h(b,L,z),h(b,A,z),A.innerHTML=X,W=!0},p:_,i(b){W||(E(i.$$.fragment,b),E(c.$$.fragment,b),E(f.$$.fragment,b),E(F.$$.fragment,b),W=!0)},o(b){N(i.$$.fragment,b),N(c.$$.fragment,b),N(f.$$.fragment,b),N(F.$$.fragment,b),W=!1},d(b){b&&d(e),b&&d(n),M(i,b),b&&d(o),b&&d(s),b&&d(l),M(c,b),b&&d(u),b&&d(m),b&&d(p),M(f,b),b&&d(U),b&&d($),b&&d(q),M(F,b),b&&d(L),b&&d(A)}}}function mr(r){return[`
-  # XSD - Schema Validation 
+  # XSD - Schema Validation
 
   <hr>
   
   XSD validation is possible with NEXUSe2e for outbound and inbound messages. However the components are not enabled by default, you have to create a new pipelet depending on what end you want to validate XML files. For incoming messages it would be suitable to use the frontend pipelet, the backend pipelet for outgoing, thus failed conversation/messages due to invalid XML validations will not occur in your database. If this is an intentional behavior, you need to add the pipelet in the frontend pipeline for outgoing messages vice versa in the backend pipeline for incoming messages. Create the component as descripted and add the pipelet into your pipeline and, also add the relevant XSD file, that is all.
 
 Please make also sure, that the account you are using for the Tomcat Service is allowed to access the folder of your XSD file.
-Backend Validation
+
+## Backend Validation
 
 Create Component
 
@@ -595,9 +596,9 @@ Open the pipeline that you want to validate outgoing XML files.
 
   `,`
   
-
 This is all that needs to be done, your outgoing XML files will now be validated against your XSD file.
-Frontend Validation
+
+## Frontend Validation
 
 Create Component
 
@@ -691,13 +692,14 @@ It says that the element "Document" is not valid according to the XSD.
   `]}class gr extends O{constructor(e){super(),B(this,e,mr,pr,H,{})}}function wr(r){let e,t,n,i,o,s=v.parse(r[0])+"",a,l,c=v.parse(r[1])+"";return{c(){e=g("h1"),e.textContent="Security",t=y(),n=g("hr"),i=y(),o=g("div"),a=y(),l=g("div")},m(u,m){h(u,e,m),h(u,t,m),h(u,n,m),h(u,i,m),h(u,o,m),o.innerHTML=s,h(u,a,m),h(u,l,m),l.innerHTML=c},p:_,i:_,o:_,d(u){u&&d(e),u&&d(t),u&&d(n),u&&d(i),u&&d(o),u&&d(a),u&&d(l)}}}function vr(r){return[`
   ## Client Authentication
   
-  The client authentication is something you should keep in mind when requesting an certificate and establishing connections with new partners. Even if NEXUSe2e is a server application compareable to a website it acts as a client as well which is the major different to standard website certificates. When receiving a business message from your partner, the webapplication server handles this incomming request.
 
-  The SSL Handshake is done before any data is forward into the NEXUSe2e web app. Therefore its important to keep your web app servers security configuration in mind when changing your certificates. Most web app servers can be configured to enable clientAuth. Normally the client (sending NEXUSe2e instance) connect to the server(receiving NEXUSe2e instance) and asked for a valid server certificate.
+  The client authentication is something you should keep in mind when requesting an certificate and establishing connections with new partners. Even though NEXUSe2e is a server application comparable to a website, it acts as a client as well, which is the major difference to standard website certificates. When receiving a business message from your partner, the web application server handles this incoming request.
 
-  The server provides the server certificate and the client validates this against the configured partner certifcate, the ca certificates and the expiration time. without clientauth the handshake process is done and the user data is transfered. But with enabled client auth, the client is asked for a certificate as well. This client certificate is send over to the server and validated inside the web app server. Therefore it is required to apply the changes on ca certificates in your web app server configuration as well. Even if the clients CA cert is installed in NEXUSe2e, the ssl handshake fails if the required CA certificate is not found in the web app server key store.
+The SSL Handshake is done before any data is forwarded into the NEXUSe2e web app. Therefore, it's important to keep your web app servers security configuration in mind when changing your certificates. Most web app servers can be configured to enable clientAuth. Normally the client (sending NEXUSe2e instance) connect to the server(receiving NEXUSe2e instance) and asked for a valid server certificate.
 
-  The most common issue here is the installed certificate on the client has no client auth flag enabled. Even if the certificate is valid the server will deny the handshake process. This flag can only be enabled by your CA when requesting a new certificate. Without this flag enabled you must ensure your partners have disabled the client auth setting in there web app server configurations.
+The server provides the server certificate and the client validates this against the configured partner certificate, the CA certificates and the expiration time. Without client auth the handshake process is done and the user data is transferred. But with enabled client auth, the client is asked for a certificate as well. This client certificate is send over to the server and validated inside the web app server. Therefore, it is required to apply the changes on CA certificates in your web app server configuration as well. Even if the clients CA certificate is installed in NEXUSe2e, the SSL handshake fails if the required CA certificate is not found in the web app server key store.
+
+The most common issue here is the installed certificate on the client has no client auth flag enabled. Even if the certificate is valid the server will deny the handshake process. This flag can only be enabled by your CA when requesting a new certificate. Without this flag enabled you must ensure your partners have disabled the client auth setting in their web app server configurations.
   
   <hr />
   `,`
@@ -832,13 +834,13 @@ The fundamental prerequisite for exchanging messages is a peer that receives you
 
 The default configuration of NEXUSe2e server contains several preset. You can just use the presets or modify them as you like in the following configuration steps.
 
-Log In as Administrator
+### Log In as Administrator
 
 Start your web browser and point it to http://\\<server>:\\<port>/\\<deployment_name>. For Tomcat running the default configuration on the local machine--this is the case if you installed with the Windows installer, the url is: http://localhost:8080/NEXUSe2e. If you have not chopped the version substring, e.g. _4.2.4, from the war file's name before deployment, you probably need to append it to the URL.
 
 The default administration account is admin with password admin.
 
-Set the Server Identity
+### Set the Server Identity
 
 The Server Identity is a unique id called Partner Id identifying your server to your communication partners. The Partner Id can be anything and its structure or format is typically agreed upon between communication partners. One possible example is the D-U-N-S number of your organization.
 
@@ -953,7 +955,7 @@ In order to exchange files based on GenericFile, you must add a business partner
 
 ### Apply Configuration Changes and Send a Message
 
-Configuration changes in NEXUSe2e server are transactional. The are only activated after you clicked the Apply button on top of the gui. This will reload the NEXUSe2e engine with the new configuration. Of course you can alternatively revert all changes by clicking Revert. The Apply andRevert buttons get enabled as soon as there are pending configuration changes.
+Configuration changes in NEXUSe2e server are transactional. They are only activated after you clicked the Apply button on top of the gui. This will reload the NEXUSe2e engine with the new configuration. Of course, you can alternatively revert all changes by clicking Revert. The Apply and Revert buttons get enabled as soon as there are pending configuration changes.
 
 Usually you will want to send messages automatically. But in order to test connectivity you can manually send a message to your partner:
 
@@ -1147,8 +1149,8 @@ And do as instructed:
 
 Based on the requirements for secure inbound and outbound connections its sometimes not that easy to pinpoint the issues directly. From top level point of view there are six components involved in the communcation process.
 
-- The senders backend system (maybe something like SAP)
-- The sending communication server (NEXUSe2e)
+- the senders backend system (maybe something like SAP)
+- the sending communication server (NEXUSe2e)
 - the outgoing firewall
 - the incoming firewall on the receiver side
 - the receiving communication server (NEXUSe2e to keep documentation simple)
