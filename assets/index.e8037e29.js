@@ -692,7 +692,6 @@ It says that the element "Document" is not valid according to the XSD.
   `]}class gr extends O{constructor(e){super(),B(this,e,mr,pr,H,{})}}function wr(r){let e,t,n,i,o,s=v.parse(r[0])+"",a,l,c=v.parse(r[1])+"";return{c(){e=g("h1"),e.textContent="Security",t=y(),n=g("hr"),i=y(),o=g("div"),a=y(),l=g("div")},m(u,m){h(u,e,m),h(u,t,m),h(u,n,m),h(u,i,m),h(u,o,m),o.innerHTML=s,h(u,a,m),h(u,l,m),l.innerHTML=c},p:_,i:_,o:_,d(u){u&&d(e),u&&d(t),u&&d(n),u&&d(i),u&&d(o),u&&d(a),u&&d(l)}}}function vr(r){return[`
   ## Client Authentication
   
-
   The client authentication is something you should keep in mind when requesting an certificate and establishing connections with new partners. Even though NEXUSe2e is a server application comparable to a website, it acts as a client as well, which is the major difference to standard website certificates. When receiving a business message from your partner, the web application server handles this incoming request.
 
 The SSL Handshake is done before any data is forwarded into the NEXUSe2e web app. Therefore, it's important to keep your web app servers security configuration in mind when changing your certificates. Most web app servers can be configured to enable clientAuth. Normally the client (sending NEXUSe2e instance) connect to the server(receiving NEXUSe2e instance) and asked for a valid server certificate.
