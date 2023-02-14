@@ -56,7 +56,7 @@ You can also communicate directly with your backend, this is fully integrated in
 
 #### Database Integration
 
-The last not very common option is using a database integration. There is a service and corresponding pipelet which provide a basic integration for inbound and outbound messages, based on the content of the specified table. From high level, it’s the same as file transfer but not storee in the file system but a database table. This Table is not part of NEXUSe2e and must be create manually and requires a predefined layout which is not configurable.
+The last not very common option is using a database integration. There is a service and corresponding pipelet which provide a basic integration for inbound and outbound messages, based on the content of the specified table. From high level, it’s the same as file transfer but not stored in the file system but a database table. This table is not part of NEXUSe2e and must be created manually and requires a predefined layout which is not configurable.
 
 Another downside of this intermediate database table is the burst load you will generate on your partners systems. Every time the database is being polled it will generate burst of messages. The polling time is configurable for sure, but you have also keep an eye on your export services which should be somewhat synchronized with the NEXUSe2e service. Otherwise you can run into some interesting locking situations.
 

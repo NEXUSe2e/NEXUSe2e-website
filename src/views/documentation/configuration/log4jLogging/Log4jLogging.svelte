@@ -12,7 +12,7 @@
 
   Logging in NEXUSe2e is implemented using Log4j 2 (starting with NEXUSe2e version 5.11.1).
 
-All logging is configured via the log4j2.xml file located in the \WEB-INF\classes\ folder, including database and email logging that was configured through the Notifiers section in the ui of previous NEXUSe2e verions.
+All logging is configured via the log4j2.xml file located in the \\WEB-INF\\classes\\ folder, including database and email logging that was configured through the Notifiers section in the ui of previous NEXUSe2e verions.
 
 Other than the database logging appender, all logging uses out-of-the-box log4j2 appenders and any Log4j 2 appender can be added. For more configuration options visit the [Apache Log4j 2 website](https://logging.apache.org/log4j/2.x/manual/configuration.html#Appenders). 
 

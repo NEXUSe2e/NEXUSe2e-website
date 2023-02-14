@@ -27,7 +27,7 @@
   - We offer remote or on site service.
 
   ## Integration & Consulting
-  - We design an realize integration with your business partners based on your individual requirements.
+  - We design and realize integration with your business partners based on your individual requirements.
   - We develop the connection to the interfaces of your backend systems, whether those are standardized or proprietary.
   - We realize the connection to your business partners, whether they make use of standardized or proprietary frontend protocols.
 
