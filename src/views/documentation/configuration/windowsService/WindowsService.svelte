@@ -45,7 +45,7 @@ Make sure you have set a JAVA_HOME in your Windows environmental variables.
   `
   const markdown2 = `
 
-- Next, switch in the bin directory of your Tomcat and rename the "Tomcatw.exe" to wahtever you named your service. Make sure you include the "w.exe".
+- Next, switch in the bin directory of your Tomcat and rename the "Tomcatw.exe" to whatever you named your service. Make sure you include the "w.exe".
 
 - Execute your "NEXUSe2eFAQw.exe".
      

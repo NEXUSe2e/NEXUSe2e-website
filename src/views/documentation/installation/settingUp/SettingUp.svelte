@@ -18,16 +18,16 @@
   - Java 11 or higher <a href="https://jdk.java.net/archive/" target="_blank">Link</a>
   - Tomcat 9  <a href="https://tomcat.apache.org/" target="_blank">Link</a>
  
-  NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
-  - An SQL database that can be accessed through JDCB (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
+  NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank" class="standard-link">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
+  - An SQL database that can be accessed through JDBC (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
   
   ### Installing Your Server
   - Download the WAR file from the Download section or directly from github <a href="https://github.com/NEXUSe2e/NEXUSe2e/releases" target="_blank">Releases</a>.
   - Deploy the WAR file in your servlet container.
   
-  >To deploy the WAR file please follow the instructions of your Servlet container/Web application server. For Tomcat the deployment is as easy as copying the WAR file into the *\\<Tomcat root>/\\<webapps>* directory and starting Tomcat. This will expand the WAR and start the Web application.
+  >To deploy the WAR file please follow the instructions of your Servlet container/Web application server. For Tomcat the deployment is as easy as copying the WAR file into the *\\<Tomcat root>\\webapps* directory and starting Tomcat. This will expand the WAR and start the Web application.
 
-  >The shipped configuration inside the WAR file will create a Derby database and pre-populate it with a basic sample configuration on first startup. The database will be created in the directory *\\<NEXUSe2e Web app root>/WEB-INF/config/database/derby* and be named *NEXUSe2eDB*. This database is for testing purposes only.
+  >The shipped configuration inside the WAR file will create a Derby database and pre-populate it with a basic sample configuration on first startup. The database will be created in the directory *\\<Tomcat root>\\NEXUSe2eDB*. This database is for testing purposes only.
 
   - Log in to the admin interface and configure the server.
 

@@ -14,8 +14,8 @@
 
 Based on the requirements for secure inbound and outbound connections its sometimes not that easy to pinpoint the issues directly. From top level point of view there are six components involved in the communcation process.
 
-- The senders backend system (maybe something like SAP)
-- The sending communication server (NEXUSe2e)
+- the senders backend system (maybe something like SAP)
+- the sending communication server (NEXUSe2e)
 - the outgoing firewall
 - the incoming firewall on the receiver side
 - the receiving communication server (NEXUSe2e to keep documentation simple)

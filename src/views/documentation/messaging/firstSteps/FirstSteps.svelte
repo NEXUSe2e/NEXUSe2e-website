@@ -33,13 +33,13 @@ The fundamental prerequisite for exchanging messages is a peer that receives you
 
 The default configuration of NEXUSe2e server contains several preset. You can just use the presets or modify them as you like in the following configuration steps.
 
-Log In as Administrator
+### Log In as Administrator
 
 Start your web browser and point it to http://\\<server>:\\<port>/\\<deployment_name>. For Tomcat running the default configuration on the local machine--this is the case if you installed with the Windows installer, the url is: http://localhost:8080/NEXUSe2e. If you have not chopped the version substring, e.g. _4.2.4, from the war file's name before deployment, you probably need to append it to the URL.
 
 The default administration account is admin with password admin.
 
-Set the Server Identity
+### Set the Server Identity
 
 The Server Identity is a unique id called Partner Id identifying your server to your communication partners. The Partner Id can be anything and its structure or format is typically agreed upon between communication partners. One possible example is the D-U-N-S number of your organization.
 
@@ -159,7 +159,7 @@ In order to exchange files based on GenericFile, you must add a business partner
 
 ### Apply Configuration Changes and Send a Message
 
-Configuration changes in NEXUSe2e server are transactional. The are only activated after you clicked the Apply button on top of the gui. This will reload the NEXUSe2e engine with the new configuration. Of course you can alternatively revert all changes by clicking Revert. The Apply andRevert buttons get enabled as soon as there are pending configuration changes.
+Configuration changes in NEXUSe2e server are transactional. They are only activated after you clicked the Apply button on top of the gui. This will reload the NEXUSe2e engine with the new configuration. Of course, you can alternatively revert all changes by clicking Revert. The Apply and Revert buttons get enabled as soon as there are pending configuration changes.
 
 Usually you will want to send messages automatically. But in order to test connectivity you can manually send a message to your partner:
 
