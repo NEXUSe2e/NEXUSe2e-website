@@ -28,8 +28,6 @@
   import WindowsService from "../views/documentation/configuration/windowsService/WindowsService.svelte"
   import XsdSchemaValidation from "../views/documentation/configuration/xsdSchemaValidation/XsdSchemaValidation.svelte"
 
-  import ClientAuth from "../views/documentation/security/clientAuth/ClientAuth.svelte"
-  import SecureEndpointConfig from "../views/documentation/security/secureEndpointConfig/SecureEndpointConfig.svelte"
   import Security from "../views/documentation/security/Security.svelte"
 
 
@@ -77,8 +75,6 @@
     '/documentation/configuration/xsd-schema-validation': XsdSchemaValidation,
     '/documentation/configuration/log4j-logging': Log4jLogging,
     '/documentation/security': Security,
-    '/documentation/security/client-auth': ClientAuth,
-    '/documentation/security/secure-endpoint-config': SecureEndpointConfig,
    
     '/documentation/messaging': Messaging,
     '/documentation/messaging/first-steps': FirstSteps,

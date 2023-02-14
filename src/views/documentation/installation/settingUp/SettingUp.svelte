@@ -12,7 +12,7 @@
 
 
 
-  ## Requirements
+  ### Requirements
 
   The current version 5.x of NEXUSe2e requires:
   - Java 11 or higher <a href="https://jdk.java.net/archive/" target="_blank" class="standard-link">Link</a>
@@ -21,7 +21,7 @@
   NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank" class="standard-link">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
   - An SQL database that can be accessed through JDCB (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
   
-  ## Installing Your Server
+  ### Installing Your Server
   - Download the WAR file from the Download section or directly from github <a href="https://github.com/NEXUSe2e/NEXUSe2e/releases" target="_blank" class="standard-link">Releases</a>.
   - Deploy the WAR file in your servlet container.
   

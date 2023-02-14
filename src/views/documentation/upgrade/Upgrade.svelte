@@ -1,11 +1,11 @@
 <h1>Upgrade</h1>
 <hr />
-<div>{@html marked.parse(markdown)}</div>
+<div>{@html marked.parse(checklistMD)}</div>
 
 <script>
   import { marked } from 'marked'
 
-  const markdown = `
+  const checklistMD = `
 
   This page provides a brief checklist of the NEXUSe2e upgrade process. Please keep in mind that this is not meant to replace a full upgrade guide.
 

@@ -98,17 +98,7 @@ const navItems = [
       },
       {
         route: '/documentation/security',
-        text: 'Security',
-        subroutes: [
-          {
-            route: '/documentation/security/client-auth',
-            text: 'Client Authentication'
-          },
-          {
-            route: '/documentation/security/secure-endpoint-config',
-            text: 'Configure a secure web service endpoint'
-          }
-        ]
+        text: 'Security'
       },
       {
         route: '/documentation/messaging',
