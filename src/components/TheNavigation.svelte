@@ -64,13 +64,7 @@ const navItems = [
       },
       {
         route: '/documentation/upgrade',
-        text: 'Upgrade',
-        subroutes: [
-          {
-            route: '/documentation/upgrade/checklist',
-            text: 'Upgrade Checklist'
-          }          
-        ]
+        text: 'Upgrade'
       },
       {
         route: '/documentation/configuration',

@@ -18,7 +18,6 @@
   import SettingUp from "../views/documentation/installation/settingUp/SettingUp.svelte"
   import SystemRequirements from "../views/documentation/installation/systemRequirements/SystemRequirements.svelte"
 
-  import Checklist from "../views/documentation/upgrade/checklist/Checklist.svelte"
   import Upgrade from "../views/documentation/upgrade/Upgrade.svelte"
 
   import AlterUrl from "../views/documentation/configuration/alterUrl/AlterUrl.svelte"
@@ -70,7 +69,6 @@
     '/documentation/installation/setting-up': SettingUp,
     '/documentation/installation/external-config': ExternalConfig,
     '/documentation/upgrade': Upgrade,
-    '/documentation/upgrade/checklist': Checklist,
     '/documentation/configuration/': Configuration,
     '/documentation/configuration/alter-url': AlterUrl,
     '/documentation/configuration/mssql-auth': MssqlAuth,
