@@ -12,7 +12,7 @@
   ## Preparation
 
   - **Get the .war-file used for the update.**  
-    Depending on your specific case you either want to download the official release from the <a href="https://github.com/NEXUSe2e/NEXUSe2e/releases" target="_blank" class="standard-link">NEXUSe2e Github Project</a>, you will have a .war-file which the NEXUSe2e support team provided, or your department or team has built a .war-file to use for the update.
+    Depending on your specific case you either want to download the official release from the <a href="https://github.com/NEXUSe2e/NEXUSe2e/releases" target="_blank">NEXUSe2e Github Project</a>, you will have a .war-file which the NEXUSe2e support team provided, or your department or team has built a .war-file to use for the update.
 
   - **Get patches.jar if needed (see below).**  
     Under certain conditions you need to apply some patches to your installation. For this you will need a special .jar-file which can be obtained from the download page.
