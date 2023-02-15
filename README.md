@@ -16,7 +16,6 @@
 ## Manuelles Deplyoment 
 1. Projekt bauen: `npm run build`
 2. Projekt nach github deployen: `npm run deploy`
-3. Anpassen des Custom Domain Name auf 'nexuse2e.org'. Dies ist notwendig solange die CNAME Datei nicht im Repo ist.
 
 
 
