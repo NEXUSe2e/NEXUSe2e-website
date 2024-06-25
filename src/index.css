@@ -1,0 +1,25 @@
+h1 {
+  margin-block: 1rem;
+}
+
+h2 {
+  margin-block: 0.75rem;
+}
+
+ul {
+  margin-left: 2rem;
+  margin-block: 1rem;
+}
+
+ol {
+  margin-left: 2rem;
+  margin-block: 1rem;
+}
+
+p {
+  margin-block: 1rem;
+}
+
+a {
+  color: #ff6f00;
+}

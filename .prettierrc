@@ -1,0 +1,18 @@
+{
+  "semi": false,
+  "singleQuote": true,
+  "useTabs": false,
+  "trailingComma": "none",
+  "printWidth": 120,
+  "endOfLine": "auto",
+  "singleAttributePerLine": true,
+  "importOrder": [
+    "^vue(.*)$",
+    "(.*).vue$",
+    "^(@/components/(.*)/use(.*)$)|^(@/composables/(.*)$)|^(@/layouts/(.*)$)",
+    "<THIRD_PARTY_MODULES>",
+    "^[./]"
+  ],
+  "importOrderSeparation": true,
+  "plugins": ["@trivago/prettier-plugin-sort-imports"]
+}
