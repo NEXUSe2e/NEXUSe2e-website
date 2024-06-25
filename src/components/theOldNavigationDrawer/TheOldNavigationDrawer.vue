@@ -11,7 +11,6 @@
       :opened="currentlyOpen"
     >
       <v-list-item
-        density="compact"
         subtitle="New docs"
         style="min-height: 24px"
         @click="router.push('/new')"

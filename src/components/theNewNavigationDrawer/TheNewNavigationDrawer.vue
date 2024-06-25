@@ -8,7 +8,6 @@
     <v-img src="@/assets/logo.png" />
     <v-list>
       <v-list-item
-        density="compact"
         subtitle="Old docs"
         style="min-height: 24px"
         @click="router.push('/home')"
@@ -22,6 +21,30 @@
         :active="route.path === '/new'"
         @click="router.push('/new')"
       />
+
+      <v-list-group value="docs">
+        <template #activator="{ props }">
+          <v-list-item
+            v-bind="props"
+            title="Documentation"
+            color="accent"
+            :active="route.path === '/new/docs'"
+            @click="router.push('/new/docs')"
+          />
+        </template>
+        <v-list-item
+          title="Overview"
+          color="accent"
+          :active="route.path === '/new/docs/overview'"
+          @click="router.push('/new/docs/overview')"
+        />
+        <v-list-item
+          title="Dictionary"
+          color="accent"
+          :active="route.path === '/new/docs/dictionary'"
+          @click="router.push('/new/docs/dictionary')"
+        />
+      </v-list-group>
     </v-list>
 
     <template #append>
