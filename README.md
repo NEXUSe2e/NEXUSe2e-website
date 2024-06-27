@@ -12,10 +12,7 @@
 2. Gebaute Version im Browser überprüfen: `npm run preview`
 3. Im Ordner `dist` findet sich das gebaute Projekt
 
+## Manuelles Deplyoment
 
-## Manuelles Deplyoment 
 1. Projekt bauen: `npm run build`
 2. Projekt nach github deployen: `npm run deploy`
-
-
-
