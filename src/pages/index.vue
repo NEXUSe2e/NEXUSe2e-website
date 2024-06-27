@@ -13,14 +13,22 @@
       </div>
       <div class="container px-6 py-8 h-100 d-flex flex-column flex-md-row justify-md-space-between align-center">
         <v-row justify="space-around">
+          <v-col class="pb-16"
+           cols="12"
+            md="12"
+          >
+            <H1 class="mb-0" style="text-transform: uppercase; color: rgba(230, 96, 9)">Our toolbox for reliable and secure data transfer</H1>
+            <h3 class="pl-6" style="color: rgba(230, 96, 9)">We connect your different data sources and processes</h3>
+          </v-col>
+        
           <v-col
-            cols="12"
+           cols="12"
             md="5"
           >
             <v-card>
               <v-card-text>
-                <div class="text-h3">NEXUSe2e</div>
-                <div class="mb-6 text-h5 text-medium-emphasis">Next generation version</div>
+                <div class="text-h3">NEXUSe2e 10.x</div>
+                <div class="mb-6 text-h5 text-medium-emphasis">The new generation of our B2B solution</div>
                 <v-img
                   cover
                   max-height="200"
@@ -29,8 +37,7 @@
                   @click="router.push('/new')"
                 />
                 <p class="mt-6">
-                  Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
-                  labore et dolore magna aliquyam erat, sed diam voluptua.
+                  The completely new implemented version of NEXUSe2e applying all the experience we gathered over the last two decades. We reworked all areas and challenged all decisions over the years to make it a solid solution for the upcoming years.
                 </p>
                 <div class="mt-6 d-flex justify-end">
                   <v-btn
@@ -54,7 +61,7 @@
               theme="LIGHT"
             >
               <v-card-text>
-                <div class="text-h3 text-accent">NEXUSe2e</div>
+                <div class="text-h3 text-accent">NEXUSe2e 5.x</div>
                 <div class="mb-6 text-h5 text-medium-emphasis">The proven open source B2B solution</div>
                 <v-img
                   cover
@@ -64,8 +71,7 @@
                   @click="router.push('/home')"
                 />
                 <p class="mt-6">
-                  Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
-                  labore et dolore magna aliquyam erat, sed diam voluptua.
+                  For more than 20 years our solution to move your data around the globe. Although the new version is now available, the open source version is still available and we will support you to keep your business going.  
                 </p>
                 <div class="mt-6 d-flex justify-end">
                   <v-btn
