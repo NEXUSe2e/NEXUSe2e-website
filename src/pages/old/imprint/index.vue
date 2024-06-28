@@ -14,7 +14,6 @@ const markdown = marked(`
 
   ---
 
-# Angaben gemäß § 5 TMG
 
 **evolving systems consulting GmbH**  
 Alter Wall 34-36  
