@@ -38,9 +38,3 @@ Feel free to get in touch with us and we help you getting your new version going
 
 `)
 </script>
-
-
-raus:
-Angaben gemäß 5 TGM
-
-Datemschutzerklärung
