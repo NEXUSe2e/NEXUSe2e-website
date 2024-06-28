@@ -1264,7 +1264,7 @@ To replicate this issue post the content of the attached mulitpart MIME request 
 
   ---
 
-# Angaben gem\xE4\xDF \xA7 5 TMG
+
 
 **evolving systems consulting GmbH**  
 Alter Wall 34-36  
