@@ -9,6 +9,16 @@ interface Version {
 
 const versions: Version[] = [
   {
+    version: 'NEXUSe2e 5.11.6',
+    md5: '1328F4D46D2E19A5AD8D51AA665A53B3',
+    sha256: '05426B426FE352FFAD339A02687804EC9B081622ADCAA5D6C4773C5CFA68A985',
+    download: 'v5.11.6/nexuse2e-webapp-5.11.6.war',
+    changes: [
+      'Fixed payload download links and backend status display in new UI (/ui).',
+      'Set autocomplete to off for login form.'
+    ]
+  },
+  {
     version: 'NEXUSe2e 5.11.5',
     md5: 'BB37D202B5F4B6F52E02AE73489BE78A',
     sha256: '358896BD9A92129EBABE5B5CC10802935930C23DA5828B55B28B7C5156EDC2C2',
