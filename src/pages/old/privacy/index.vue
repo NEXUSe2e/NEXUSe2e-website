@@ -7,6 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { imprint } from '@/utils/LegalTexts'
-const markdown = imprint
+import { privacyPolicy } from '@/utils/LegalTexts'
+const markdown = privacyPolicy
 </script>
