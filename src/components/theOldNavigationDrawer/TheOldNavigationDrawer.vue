@@ -228,10 +228,16 @@
           @click="router.push('/contact')"
         />
         <v-list-item
-          title="Legal Notices / Impressum"
+          title="Imprint / Impressum"
           color="accent"
           :active="route.path === '/imprint'"
           @click="router.push('/imprint')"
+        />
+        <v-list-item
+          title="Privacy Policy / Datenschutz"
+          color="accent"
+          :active="route.path === '/privacy'"
+          @click="router.push('/privacy')"
         />
       </v-list>
     </template>

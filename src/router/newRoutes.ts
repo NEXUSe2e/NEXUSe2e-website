@@ -23,5 +23,9 @@ export default [
   {
     path: 'imprint',
     component: () => import('@/pages/new/imprint/index.vue')
+  },
+  {
+    path: 'privacy',
+    component: () => import('@/pages/new/privacy/index.vue')
   }
 ]
