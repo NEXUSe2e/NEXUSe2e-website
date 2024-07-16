@@ -29,9 +29,46 @@
             title="Documentation"
             color="accent"
             :active="route.path === '/new/docs'"
-            @click="router.push('/new/docs')"
           />
         </template>
+        <v-list-group value="concepts">
+          <template #activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Concepts"
+              color="accent"
+              :active="route.path === '/new/docs/concepts'"
+            />
+          </template>
+          <v-list-item
+            title="Inflow and Outflow"
+            color="accent"
+            :active="route.path === '/new/docs/concepts/flows'"
+            @click="router.push('/new/docs/concepts/flows')"
+          />
+          <v-list-item
+            title="Routes"
+            color="accent"
+            :active="route.path === '/new/docs/concepts/routes'"
+            @click="router.push('/new/docs/concepts/routes')"
+          />
+        </v-list-group>
+        <v-list-group value="components">
+          <template #activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Components"
+              color="accent"
+              :active="route.path === '/new/docs/components'"
+            />
+          </template>
+          <v-list-item
+            title="DirectoryScanner"
+            color="accent"
+            :active="route.path === '/new/docs/components/directory_scanner'"
+            @click="router.push('/new/docs/components/directory_scanner')"
+          />
+        </v-list-group>
         <v-list-item
           title="Overview"
           color="accent"

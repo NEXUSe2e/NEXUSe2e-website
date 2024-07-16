@@ -20,7 +20,7 @@
             <H1 class="mb-0" style="text-transform: uppercase; color: rgba(230, 96, 9)">Our toolbox for reliable and secure data transfer</H1>
             <h3 class="pl-6" style="color: rgba(230, 96, 9)">We connect your different data sources and processes</h3>
           </v-col>
-        
+
           <v-col
            cols="12"
             md="5"
@@ -67,11 +67,11 @@
                   cover
                   max-height="200"
                   class="cursor-pointer"
-                  src="./old/home//nexus_on_java_11.jpg"
+                  src="./old/home/nexus_on_java_11.jpg"
                   @click="router.push('/home')"
                 />
                 <p class="mt-6">
-                  For more than 20 years our solution to move your data around the globe. Although the new version is now available, the open source version is still available and we will support you to keep your business going.  
+                  For more than 20 years our solution to move your data around the globe. Although the new version is now available, the open source version is still available and we will support you to keep your business going.
                 </p>
                 <div class="mt-6 d-flex justify-end">
                   <v-btn

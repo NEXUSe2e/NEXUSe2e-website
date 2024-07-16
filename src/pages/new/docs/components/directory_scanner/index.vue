@@ -10,7 +10,9 @@
 import { marked } from 'marked'
 
 const markdown = marked(`
-# 🚧 Documentation is compiled... 🚧
+  # Directory Scanner
+  ---
+
 
 `)
 </script>
