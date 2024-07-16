@@ -8,7 +8,7 @@
     <v-img src="@/assets/logo.png" />
     <v-list>
       <v-list-item
-        subtitle="Old docs"
+        subtitle="Old Version"
         style="min-height: 24px"
         @click="router.push('/home')"
       />
@@ -93,10 +93,16 @@
           @click="router.push('/new/contact')"
         />
         <v-list-item
-          title="Legal Notices / Impressum"
+          title="Imprint / Impressum"
           color="accent"
           :active="route.path === '/new/imprint'"
           @click="router.push('/new/imprint')"
+        />
+        <v-list-item
+          title="Privacy Policy / Datenschutz"
+          color="accent"
+          :active="route.path === '/new/privacy'"
+          @click="router.push('/new/privacy')"
         />
       </v-list>
     </template>
