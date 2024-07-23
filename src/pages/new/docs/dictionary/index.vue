@@ -6,9 +6,14 @@
         <v-list-item
           v-for="item in dictionary"
           :key=item.key
-          :title=item.key
-          :subtitle=item.value
-        ></v-list-item>
+        >
+          <template v-slot:default>
+            <v-list-item-content>
+              <v-list-item-title v-html="item.key"></v-list-item-title>
+              <v-list-item-subtitle v-html="item.value"></v-list-item-subtitle>
+            </v-list-item-content>
+          </template>
+        </v-list-item>
       </v-list>
       <div v-html="markdown" />
     </v-col>
@@ -17,8 +22,16 @@
 
 <script setup lang="ts">
 import { marked } from "marked";
+import { onMounted, ref } from 'vue';
 
-const dictionary = 
+interface DictionaryItem {
+  key: string;
+  value: string;
+}
+
+
+
+const rawDictionary =
   [
     {
       key: "Pipeline",
@@ -46,7 +59,7 @@ const dictionary =
     },
     {
       key: "Route",
-      value:"One route describes the connection between two partners. A route always requires the two partners and the connection, additionally you can provide an optional client certificates. "
+      value:"One route describes the connection between two partners. A route always requires the two partners and the connection, additionally you can provide an optional client certificates. For more details about routes, check the [Routing Concepts](#/new/docs/concepts/routes)"
     },
     {
       key: "SSO",
@@ -58,7 +71,7 @@ const dictionary =
     },
     {
       key: "Sender Service",
-      value:"A sender Service is the implementation of service that actually sends data to the outside. This can be integrations with your backend or standard messages to your trading partners. Examples are HttpSenderService or FileSaveSenderService."
+      value:"A sender Service is the implementation of service that actually sends data to the outside. This can be integrations with your backend or standard messages to your trading partners. Examples are `HttpSenderService` or `FileSaveSenderService`."
     },
     {
       key: "Receiver Service",
@@ -91,16 +104,30 @@ const dictionary =
 
   ]
 
+const dictionary = ref<DictionaryItem[]>([]);
+
+
+async function processDictionary() {
+  dictionary.value = await Promise.all(rawDictionary.map(async item => ({
+    ...item,
+    value: await marked(item.value)
+  })));
+}
+
+onMounted(() => {
+  processDictionary();
+});
+
 
 
 const markdown = marked(`
 
 
-And after all this, wse want to make sure a couple of phrases aren't missed above but were actually removed from the concepts in NEXUSe2e.
+And after all this, we want to make sure a couple of phrases aren't missed above but were actually removed from the concepts in NEXUSe2e.
 
 - Frontend and Backend: Yes it took some time but eventually we learned, its not only confusing but also not necessary at all.
-- Persistent Properties: These are replaced by the Key Value Properties. The behavior is more or less the same. 
-- TRP: the transport/routing/protocol configuration got removed in favor of the routes. They replace the existing options and adding some new options as well. 
+- Persistent Properties: These are replaced by the Key Value Properties. The behavior is more or less the same.
+- TRP: the transport/routing/protocol configuration got removed in favor of the routes. They replace the existing options and adding some new options as well.
 - Roles: Roles are not really gone but got be summarized as default rules within NEXUSe2e. Now you have System Administrator, Administrator and Report. This might change over time, but we want to keep it as simple as possible.
 
 `);

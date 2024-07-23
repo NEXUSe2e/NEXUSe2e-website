@@ -4,8 +4,16 @@ export default [
     component: () => import('@/pages/new/index.vue')
   },
   {
-    path: 'docs',
-    component: () => import('@/pages/new/docs/index.vue')
+    path: 'docs/concepts/flows',
+    component: () => import('@/pages/new/docs/concepts/flows/index.vue')
+  },
+  {
+    path: 'docs/concepts/routes',
+    component: () => import('@/pages/new/docs/concepts/routes/index.vue')
+  },
+  {
+    path: 'docs/components/directory_scanner',
+    component: () => import('@/pages/new/docs/components/directory_scanner/index.vue')
   },
   {
     path: 'docs/overview',
@@ -15,7 +23,6 @@ export default [
     path: 'docs/dictionary',
     component: () => import('@/pages/new/docs/dictionary/index.vue')
   },
-
   {
     path: 'contact',
     component: () => import('@/pages/new/contact/index.vue')
