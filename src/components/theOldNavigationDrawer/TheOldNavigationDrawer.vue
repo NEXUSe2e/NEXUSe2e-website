@@ -62,8 +62,6 @@
             v-bind="props"
             title="Documentation"
             color="accent"
-            :active="route.path === '/documentation'"
-            @click="router.push('/documentation')"
           />
         </template>
 
@@ -73,8 +71,6 @@
               v-bind="props"
               title="Installation"
               color="accent"
-              :active="route.path === '/documentation/installation'"
-              @click="router.push('/documentation/installation')"
             />
           </template>
 
@@ -111,8 +107,6 @@
               v-bind="props"
               title="Configuration"
               color="accent"
-              :active="route.path === '/documentation/configuration'"
-              @click="router.push('/documentation/configuration')"
             />
           </template>
 
@@ -167,8 +161,6 @@
               v-bind="props"
               title="Messaging"
               color="accent"
-              :active="route.path === '/documentation/messaging'"
-              @click="router.push('/documentation/messaging')"
             />
           </template>
 
