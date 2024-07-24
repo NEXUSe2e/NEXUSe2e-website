@@ -7,7 +7,7 @@
         title="Important Notice"
         type="info"
         variant="tonal"
-      ></v-alert>
+      />
     </v-col>
   </v-row>
 </template>
