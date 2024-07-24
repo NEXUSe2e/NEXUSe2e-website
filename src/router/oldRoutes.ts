@@ -20,14 +20,6 @@ export default [
     component: () => import('@/pages/old/service/index.vue')
   },
   {
-    path: 'documentation',
-    component: () => import('@/pages/old/documentation/index.vue')
-  },
-  {
-    path: 'documentation/installation',
-    component: () => import('@/pages/old/documentation/installation/index.vue')
-  },
-  {
     path: '/documentation/installation/system-requirements',
     component: () => import('@/pages/old/documentation/installation/systemRequirements/index.vue')
   },
@@ -42,10 +34,6 @@ export default [
   {
     path: 'documentation/upgrade',
     component: () => import('@/pages/old/documentation/upgrade/index.vue')
-  },
-  {
-    path: 'documentation/configuration',
-    component: () => import('@/pages/old/documentation/configuration/index.vue')
   },
   {
     path: 'documentation/configuration/alter-url',
@@ -74,10 +62,6 @@ export default [
   {
     path: 'documentation/security',
     component: () => import('@/pages/old/documentation/security/index.vue')
-  },
-  {
-    path: 'documentation/messaging',
-    component: () => import('@/pages/old/documentation/messaging/index.vue')
   },
   {
     path: 'documentation/messaging/first-steps',
