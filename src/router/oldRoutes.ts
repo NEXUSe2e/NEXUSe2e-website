@@ -25,7 +25,7 @@ export default [
   },
   {
     path: '/documentation/installation/setting-up',
-    component: () => import('@/pages/old/documentation/installation/settingUp/inde.vue')
+    component: () => import('@/pages/old/documentation/installation/settingUp/index.vue')
   },
   {
     path: '/documentation/installation/external-config',

@@ -4,6 +4,7 @@
       <div class="w-100 d-flex align-center pa-3">
         <div class="d-flex align-center ga-3">
           <img
+            alt="NEXUSe2e logo"
             id="logo"
             src="@/assets/nexus_logo.svg"
           />
@@ -78,8 +79,7 @@
                 />
                 <p class="mt-6">
                   For more than 20 years our solution to move your data around the globe. Although the new version is
-                  now available, the open source version is still available and we will support you to keep your
-                  business going.
+                  now available, the open source version is still available. The project is now in maintenance mode.
                 </p>
                 <div class="mt-6 d-flex justify-end">
                   <v-btn

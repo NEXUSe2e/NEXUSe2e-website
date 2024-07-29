@@ -21,8 +21,8 @@ const markdown = marked(`
 ### Requirements
 
 The current version 5.x of NEXUSe2e requires:
-- Java 11 or higher <a href="https://jdk.java.net/archive/" target="_blank">Link</a>
-- Tomcat 9  <a href="https://tomcat.apache.org/" target="_blank">Link</a>
+- Java 11 (we suggest AWS Corretto 11) <a href="https://docs.aws.amazon.com/corretto/latest/corretto-11-ug/downloads-list.html" target="_blank">Link</a>
+- Tomcat 9  <a href="https://tomcat.apache.org/download-90.cgi" target="_blank">Link</a>
 
 NEXUSe2e server comes with an embedded <a href="https://db.apache.org/derby/" target="_blank" class="standard-link">Apache Derby</a> database, for evaluation and development use. We disadvise you from using the embedded database in a production environment. If you want to run NEXUSe2e server in a production environment, you also need:
 - An SQL database that can be accessed through JDBC (e.g. MS SQL Server, Oracle, DB2, MySQL, PostgreSQL)
