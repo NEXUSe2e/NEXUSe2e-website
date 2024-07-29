@@ -4,6 +4,18 @@ export default [
     component: () => import('@/pages/new/index.vue')
   },
   {
+    path: '/solutions',
+    component: () => import('@/pages/new/solution/index.vue')
+  },
+  {
+    path: '/changelog',
+    component: () => import('@/pages/new/changelog/index.vue')
+  },
+  {
+    path: '/recommendations',
+    component: () => import('@/pages/new/recommendations/index.vue')
+  },
+  {
     path: 'docs/concepts/flows',
     component: () => import('@/pages/new/docs/concepts/flows/index.vue')
   },

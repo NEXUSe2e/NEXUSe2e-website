@@ -22,7 +22,20 @@
         @click="router.push('/new')"
       />
 
+      <v-list-item
+        title="Solution"
+        color="accent"
+        :active="route.path === '/solutions'"
+        @click="router.push('/solutions')"
+      />
+
       <v-list-group value="docs">
+        <v-list-item
+          title="Overview"
+          color="accent"
+          :active="route.path === '/new/docs/overview'"
+          @click="router.push('/new/docs/overview')"
+        />
         <template #activator="{ props }">
           <v-list-item
             v-bind="props"
@@ -70,12 +83,6 @@
           />
         </v-list-group>
         <v-list-item
-          title="Overview"
-          color="accent"
-          :active="route.path === '/new/docs/overview'"
-          @click="router.push('/new/docs/overview')"
-        />
-        <v-list-item
           title="Dictionary"
           color="accent"
           :active="route.path === '/new/docs/dictionary'"
@@ -106,6 +113,18 @@
         />
       </v-list>
     </template>
+    <v-list-item
+      title="Changelog"
+      color="accent"
+      :active="route.path === '/changelog'"
+      @click="router.push('/changelog')"
+    />
+    <v-list-item
+      title="Recommendations"
+      color="accent"
+      :active="route.path === '/recommendations'"
+      @click="router.push('/recommendations')"
+    />
   </v-navigation-drawer>
 </template>
 

@@ -16,10 +16,14 @@ const markdown = marked(`
 
 ## Professional Services provided by evolving systems consulting
 
-The developers of NEXUSe2e are part of the Skaylink GmbH, a German IT and business consultancy, which specializes in:
-- IT strategy consulting and organizational consulting
-- IT architecture and projects
-- Collaboration, eBusiness and process integration
+The developers of NEXUSe2e are part of the Evolving Systems Consulting GmbH, a German IT and business consultancy, which specializes in:
+- Agility
+- Business consulting
+- Customer experience
+- Software Development
+- IT Governance & Security
+- Project Management
+- Strategy Consulting
 
 **We are all ease for your requirements. Please contact us with your individual request.**
 
@@ -46,7 +50,7 @@ The developers of NEXUSe2e are part of the Skaylink GmbH, a German IT and busine
 
 **Enterprise**
 - In addition to the standard support service you gain access to the clustering code of NEXUSe2e, which enables you to set up a scalable network of NEXUSe2e nodes.
-- With the clustering code you    
+- With the clustering code you
   - distribute the load of your transactions to several machines, and in addition to that
   - ensure availability in case of failure
 `)
