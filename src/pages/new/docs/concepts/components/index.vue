@@ -22,6 +22,7 @@ All components are automatically scanned and available after startup. Manuall re
 `)
 
 const markdown2 = marked(`
+<br>
 ### #1 Name
 Shows the name of the component. The name is unique and used to reference the component in service or pipelet configurations.
 
