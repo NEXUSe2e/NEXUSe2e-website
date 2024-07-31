@@ -75,12 +75,23 @@
               :active="route.path === '/new/docs/components'"
             />
           </template>
-          <v-list-item
-            title="DirectoryScanner"
-            color="accent"
-            :active="route.path === '/new/docs/components/directory_scanner'"
-            @click="router.push('/new/docs/components/directory_scanner')"
-          />
+          <v-list-group value="services">
+            <template #activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                title="Services"
+                color="accent"
+                :active="route.path === '/new/docs/components/services'"
+                @click="router.push('/new/docs/components/services')"
+              />
+            </template>
+            <v-list-item
+              title="DirectoryScanner"
+              color="accent"
+              :active="route.path === '/new/docs/components/services/directory_scanner'"
+              @click="router.push('/new/docs/components/services/directory_scanner')"
+            />
+          </v-list-group>
         </v-list-group>
         <v-list-item
           title="Dictionary"

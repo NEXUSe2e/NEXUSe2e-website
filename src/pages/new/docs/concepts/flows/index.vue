@@ -3,7 +3,6 @@
     <v-col cols="12">
       <div v-html="markdown1" />
       <v-img
-        class="cursor-pointer"
         src="@/assets/services_flow.png"
       />
       <div v-html="markdown2" />
