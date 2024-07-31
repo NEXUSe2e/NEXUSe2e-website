@@ -1,0 +1,23 @@
+flowchart
+    classDef note-sub opacity:0
+    classDef note fill:#ffd, stroke:#ccb
+    classDef persist fill:#87CEFA, color:#000000
+
+    INFLOW-SERVICE[Inflow service execution] --> INFLOW-SERVICE-RESOLVER-PIPELINE[Execute Inflow Service Resolver Pipeline]
+    INFLOW-SERVICE-RESOLVER-PIPELINE --> ROUTE-INFLOW-PIPELINE[Execute Route Inflow Pipeline]
+    ROUTE-INFLOW-PIPELINE --> PERSIST_MESSAGE_RESOLVED[Save message to state <b>Resolved</b>]
+    PERSIST_MESSAGE_RESOLVED --> SEND_ACKNOWLEDGEMENT[Send optional Receipt]
+    PERSIST_MESSAGE_RESOLVED --> ACTION_PIPELINE[Execute Action Pipeline]
+    ACTION_PIPELINE --> PERSIST_MESSAGE_ACTION[Save message to state <b>Action Pipeline Successful</b>]
+    PERSIST_MESSAGE_ACTION --> OUTFLOW-SERVICE-RESOLVER-PIPELINE[Execute Outflow Service Resolver Pipeline]
+    OUTFLOW-SERVICE-RESOLVER-PIPELINE --> SEND_MESSAGE[Dispatch Message with Outflow Service]
+    SEND_MESSAGE --> PERSIST_MESSAGE_SENT[Save message to state <b>Transferred</b>]
+
+    subgraph action-note [" "]
+        ACTION_PIPELINE
+        ACTION_PIPELINE-NOTE{{As all pipelines the action pipeline is optional.<br>If there is no action pipeline, the <br>'Save message to state <b>Action Pipeline Successful</b>' step is also skipped.}}
+    end
+
+    class action-note note-sub
+    class ACTION_PIPELINE-NOTE note
+    class PERSIST_MESSAGE_RESOLVED,PERSIST_MESSAGE_ACTION,PERSIST_MESSAGE_SENT persist

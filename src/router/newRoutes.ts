@@ -24,6 +24,14 @@ export default [
     component: () => import('@/pages/new/docs/concepts/routes/index.vue')
   },
   {
+    path: 'docs/concepts/components',
+    component: () => import('@/pages/new/docs/concepts/components/index.vue')
+  },
+  {
+    path: 'docs/concepts/message-flow',
+    component: () => import('@/pages/new/docs/concepts/message-flow/index.vue')
+  },
+  {
     path: 'docs/components/directory_scanner',
     component: () => import('@/pages/new/docs/components/directory_scanner/index.vue')
   },
