@@ -22,10 +22,12 @@ For a very long time we worked with inbound and outbound in conjunction with fro
 `)
 
 const markdown2 = marked(`
-## Inflow
+<br/>
+
+### Inflow
 All inflow services are used to get data into NEXUSe2e. Its not important if data gets pushed into the service or if its fetched by a specific service. The important part is the general direction of the data flow. Its also not important if data is coming from a partner, or from any internal backend system.
 
-## Outflow
+### Outflow
 Similar to Inflow services, the outflow services are used to move data out of NEXUSe2e. This can be done by pushing or pulling and it also works for all directions. Therefore services like \`httpPlainSender\` can be used for integration with partners and integration with internal backend systems at the same time. This was not possible in the old version of NEXUSe2e.
 `)
 </script>
