@@ -65,6 +65,18 @@
             :active="route.path === '/new/docs/concepts/routes'"
             @click="router.push('/new/docs/concepts/routes')"
           />
+          <v-list-item
+            title="Components"
+            color="accent"
+            :active="route.path === '/new/docs/concepts/components'"
+            @click="router.push('/new/docs/concepts/components')"
+            />
+          <v-list-item
+            title="Message flow"
+            color="accent"
+            :active="route.path === '/new/docs/concepts/message-flow'"
+            @click="router.push('/new/docs/concepts/message-flow')"
+          />
         </v-list-group>
         <v-list-group value="components">
           <template #activator="{ props }">

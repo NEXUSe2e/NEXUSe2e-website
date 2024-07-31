@@ -45,14 +45,14 @@ export const rawDictionary = [
       'A service in general is a component that normally used as a connection point to the outside world beyond NEXUSe2e. It might send Data out, or just receive data no matter whether its scheduled or triggered by an incoming http request.'
   },
   {
-    key: 'Sender Service',
+    key: 'Outflow Service',
     value:
-      'A sender Service is the implementation of service that actually sends data to the outside. This can be integrations with your backend or standard messages to your trading partners. Examples are `HttpSenderService` or `FileSaveSenderService`.'
+      'A Outflow Service is the implementation of service that actually sends data to the outside. This can be integrations with your backend or standard messages to your trading partners. Examples are `HttpSenderService` or `FileSaveSenderService`.'
   },
   {
-    key: 'Receiver Service',
+    key: 'Inflow Service',
     value:
-      'Receiver Services are the components for getting data inside NEXUSe2e. This services are supposed to fetch or receive data from outside systems. The most prominent Receiver Services are DirectoryScanner and HttpReceiverService.'
+      'Inflow Services are the components for getting data inside NEXUSe2e. This services are supposed to fetch or receive data from outside systems. The most prominent Inflow Services are DirectoryScanner and HttpReceiverService.'
   },
   {
     key: 'Support Service',
@@ -82,6 +82,6 @@ export const rawDictionary = [
   {
     key: 'Components',
     value:
-      'Components are all the building blocks NEXUSe2e used to provide its toolbox like functionality. While this were manually manged in the old version the next generation version uses automated scanning processes to gather all the available features. Therefore the component screen is mostly used to look for a specific feature or some description details and configuration settings. '
+      'Components are all the building blocks NEXUSe2e used to provide its toolbox like functionality. While this were manually manged in the old version the next generation version uses automated scanning processes to gather all the available features. Therefore the component screen is mostly used to look for a specific feature or some description details and configuration settings. See [Components](#/new/docs/concepts/components) for more details.'
   }
 ]
