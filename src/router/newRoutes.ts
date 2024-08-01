@@ -24,6 +24,14 @@ export default [
     component: () => import('@/pages/new/docs/concepts/routes/index.vue')
   },
   {
+    path: 'docs/components/services',
+    component: () => import('@/pages/new/docs/components/services/index.vue')
+  },
+  {
+    path: 'docs/components/services/directory_scanner',
+    component: () => import('@/pages/new/docs/components/services/directory_scanner/index.vue')
+  },
+  {
     path: 'docs/concepts/components',
     component: () => import('@/pages/new/docs/concepts/components/index.vue')
   },
@@ -33,7 +41,7 @@ export default [
   },
   {
     path: 'docs/components/directory_scanner',
-    component: () => import('@/pages/new/docs/components/directory_scanner/index.vue')
+    component: () => import('@/pages/new/docs/components/services/directory_scanner/index.vue')
   },
   {
     path: 'docs/overview',
