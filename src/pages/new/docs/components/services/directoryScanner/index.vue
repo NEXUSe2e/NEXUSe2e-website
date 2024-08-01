@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <ng-img src="@/assets/new_service2.png" />
+      <NEXUSe2eImage src="@/assets/new_service2.png" />
 
       <div v-html="markdown2" />
     </v-col>
@@ -10,8 +10,7 @@
 </template>
 
 <script setup lang="ts">
-
-import ngImg from '@/components/ngImg/NgImg.vue'
+import NEXUSe2eImage from '@/components/NEXUSe2eImage/NEXUSe2eImage.vue'
 
 import { marked } from 'marked'
 
