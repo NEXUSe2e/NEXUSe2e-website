@@ -10,7 +10,6 @@
         src="@/assets/new_service2.png"
       />
       <div v-html="markdown3" />
-
     </v-col>
   </v-row>
 </template>

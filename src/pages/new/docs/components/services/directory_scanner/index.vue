@@ -41,10 +41,10 @@ A local filesystem directory to store the archive files into.
 By default the directory scanner will only scan in the given directory and ignoring any sub directories. By enabling the recursive scan, you can process the files in the sub directories as well.
 
 ### #7 Files per run
-To prevent excessive resource consumption, the number of files per scanner run can be limited. By default its configured to 20 files per scheduled run.
+To prevent excessive resource consumption, the number of files per scanner run can be limited. By default it's configured to 20 files per scheduled run.
 
 ### #8 Scheduling configuration
-the scanner can be schedule in few different ways. The most versatile option is using cron pattern. NEXUSe2e uses a common library called quartz to handle this pattern. Its quite close to standard unix cron pattern used in crontab. However, quartz added seconds and optional years into the pattern. [(external pattern planer)](https://www.freeformatter.com/cron-expression-generator-quartz.html). The second option is a simple clock pattern to fire the the job every day at a given time. (eg. 22:15 for 15 past 10 in the evening)
+The scanner can be schedule in few different ways. The most versatile option is using cron pattern. NEXUSe2e uses a common library called quartz to handle this pattern. It's quite close to standard unix cron pattern used in crontab. However, quartz added seconds and optional years into the pattern. [(external pattern planer)](https://www.freeformatter.com/cron-expression-generator-quartz.html). The second option is a simple clock pattern to fire the job every day at a given time. (eg. 22:15 for 15 past 10 in the evening)
 Last but not least the scheduler supports an interval defined by hour, minute and second. The Service supports only one method at a time.
 
 ### #9 Misfire instruction
