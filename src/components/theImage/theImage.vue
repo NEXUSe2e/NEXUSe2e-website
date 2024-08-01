@@ -1,9 +1,8 @@
 
 
 <template>
-  <div>{{resolvedSrc}}</div>
+  <div>{{src}}</div>
   <v-img
-    display="true"
     :src="src"
   />
 </template>
