@@ -100,8 +100,8 @@
             <v-list-item
               title="DirectoryScanner"
               color="accent"
-              :active="route.path === '/new/docs/components/services/directory_scanner'"
-              @click="router.push('/new/docs/components/services/directory_scanner')"
+              :active="route.path === '/new/docs/components/services/directoryScanner'"
+              @click="router.push('/new/docs/components/services/directoryScanner')"
             />
           </v-list-group>
         </v-list-group>

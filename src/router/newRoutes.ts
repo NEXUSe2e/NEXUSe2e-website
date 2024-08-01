@@ -28,8 +28,8 @@ export default [
     component: () => import('@/pages/new/docs/components/services/index.vue')
   },
   {
-    path: 'docs/components/services/directory_scanner',
-    component: () => import('@/pages/new/docs/components/services/directory_scanner/index.vue')
+    path: 'docs/components/services/directoryScanner',
+    component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
   },
   {
     path: 'docs/concepts/components',
@@ -41,7 +41,7 @@ export default [
   },
   {
     path: 'docs/components/directory_scanner',
-    component: () => import('@/pages/new/docs/components/services/directory_scanner/index.vue')
+    component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
   },
   {
     path: 'docs/overview',

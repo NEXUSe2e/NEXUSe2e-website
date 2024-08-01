@@ -10,6 +10,7 @@ declare module 'vue' {
     DownloadCard: typeof import('./src/components/downloadCard/DownloadCard.vue')['default']
     HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
     NgImage: typeof import('./src/components/theImage/NgImage.vue')['default']
+    NgImg: typeof import('./src/components/ngImg/NgImg.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TheImage: typeof import('./src/components/theImage/TheImage.vue')['default']

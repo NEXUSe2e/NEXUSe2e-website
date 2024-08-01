@@ -2,16 +2,17 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <TheImage :src="directory_scanner" />
+      <ng-img src="@/assets/new_service2.png" />
+
       <div v-html="markdown2" />
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
-import TheImage from '@/components/theImage/TheImage.vue'
 
-import directory_scanner from '@/assets/directory_scanner1.png'
+import ngImg from '@/components/ngImg/NgImg.vue'
+
 import { marked } from 'marked'
 
 const markdown1 = marked(`
