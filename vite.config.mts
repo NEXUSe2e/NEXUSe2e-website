@@ -20,8 +20,19 @@ export default defineConfig({
           img: 'src',
           image: ['xlink:href', 'href'],
           use: ['xlink:href', 'href'],
-          'ng-img': 'src',
-          'v-img': 'src'
+          'v-app-bar': ['image'],
+          'v-avatar': ['image'],
+          'v-banner': ['avatar'],
+          'v-card': ['image', 'prependAvatar', 'appendAvatar'],
+          'c-card-item': ['prependAvatar', 'appendAvatar'],
+          'v-carousel-item': ['src', 'lazySrc', 'srcset'],
+          'v-chip': ['prependAvatar', 'appendAvatar'],
+          'v-img': ['src', 'lazySrc', 'srcset'],
+          'v-list-item': ['prependAvatar', 'appendAvatar'],
+          'v-navigation-drawer': ['image'],
+          'v-parallax': ['src', 'lazySrc', 'srcset'],
+          'v-toolbar': ['image'],
+          NEXUSe2eImage: 'src'
         }
       }
     }),
