@@ -1,6 +1,7 @@
 <template>
   <v-img :src="src" />
 </template>
+
 <script setup lang="ts">
 defineProps({
   src: {
