@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import NEXUSe2eImage from '@/components/NEXUSe2eImage/NEXUSe2eImage.vue'
+import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 
 import { marked } from 'marked'
 
