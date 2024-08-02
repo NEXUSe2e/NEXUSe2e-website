@@ -2,15 +2,16 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <v-img
-        src="@/assets/directory_scanner1.png"
-      />
+      <NEXUSe2eImage src="@/assets/new_service2.png" />
+
       <div v-html="markdown2" />
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
+import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
+
 import { marked } from 'marked'
 
 const markdown1 = marked(`
