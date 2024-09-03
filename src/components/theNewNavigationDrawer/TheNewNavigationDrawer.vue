@@ -8,7 +8,7 @@
     <v-img src="@/assets/logo.png" />
     <v-list>
       <v-list-item
-        subtitle="Switch to 10.x Version"
+        subtitle="Switch to 5.x Version"
         style="min-height: 24px"
         @click="router.push('/home')"
       />

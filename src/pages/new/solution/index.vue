@@ -32,7 +32,7 @@ NEXUSe2e is a toolbox that is tailored to the needs of our customers. Every proc
 ✓ Generalized messaging workflow, independent of protocols, ready to be extended to handle different communication protocol<br/>
 ✓ Individual settings for maximum number of retries and interval between resends for all connections<br/>
 ✓ Transaction logs reflect the status of the message confirmation<br/>
-✓ You decided what to filter on logs with custom meta data generated for your messages<br/>
+✓ You decide what to filter on logs with custom meta data generated for your messages<br/>
 ✓ Standard reports on the volume of messages<br/>
 ✓ Reports to identify failed transmissions<br/>
 ✓ Transaction and application log with flexible filtering<br/>
