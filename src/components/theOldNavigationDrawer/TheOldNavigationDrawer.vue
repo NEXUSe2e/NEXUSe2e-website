@@ -11,7 +11,7 @@
       :opened="currentlyOpen"
     >
       <v-list-item
-        subtitle="New docs"
+        subtitle="Switch to 5.x Version"
         style="min-height: 24px"
         @click="router.push('/new')"
       />

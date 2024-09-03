@@ -2,15 +2,15 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <v-img
-        src="@/assets/services_flow.png"
-      />
+      <NEXUSe2eImage src="@/assets/services_flow.png" />
       <div v-html="markdown2" />
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
+import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
+
 import { marked } from 'marked'
 
 const markdown1 = marked(`
@@ -22,8 +22,6 @@ For a very long time we worked with inbound and outbound in conjunction with fro
 `)
 
 const markdown2 = marked(`
-<br/>
-
 ### Inflow
 All inflow services are used to get data into NEXUSe2e. Its not important if data gets pushed into the service or if its fetched by a specific service. The important part is the general direction of the data flow. Its also not important if data is coming from a partner, or from any internal backend system.
 

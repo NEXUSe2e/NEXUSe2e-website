@@ -21,8 +21,6 @@ The Directory Scanner is a standard inflow service often used to pick up local f
 
 `)
 const markdown2 = marked(`
-<br>
-
 ### #1 Directory
 The directory is the path into the local filesystem of the server. Like most parameters, the field allows string replacements from service like key value properties or key vault.
 
