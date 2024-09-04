@@ -5,6 +5,47 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.1.3] - 2024-07-30
+---------------------
+
+### Fixed (1 change)
+
+- Fixed manual message ui.
+
+
+[10.1.2] - 2024-07-29
+---------------------
+
+### Important notes
+
+- Existing \`HttpSenderServices\` are automatically remapped to the new synchronous \`HttpSenderService\`. If you want to change it back to the old Variant you need to change the componentId in your Service to \`ReactiveHttpSenderService\`.
+
+### Added (6 changes)
+
+- Added the conversation id filter to the message list.
+- Added url sorting for tables, that dont have pagination.
+- Added a \`JsonSchemaRulePipelet\` that validates message payloads against a JSON schema.
+- Added a messageId field to the manual message page. This allows to send a message with a user defined Id. Note that the Id must not be used by any other message.
+- Added a source partner field to the manual message page. It defaults to the default local identity but can be changed to any other partner. This allows to send messages on behalf of external partners to your local identity.
+- Added a new type of \`HttpSenderService\` which uses a dedicated synchronous HttpClient instead of the reactive HttpClient. The existing \`HttpSenderService\` is now renamed to \`ReactiveHttpSenderService\`. Both have the same parameters and functions, but the reactive version may have some issues with older HttpServers so the synchronous variant is generally preferred.
+
+### Changed (3 changes)
+
+- Changed the color of conversation status "STOPPED" from yellow to grey to match message status.
+- The parameter \`max_in_memory_size\` for \`HttpPollingService\` has changed to accept \`-1\` as unlimited size. Also the default value has been changed to \`-1\`.
+- The button for saving the imported configuration is not disabled if fatal errors where detected during the upload. The import still fails if the fatal errors have not been fixed via the config ui.
+
+### Fixed (7 changes)
+
+- Fixed the copy button function on the config page.
+- Fixed missing key value properties in config import and merged view.
+- The display for payloads has been fixed and will not overflow, when no file extension is provided.
+- The function for displaying durations is now able to display milliseconds.
+- Fixed oauth2 path in ui if context-path is not set to root
+- Fixed the content streaming option in \`HttpSenderService\`.
+- Fixed missing validation in the config xml for invalid \`routeIds\` in choreographies and actions.
+
+
 [10.1.1] - 2024-07-11
 ---------------------
 
