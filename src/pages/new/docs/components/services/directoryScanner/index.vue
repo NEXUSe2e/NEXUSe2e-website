@@ -2,7 +2,8 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <NEXUSe2eImage src="@/assets/new_service2.png" />
+      <!--      <NEXUSe2eImage src="@/assets/new_service2.png" />-->
+      <NEXUSe2eImage src="@/assets/directory_scanner1.png" />
 
       <div v-html="markdown2" />
     </v-col>
