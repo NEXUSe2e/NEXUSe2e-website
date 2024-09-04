@@ -1,5 +1,8 @@
 <template>
-  <v-img :src="src" />
+  <v-img
+    class="nexus-img"
+    :src="src"
+  />
 </template>
 
 <script setup lang="ts">
@@ -12,8 +15,10 @@ defineProps({
 </script>
 
 <style scoped>
-img {
+.nexus-img {
   max-width: 100%;
   height: auto;
+  padding-top: 30px;
+  padding-bottom: 30px;
 }
 </style>

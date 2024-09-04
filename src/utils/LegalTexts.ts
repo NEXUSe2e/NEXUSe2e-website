@@ -16,7 +16,7 @@ export const contact = marked(`
   We are available by phone 9 am through 6 pm Central European Time (CET) Monday through Friday.
 
   **Tel.:** <a href="tel:+49 40 377073-500" class="phone">+49 40 377073-500</a><br />
-  **E-Mail:** <a href="mailto:nexuse2e@evolvsys.com" class="email">nexuse2e@evolvsys.com</a><br />
+  **E-Mail:** nexuse2e(at)evolvsys.com<br />
 
   ---
 
@@ -41,7 +41,7 @@ Alter Wall 34-36<br />
 Deutschland<br />
 
 **Telefon:** +49-40-377073-500<br />
-**E-Mail:** contact(at)evolvsys.com<br />
+**E-Mail:** nexuse2e(at)evolvsys.com<br />
 
 **Handelsregister:** HRB 153784<br />
 **Registergericht:** Amtsgericht Hamburg<br />
@@ -66,7 +66,7 @@ Wir haben für unser Unternehmen einen externen Datenschutzbeauftragten bestellt
 
 **Telefon:** +49-40- 52169771<br />
 **Web:**  www.compliance-factory.com<br />
-**E-Mail:** datenschutz@evolvsys.com<br />
+**E-Mail:** datenschutz(at)evolvsys.com<br />
 
 ### Präambel
 Mit der folgenden Datenschutzerklärung möchten wir Sie darüber aufklären, welche Arten Ihrer personenbezogenen Daten (nachfolgend auch kurz als „Daten“ bezeichnet) wir zu welchen Zwecken und in welchem Umfang verarbeiten. Die Datenschutzerklärung gilt für alle von uns durchgeführten Verarbeitungen personenbezogener Daten, sowohl im Rahmen der Erbringung unserer Leistungen als auch insbesondere auf unserer Webseite.
@@ -80,7 +80,7 @@ evolving systems consulting GmbH<br />
 Alter Wall 34-36<br />
 20457 Hamburg<br />
 
-**E-Mail-Adresse:** contact@evolvsys.com<br />
+**E-Mail-Adresse:** nexuse2e(at)evolvsys.com<br />
 **Telefon:** +49-40-377073-500
 
 ## Übersicht der Verarbeitungen

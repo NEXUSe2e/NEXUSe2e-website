@@ -2,19 +2,17 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <v-img
-        src="@/assets/new_service1.png"
-      />
+      <NEXUSe2eImage src="@/assets/new_service1.png" />
       <div v-html="markdown2" />
-      <v-img
-        src="@/assets/new_service2.png"
-      />
+      <NEXUSe2eImage src="@/assets/new_service2.png" />
       <div v-html="markdown3" />
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
+import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
+
 import { marked } from 'marked'
 
 const markdown1 = marked(`
@@ -36,6 +34,6 @@ const markdown2 = marked(`
 `)
 
 const markdown3 = marked(`
-  The Overview list shows all services which can be enabled or disabled at any time. When clicking on one service (#1), the common list view right side drawer will appear and shown the service configuration. For manual runs,the service can be triggered by clicking the play button (#2). The action bar in the drawer also contains a edit button (#3) and a close button (#4).
+  The Overview list shows all services which can be enabled or disabled at any time. When clicking on one service (#1), the common list view right side drawer will appear and shown the service configuration. For manual runs, the service can be triggered by clicking the play button (#2). The action bar in the drawer also contains a edit button (#3) and a close button (#4).
 `)
 </script>

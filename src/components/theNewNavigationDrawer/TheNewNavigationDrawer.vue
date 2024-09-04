@@ -8,7 +8,7 @@
     <v-img src="@/assets/logo.png" />
     <v-list>
       <v-list-item
-        subtitle="Old Version"
+        subtitle="Switch to 5.x Version"
         style="min-height: 24px"
         @click="router.push('/home')"
       />
@@ -70,7 +70,7 @@
             color="accent"
             :active="route.path === '/new/docs/concepts/components'"
             @click="router.push('/new/docs/concepts/components')"
-            />
+          />
           <v-list-item
             title="Message flow"
             color="accent"
@@ -145,6 +145,7 @@
     <v-list-item
       title="Recommendations"
       color="accent"
+      v-show="false"
       :active="route.path === '/recommendations'"
       @click="router.push('/recommendations')"
     />

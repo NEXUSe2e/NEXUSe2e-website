@@ -32,7 +32,7 @@ export const rawDictionary = [
   {
     key: 'Route',
     value:
-      'One route describes the connection between two partners. A route always requires the two partners and the connection, additionally you can provide an optional client certificates. For more details about routes, check the [Routing Concepts](#/new/docs/concepts/routes)'
+      'One route describes the connection between two partners. A route always requires the two partners and the connection, additionally you can provide an optional client certificate. For more details about routes, check the [Routing Concepts](#/new/docs/concepts/routes)'
   },
   {
     key: 'SSO',

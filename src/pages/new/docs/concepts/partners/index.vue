@@ -2,7 +2,7 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <v-img
+      <NEXUSe2eImage
         class="cursor-pointer"
         src="@/assets/routes.png"
       />
@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
+
 import { marked } from 'marked'
 
 const markdown1 = marked(`
