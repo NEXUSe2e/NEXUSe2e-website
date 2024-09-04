@@ -32,7 +32,10 @@
             cols="12"
             md="5"
           >
-            <v-card @click="router.push('/new')">
+            <v-card
+              class="h-100"
+              @click="router.push('/new')"
+            >
               <v-card-text>
                 <div class="text-h3">NEXUSe2e 10.x</div>
                 <div class="mb-6 text-h5 text-medium-emphasis">The new generation of our B2B solution</div>
@@ -66,6 +69,7 @@
             <v-card
               color="white"
               theme="LIGHT"
+              class="h-100"
               @click="router.push('/home')"
             >
               <v-card-text>
