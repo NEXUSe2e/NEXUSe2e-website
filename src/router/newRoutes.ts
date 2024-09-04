@@ -8,8 +8,8 @@ export default [
     component: () => import('@/pages/new/solution/index.vue')
   },
   {
-    path: '/changelog',
-    component: () => import('@/pages/new/changelog/index.vue')
+    path: 'docs/overview',
+    component: () => import('@/pages/new/docs/overview/index.vue')
   },
   {
     path: '/recommendations',
@@ -24,14 +24,6 @@ export default [
     component: () => import('@/pages/new/docs/concepts/routes/index.vue')
   },
   {
-    path: 'docs/components/services',
-    component: () => import('@/pages/new/docs/components/services/index.vue')
-  },
-  {
-    path: 'docs/components/services/directoryScanner',
-    component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
-  },
-  {
     path: 'docs/concepts/components',
     component: () => import('@/pages/new/docs/concepts/components/index.vue')
   },
@@ -40,16 +32,24 @@ export default [
     component: () => import('@/pages/new/docs/concepts/message-flow/index.vue')
   },
   {
+    path: 'docs/components/services',
+    component: () => import('@/pages/new/docs/components/services/index.vue')
+  },
+  {
+    path: 'docs/components/services/directoryScanner',
+    component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
+  },
+  {
     path: 'docs/components/directory_scanner',
     component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
   },
   {
-    path: 'docs/overview',
-    component: () => import('@/pages/new/docs/overview/index.vue')
-  },
-  {
     path: 'docs/dictionary',
     component: () => import('@/pages/new/docs/dictionary/index.vue')
+  },
+  {
+    path: '/changelog',
+    component: () => import('@/pages/new/changelog/index.vue')
   },
   {
     path: 'contact',

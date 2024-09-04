@@ -14,11 +14,10 @@ import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 import { marked } from 'marked'
 
 const markdown1 = marked(`
-  # Components
-  ---
+# Components
+---
 
 All components are automatically scanned and available after startup. Manuall registration is no longer required. The components list shows all available components and their types. The components list is used to reference components in services or pipelets.
-
 `)
 
 const markdown2 = marked(`

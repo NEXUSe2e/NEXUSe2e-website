@@ -14,11 +14,10 @@ import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 import { marked } from 'marked'
 
 const markdown1 = marked(`
-  # Inflow and Outflow
-  ---
+# Inflow and Outflow
+---
 
 For a very long time we worked with inbound and outbound in conjunction with frontend and backend. However, this is not only missleading or sometimes confusing but also unnecessary complicated. Starting with NEXUSe2e 10.x we try to focus only on the flow direction from NEXUSe2e perspective. Therefore all the wording is focused on the edges of your NEXUSe2e instance which is most likely some sort of service depending on your needs. There are rare instances where you want for example multiple outputs which softens the service pattern. Below you can see a selection of services sorted by type. Besides the Inflow and Outflow services you can also see Support services. This are special helper services that carry configuration and specific implementations of reusable functionality.
-
 `)
 
 const markdown2 = marked(`

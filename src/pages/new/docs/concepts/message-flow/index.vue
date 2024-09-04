@@ -107,13 +107,13 @@ import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 import { marked } from 'marked'
 
 const markdown1 = marked(`
-  # Message Flow
-  ---
-  This is a simple representation of the message flow in the system to give on overview of when different pipelines are executed and statuses are set.
-  The execution of each pipeline is optional but is displayed in the diagram for simplification.
+# Message Flow
+---
+This is a simple representation of the message flow in the system to give on overview of when different pipelines are executed and statuses are set.
+The execution of each pipeline is optional but is displayed in the diagram for simplification.
 `)
 
 const markdown2 = marked(`
-  There are multiple statuses a message can have. The following table lists the status names in the ui, their value in the database and a brief description.
+There are multiple statuses a message can have. The following table lists the status names in the ui, their value in the database and a brief description.
 `)
 </script>

@@ -15,10 +15,9 @@ import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 import { marked } from 'marked'
 
 const markdown1 = marked(`
-  # Directory Scanner
-  ---
+# Directory Scanner
+---
 The Directory Scanner is a standard inflow service often used to pick up local files from the server file system and let NEXUSe2e process the messages and send them to your configured target system for the process.
-
 `)
 const markdown2 = marked(`
 ### #1 Directory
@@ -54,10 +53,5 @@ Depending on the use-case its preferred to bind one directory scanner to one par
 
 ### #11 Target Choreography & Action
 Like the partner, the routing information for choreography and action can be defined here, or with some logic in the resolver pipeline. One or the other must happen before the resolver pipeline is completed, because the validation will check on these three parameters after running the pipelets in the resolver pipeline.
-
-
-
-
-
 `)
 </script>

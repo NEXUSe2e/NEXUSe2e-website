@@ -143,9 +143,9 @@
       @click="router.push('/changelog')"
     />
     <v-list-item
+      v-show="false"
       title="Recommendations"
       color="accent"
-      v-show="false"
       :active="route.path === '/recommendations'"
       @click="router.push('/recommendations')"
     />
