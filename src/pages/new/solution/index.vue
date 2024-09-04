@@ -15,14 +15,12 @@ import { marked } from 'marked'
 
 const markdown1 = marked(`
 # It's all about integration.
-  ---
+---
 ## We connect different systems and processes with each other.
 Modern structures and supply chains are highly dependent on efficient collaboration and a comprehensive exchange of information with a diverse network of partners.
 NEXUSe2e supports fully automated data exchange - even across company boundaries.
-
 `)
 const markdown2 = marked(`
-
 # Secure and reliable
 ---
 ## Even for smaller applications.
@@ -40,7 +38,5 @@ NEXUSe2e is a toolbox that is tailored to the needs of our customers. Every proc
 ✓ Messages can be validated accordingly by means of a partner and process directory<br/>
 ✓ Communication with partners can follow different standards (transport, identifiers, security settings)<br/>
 ✓ Flexible data encryption at the transport level<br/>
-
-
 `)
 </script>
