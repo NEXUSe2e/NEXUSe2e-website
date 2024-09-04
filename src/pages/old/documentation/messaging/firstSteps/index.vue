@@ -38,10 +38,6 @@
       />
 
       <div v-html="markdown7" />
-      <v-img
-        max-height="550px"
-        src="./first7.jpg"
-      />
     </v-col>
   </v-row>
 </template>
