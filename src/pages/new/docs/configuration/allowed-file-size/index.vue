@@ -17,7 +17,7 @@ const markdown1 = marked(`
 ---
 
 By default NEXUSe2e only allows a limited file size when uploading files in the UI (e.g. selecting a file to send using 'Manual Message" function).\\
-This does not effect the allowed size of payloads send by external partners or internal backend systems.\\
+This might also effect the allowed size of payloads send by external partners or internal backend systems depending on kind of payload and the way the payload is send.\\
 The purpose of the limit is to protect against uploading files too large for the system to handle.
 
 When trying to upload a file is larger then the allowed limit, a "Couldn't upload file" error will be displayed.
