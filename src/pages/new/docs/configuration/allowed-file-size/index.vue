@@ -26,7 +26,7 @@ It is possible to configure this limit to allow uploading larger files, but shou
 If not explicitly configured the default limit is currently 5 MB.
 
 The configuration is done in the NEXUSe2e application properties.\\
-For NEXUSe2e running in Tomcat the application properties are usually located in the application-default.yml in the Tomcat /conf directory.
+For NEXUSe2e running in Tomcat the application properties are usually located in the application-nexuse2e.yml in the Tomcat /conf directory.
 
 Locate the spring.servlet.multipart.max-file-size and spring.servlet.multipart.max-request-size properties or add them if missing and set them to the desired value, e.g. to 20 MB:
 `)
