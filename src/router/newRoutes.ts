@@ -44,6 +44,10 @@ export default [
     component: () => import('@/pages/new/docs/components/services/directoryScanner/index.vue')
   },
   {
+    path: 'docs/configuration/allowed-file-size',
+    component: () => import('@/pages/new/docs/configuration/allowed-file-size/index.vue')
+  },
+  {
     path: 'docs/dictionary',
     component: () => import('@/pages/new/docs/dictionary/index.vue')
   },

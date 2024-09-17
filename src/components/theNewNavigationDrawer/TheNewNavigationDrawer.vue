@@ -105,6 +105,22 @@
             />
           </v-list-group>
         </v-list-group>
+        <v-list-group value="configuration">
+          <template #activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Configuration"
+              color="accent"
+              :active="route.path === '/new/docs/configuration'"
+            />
+          </template>
+          <v-list-item
+            title="Allowed File Size"
+            color="accent"
+            :active="route.path === '/new/docs/configuration/allowed-file-size'"
+            @click="router.push('/new/docs/configuration/allowed-file-size')"
+          />
+        </v-list-group>
         <v-list-item
           title="Dictionary"
           color="accent"
