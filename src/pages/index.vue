@@ -82,8 +82,9 @@
                   src="./old/home/nexus_on_java_11.jpg"
                 />
                 <p class="mt-6">
-                  For more than 20 years our solution to move your data around the globe. Although the new version is
-                  now available, the open source version is still available. The project is now in maintenance mode.
+                  For more than 20 years, NEXUSe2e is our solution to move your data around the globe. Although the new
+                  version is now available, the open source version is still available. The project is now in
+                  maintenance mode.
                 </p>
                 <div class="mt-6 d-flex justify-end">
                   <v-btn
