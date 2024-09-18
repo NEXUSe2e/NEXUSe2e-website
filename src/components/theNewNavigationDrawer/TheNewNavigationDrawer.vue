@@ -120,6 +120,18 @@
             :active="route.path === '/new/docs/configuration/allowed-file-size'"
             @click="router.push('/new/docs/configuration/allowed-file-size')"
           />
+          <v-list-item
+            title="Client Authentication"
+            color="accent"
+            :active="route.path === '/new/docs/configuration/client-auth'"
+            @click="router.push('/new/docs/configuration/client-auth')"
+          />
+          <v-list-item
+            title="Server Authentication"
+            color="accent"
+            :active="route.path === '/new/docs/configuration/server-auth'"
+            @click="router.push('/new/docs/configuration/server-auth')"
+          />
         </v-list-group>
         <v-list-item
           title="Dictionary"

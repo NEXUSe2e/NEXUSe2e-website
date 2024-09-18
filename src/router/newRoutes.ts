@@ -48,6 +48,14 @@ export default [
     component: () => import('@/pages/new/docs/configuration/allowed-file-size/index.vue')
   },
   {
+    path: 'docs/configuration/client-auth',
+    component: () => import('@/pages/new/docs/configuration/client-auth/index.vue')
+  },
+  {
+    path: 'docs/configuration/server-auth',
+    component: () => import('@/pages/new/docs/configuration/server-auth/index.vue')
+  },
+  {
     path: 'docs/dictionary',
     component: () => import('@/pages/new/docs/dictionary/index.vue')
   },
