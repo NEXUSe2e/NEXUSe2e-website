@@ -56,7 +56,7 @@ const markdown2 = marked(`
     <Connector port="11443" protocol="org.apache.coyote.http11.Http11NioProtocol"
                maxThreads="150" SSLEnabled="true" secure="true" scheme="https">
         <UpgradeProtocol className="org.apache.coyote.http2.Http2Protocol" />
-        <SSLHostConfig protocols="TLSv1.2, TLSv1.3" truststoreFile="conf/truststore.jks" truststorePassword="changeit" certificateVerification="optional">
+        <SSLHostConfig truststoreFile="conf/truststore.jks" truststorePassword="changeit" certificateVerification="optional">
             <Certificate certificateKeystoreFile="conf/certificate.p12"
                          certificateKeystorePassword="nexuse2e"
                          type="RSA" />
