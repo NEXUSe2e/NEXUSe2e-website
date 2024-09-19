@@ -68,7 +68,7 @@ const markdown3 = marked(`
 ### NEXUSe2e configuration
 
 If client authentication is enabled in Tomcat ("required" or "optional"), it can be enforced for a specific [Route](#/new/docs/concepts/routes) by specifying an Inflow Pipeline that includes the ClientCertRulePipelet for the external partner on the route.
-For incoming requests from that partner that use this route a client certificate will then be required an validated against the certificates configured for that partner.
+For incoming requests from that partner that use this route a client certificate will then be required and validated against the certificates configured for that partner.
 
 Example route configuration:
 `)
@@ -78,7 +78,7 @@ const markdown4 = marked(`
 
 To configure NEXUSe2e to send a client certificate to the partner with an outbound messages, a client certificate container can be configured for the internal partner of a specific [Route](#/new/docs/concepts/routes).
 The client certificate container should contain your own current certificate that is known to the partner.
-While multiple certificates can be added to every certificate container, only one certificate should be active at any time within the container.
+While multiple certificates can be added to every certificate container, only one certificate can be active at any time within a client certificate container because only one client certificate can be used for any single connection.
 
 Example route configuration:
 `)
