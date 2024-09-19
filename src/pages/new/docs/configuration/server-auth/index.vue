@@ -4,10 +4,11 @@
       <div v-html="markdown1" />
       <div style="margin-bottom: 1rem" v-html="markdown2" />
       <div v-html="markdown3" />
-      <NEXUSe2eImage src="@/assets/connection_certificate.png" max-width="746px" style="padding-top: 0"/>
+      <NEXUSe2eImage src="@/assets/connection_certificate.png" style="padding-top: 0"/>
       <div v-html="markdown4" />
-      <NEXUSe2eImage src="@/assets/partner_certificate.png" max-width="1340px" style="padding-top: 0"/>
-      <NEXUSe2eImage src="@/assets/partner_certificate_container.png" max-width="1340px" style="padding-top: 0"/>
+      <NEXUSe2eImage src="@/assets/partner_certificate.png" style="padding-top: 0"/>
+      <div v-html="markdown5" />
+      <NEXUSe2eImage src="@/assets/partner_certificate_container.png" style="padding-top: 0"/>
     </v-col>
   </v-row>
 </template>
@@ -61,5 +62,9 @@ const markdown4 = marked(`
 The certificate containers are part of the partner configuration (along with the partner connections).
 Each partner certificate container can contain multiple certificates and all active and still valid certificates are checked when sending a message to the partner.
 This allows to have e.g. the still valid partner certificate and the new partner certificate configured simultaneously and no precisely timed certificate switch is required when the partner makes the change on their end.
+`)
+
+const markdown5 = marked(`
+Example Partner Cert Container:
 `)
 </script>

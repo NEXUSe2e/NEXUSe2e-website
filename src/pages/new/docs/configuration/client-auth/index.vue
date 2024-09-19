@@ -4,11 +4,11 @@
       <div v-html="markdown1" />
       <div style="margin-bottom: 1rem" v-html="markdown2" />
       <div v-html="markdown3" />
-      <NEXUSe2eImage src="@/assets/force_client_cert.png" max-width="880px" style="padding-top: 0"/>
+      <NEXUSe2eImage src="@/assets/force_client_cert.png" style="padding-top: 0"/>
       <div v-html="markdown4" />
-      <NEXUSe2eImage src="@/assets/route_client_certificate.png" max-width="874px" style="padding-top: 0"/>
+      <NEXUSe2eImage src="@/assets/route_client_certificate.png" style="padding-top: 0"/>
       <div v-html="markdown5" />
-      <NEXUSe2eImage src="@/assets/client_certificate_container.png" max-width="1366px" style="padding-top: 0"/>
+      <NEXUSe2eImage src="@/assets/client_certificate_container.png" style="padding-top: 0"/>
     </v-col>
   </v-row>
 </template>
@@ -84,6 +84,6 @@ Example route configuration:
 `)
 
 const markdown5 = marked(`
-The Client Cert Containers can be found (and configured) in the left hand navigation:
+Example Client Cert Container:
 `)
 </script>
