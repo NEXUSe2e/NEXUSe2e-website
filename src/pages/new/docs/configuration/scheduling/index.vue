@@ -64,14 +64,14 @@ What misfire instruction options are available depends on the service.
 When setting intervals for user configured services, the interval should usually not be lower than the configured misfire threshold.\\
 Setting an interval lower than the misfire threshold might result in multiple unwanted executions at the same time which in turn might cause conflicts.
 
-It is important to note that there is no guarantee that jobs in NEXUSe2e are not executed at the precise time they are scheduled.\\
+It is important to note that there is no guarantee that jobs in NEXUSe2e are executed at the precise time they are scheduled.\\
 It is only guaranteed that they run within the misfire threshold after the scheduled time (or misfire).\\
 Meaning depending on the misfire threshold a job might run seconds (or even minutes, hours, ...) after the scheduled time.\\
 Therefore it makes sense to keep the misfire threshold low to avoid too much variance.\\
 But if the threshold is chosen too low, it might not allow the system enough time to actually execute all jobs on time resulting in constant misfires.
 
 The default misfire threshold in NEXUSe2e is 15 seconds (subject to change).\\
-It is a global setting, meaning currently it cannot be set to different values for different kinds of jobs.
+It is a global Quartz setting, meaning it cannot be set to different values for different kinds of jobs.
 
 Example configuration (to set the misfire threshold to 30 seconds):
 `)
