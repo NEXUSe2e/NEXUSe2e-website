@@ -6,9 +6,9 @@
       <div v-html="markdown3" />
       <div v-html="markdown4" />
       <NEXUSe2eImage src="@/assets/force_client_cert.png" style="padding-top: 0"/>
-      <div v-html="markdown4" />
-      <NEXUSe2eImage src="@/assets/route_client_certificate.png" style="padding-top: 0"/>
       <div v-html="markdown5" />
+      <NEXUSe2eImage src="@/assets/route_client_certificate.png" style="padding-top: 0"/>
+      <div v-html="markdown6" />
       <NEXUSe2eImage src="@/assets/client_certificate_container.png" style="padding-top: 0"/>
     </v-col>
   </v-row>
@@ -71,7 +71,7 @@ const markdown3 = marked(`
 As mentioned above, if client authentication is enforced in Tomcat ("required"), all requests to NEXUSe2e using that SSL port require a client certificate.
 That includes requests made by using the UI in the Browser.
 
-If client authentication is set to "optional", it is not necessary to supply a client certificate, but browsers might still prompt you to select one, if at least one fitting certificate is found in the certificates available to tzhe browser.
+If client authentication is set to "optional", it is not necessary to supply a client certificate, but browsers might still prompt you to select one, if at least one fitting certificate is found in the certificates available to the browser.
 
 In Firefox the selected choice can be saved (Check "Remember this decision") and by using the "Don't send a certificate button" you can choose to not send any certificate (not viable if client authentication is set to "required").\\
 Unfortunately these options are not easily available in all browsers (e.g. Google Chrome and Microsoft Edge).
