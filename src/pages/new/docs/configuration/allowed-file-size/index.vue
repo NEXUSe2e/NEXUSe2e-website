@@ -2,13 +2,12 @@
   <v-row>
     <v-col cols="12">
       <div v-html="markdown1" />
-      <NEXUSe2eImage src="@/assets/max_file_size.png" max-width="306px"/>
+      <div v-html="markdown2" />
     </v-col>
   </v-row>
 </template>
 
 <script setup lang="ts">
-import NEXUSe2eImage from '@/components/nexus2eImage/NEXUSe2eImage.vue'
 
 import { marked } from 'marked'
 
@@ -29,5 +28,13 @@ The configuration is done in the NEXUSe2e application properties.\\
 For NEXUSe2e running in Tomcat the application properties are usually located in the application-nexuse2e.yml in the Tomcat /conf directory.
 
 Locate the spring.servlet.multipart.max-file-size and spring.servlet.multipart.max-request-size properties or add them if missing and set them to the desired value, e.g. to 20 MB:
+`)
+
+const markdown2 = marked(`
+    spring:
+      servlet:
+        multipart:
+          max-file-size: 20MB
+          max-request-size: 20MB
 `)
 </script>
