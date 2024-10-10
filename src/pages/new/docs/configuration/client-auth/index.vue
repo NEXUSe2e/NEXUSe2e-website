@@ -4,6 +4,7 @@
       <div v-html="markdown1" />
       <div style="margin-bottom: 1rem" v-html="markdown2" />
       <div v-html="markdown3" />
+      <div v-html="markdown4" />
       <NEXUSe2eImage src="@/assets/force_client_cert.png" style="padding-top: 0"/>
       <div v-html="markdown4" />
       <NEXUSe2eImage src="@/assets/route_client_certificate.png" style="padding-top: 0"/>
@@ -65,6 +66,18 @@ const markdown2 = marked(`
 `)
 
 const markdown3 = marked(`
+#### Client Authentication handling in Browsers
+
+As mentioned above, if client authentication is enforced in Tomcat ("required"), all requests to NEXUSe2e using that SSL port require a client certificate.
+That includes requests made by using the UI in the Browser.
+
+If client authentication is set to "optional", it is not necessary to supply a client certificate, but browsers might still prompt you to select one, if at least one fitting certificate is found in the certificates available to tzhe browser.
+
+In Firefox the selected choice can be saved (Check "Remember this decision") and by using the "Don't send a certificate button" you can choose to not send any certificate (not viable if client authentication is set to "required").\\
+Unfortunately these options are not easily available in all browsers (e.g. Google Chrome and Microsoft Edge).
+`)
+
+const markdown4 = marked(`
 ### NEXUSe2e configuration
 
 If client authentication is enabled in Tomcat ("required" or "optional"), it can be enforced for a specific [Route](#/new/docs/concepts/routes) by specifying an Inflow Pipeline that includes the ClientCertRulePipelet for the external partner on the route.
@@ -73,7 +86,7 @@ For incoming requests from that partner that use this route a client certificate
 Example route configuration:
 `)
 
-const markdown4 = marked(`
+const markdown5 = marked(`
 ## Outbound
 
 To configure NEXUSe2e to send a client certificate to the partner with an outbound messages, a client certificate container can be configured for the internal partner of a specific [Route](#/new/docs/concepts/routes).
@@ -83,7 +96,7 @@ While multiple certificates can be added to every certificate container, only on
 Example route configuration:
 `)
 
-const markdown5 = marked(`
+const markdown6 = marked(`
 Example Client Cert Container:
 `)
 </script>
