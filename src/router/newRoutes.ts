@@ -48,6 +48,10 @@ export default [
     component: () => import('@/pages/new/docs/configuration/allowed-file-size/index.vue')
   },
   {
+    path: 'docs/configuration/scheduling',
+    component: () => import('@/pages/new/docs/configuration/scheduling/index.vue')
+  },
+  {
     path: 'docs/configuration/client-auth',
     component: () => import('@/pages/new/docs/configuration/client-auth/index.vue')
   },

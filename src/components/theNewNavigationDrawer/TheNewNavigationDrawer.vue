@@ -121,6 +121,12 @@
             @click="router.push('/new/docs/configuration/allowed-file-size')"
           />
           <v-list-item
+            title="Scheduling"
+            color="accent"
+            :active="route.path === '/new/docs/configuration/scheduling'"
+            @click="router.push('/new/docs/configuration/scheduling')"
+          />
+          <v-list-item
             title="Client Authentication"
             color="accent"
             :active="route.path === '/new/docs/configuration/client-auth'"
