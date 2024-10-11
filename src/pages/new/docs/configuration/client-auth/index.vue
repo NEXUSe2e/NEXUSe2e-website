@@ -90,7 +90,9 @@ Keep in mind that multiple connectors cannot share the same port because the por
 Therefore the second connector has to configured using a different port.
 
 Technically the second connector/port could be used by the external partners as well (avoiding the client authentication).\\
-To restrict the use of the second connector the port access can be limited using an IP filter on a firewall.
+To restrict the use of the second connector the port access can be limited using an IP filter on a firewall.\\
+If the UI is usually used within the network, the second port can also be limited to access within the network.\\
+External access to UI would still be available using the first port (with client authentication).
 
 Example server.xml https connector configuration with one connector for external partner connection (port 11443) and a second connector for the UI (port 12443):
 `)
