@@ -4,6 +4,61 @@ export const changelog = marked(`
 
 # Changelog
 
+[10.1.5] - 2024-11-08
+---------------------
+
+### Changed (1 change)
+
+- Changed text for the download options for private keys to clarify what is being downloaded
+
+### Fixed (2 changes)
+
+- Fixed an issue with private key download as a zip file when any of the certificates in the chain has characters that are invalid for Windows file system
+- Fixed a bug where the zip files for private key und public key downloads were switched
+
+### Dependency updates (1 change)
+
+- Updated minor dependencies.
+
+
+[10.1.4] - 2024-10-18
+---------------------
+
+### Important notes
+
+- Database structure will be changed (new tables).
+- XML Config Schema has been changed. The changes are backward compatible and contain only an additional user property.
+
+### Added (7 changes)
+
+- Added external eslint and prettier rulesets.
+- Added fallback views for detail pages with invalid ids.
+- Added and extended form validation on frontend.
+- Added a card for idle conversations on the dashboard page.
+- Added a list and detail view for manual actions in the frontend.
+- Added a manual action object, that tracks various manual actions (requeueing and stopping messages, importing configuration, purging logs or conversations). Those actions show who performed them and when and some additional information.
+- Added \`OAuth2AuthenticationRulePipelet\` to validate OAuth2 incoming authentication tokens.
+
+### Changed (4 changes)
+
+- The certificate chain of a ca certificate will not be loaded in the list view. It will be loaded separatly for the preview drawer
+- Separated list filter for external and internal partners.
+- Changed internal jcache configuration from \`ehcache.xml\` to \`ehcache-nexuse2e.xml\` to allow for better customization.
+- Changed internal log configuration from \`logback-spring.xml\` to \`logback-nexuse2e.yml\` to allow for better customization.
+
+### Fixed (6 changes)
+
+- Fixed manual message logs showing up for the wrong message if the repeat option was greater than 1.
+- Fixed status validation of the referenced message for acknowledgments
+- Fixed potential endless running error in KeyValue services
+- Fixed potential deadlock while logging messages on SqlServer when receiving multiple concurrent messages
+- Fixed potential deadlock in mssql during config import
+- Automatic registration and deregistration of scheduled services after configuration import has been fixed.
+
+### Dependency updates (1 change)
+
+- Updated minor dependencies.
+
 
 [10.1.3] - 2024-07-30
 ---------------------
