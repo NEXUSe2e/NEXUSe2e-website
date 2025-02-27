@@ -4,6 +4,184 @@ export const changelog = marked(`
 
 # Changelog
 
+[10.2.0] - 2025-02-27
+---------------------
+
+### Important notes
+
+- If your system has invalid configuration (e.g. choreographies or partners) with duplicated keys, you might need to fix them before upgrading.
+- If your database has a lot of entries, the upgrade process might take a while to create all the required indexes.
+- If your database has entries with more than 255 characters, you might need to adjust the value in the database of the affected rows before upgrading.
+
+### Added (3 changes)
+
+- Added inflow pipeline to route preview
+- Added table row highlighting for preview mode
+- Added multiple indexes and unique indexes for varchar columns
+
+### Changed (4 changes)
+
+- Changed accepted file types for certificate uploads
+- Changed the look of the customize page in the frontend.
+- Changed width of a key value list in frontend.
+- Changed size for multiple varchar columns to 255. This includes nearly all identifiers like choreography_id, action_id, partner_id, connection_id, service_id and some others.
+
+### Fixed (3 changes)
+
+- Fixed a bug in the choreography preview, where the links to routes would misroute
+- Added a missing gql property for the message detail page.
+- Fixed a bug, where unsaved ui settings would not be resetted.
+
+
+[10.1.11] - 2025-02-06
+----------------------
+
+### Added (3 changes)
+
+- Added \`CsvToJsonSplitterTransformatorService\`. Converts CSV Files to one or more JSON files.
+- The \`HttpReceiverService\` now supports a parameter for a post processing \`TransformatorService\`.
+- Added \`UnzipTransformatorService\`.
+
+### Changed (1 change)
+
+- Changed button text from apply to save
+
+### Dependency updates (11 changes)
+
+- com.evolvsys:esc-common-parent-pom from 6.1.7 to 6.1.8
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.17.3 to 2.18.2
+- dev.logchange:logchange-maven-plugin from 1.16.7 to 1.16.8
+- net.javacrumbs.json-unit:json-unit-assertj from 4.0.0 to 4.1.0
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.4.1 to 5.4.2
+- org.apache.tika:tika-core from 3.0.0 to 3.1.0
+- org.springframework.boot:spring-boot-configuration-processor from 3.4.1 to 3.4.2
+- org.springframework.boot:spring-boot-maven-plugin from 3.4.1 to 3.4.2
+- org.springframework.boot:spring-boot-starter-parent from 3.4.1 to 3.4.2
+- org.wiremock:wiremock-jetty12 from 3.10.0 to 3.11.0
+- Updated frontend packages
+
+
+[10.1.10] - 2025-01-28
+----------------------
+
+### Added (3 changes)
+
+- Added frontend screenshot tests.
+- Added new parameter 'content_pointer' to the 'JsonSplitterTransformatorService' to navigate to a specific json node used as the payload content after splitting the array.
+- Added \`PayloadMetadataToMessagePipelet\` to copy metadata from the payload(s) based on configurable parameters
+
+### Changed (1 change)
+
+- Changed user config validation to require either username or email instead of always requiring username
+
+### Dependency updates (18 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 5.18.0 to 5.19.0
+- com.azure:azure-identity-broker from 1.1.8 to 1.1.9
+- com.evolvsys:esc-app-core-test from 4.0.0 to 4.0.1
+- com.evolvsys:esc-app-core from 4.0.0 to 4.0.1
+- com.evolvsys:esc-common-parent-pom from 6.1.3 to 6.1.6
+- com.google.guava:guava from 33.3.1-jre to 33.4.0-jre
+- com.networknt:json-schema-validator from 1.5.4 to 1.5.5
+- dev.logchange:logchange-maven-plugin from 1.12.0 to 1.16.7
+- org.bouncycastle:bcpkix-jdk18on from 1.79 to 1.80
+- org.bouncycastle:bcprov-jdk18on from 1.79 to 1.80
+- org.mozilla:rhino from 1.7.15 to 1.8.0
+- org.postgresql:postgresql from 42.7.4 to 42.7.5
+- org.springframework.boot:spring-boot-configuration-processor from 3.4.0 to 3.4.1
+- org.springframework.boot:spring-boot-maven-plugin from 3.4.0 to 3.4.1
+- org.springframework.boot:spring-boot-starter-parent from 3.4.0 to 3.4.1
+- org.wiremock:wiremock-jetty12 from 3.9.2 to 3.10.0
+- Updated frontend packages.
+- Updated frontend date picker package.
+
+
+[10.1.9] - 2024-12-03
+---------------------
+
+### Added (4 changes)
+
+- Added a filter option for partnerIds in the route list.
+- Added a swap button for target and source partner in manual messages.
+- Added Json header information as metadata for each separate json payload in \`JsonSplitterTransformatorService\`
+- Added Json pointer traversal (draft-ietf-appsawg-json-pointer-03) for array splitting at a deeper json node in \`JsonSplitterTransformatorService\`
+
+### Changed (2 changes)
+
+- Changed internal http client ssl usage to new version
+- Changed \`HttpOauth2AuthenticationSupportService\` to use new spring implementation instead of custom one
+
+### Dependency updates (9 changes)
+
+- com.evolvsys:esc-app-core-test from 3.3.0 to 4.0.0
+- com.evolvsys:esc-app-core from 3.3.0 to 4.0.0
+- com.evolvsys:esc-common-parent-pom from 6.1.2 to 6.1.3
+- com.networknt:json-schema-validator from 1.5.3 to 1.5.4
+- commons-io:commons-io from 2.17.0 to 2.18.0
+- dev.logchange:logchange-maven-plugin from 1.11.0 to 1.12.0
+- org.springframework.boot:spring-boot-configuration-processor from 3.3.5 to 3.4.0
+- org.springframework.boot:spring-boot-maven-plugin from 3.3.5 to 3.4.0
+- org.springframework.boot:spring-boot-starter-parent from 3.3.5 to 3.4.0
+
+
+[10.1.8] - 2024-11-26
+---------------------
+
+### Changed (1 change)
+
+- Config import is now synchronized against the database, to prevent multiple concurrent imports
+
+
+[10.1.7] - 2024-11-20
+---------------------
+
+### Important notes
+
+- Please check if your default manual messages are still showing up. The changes are in general backwards compatible, but if you have customized the default manual messages, you might need to adjust them.
+
+### Added (1 change)
+
+- Added a parameter \`Valid audiences\` for the \`OAuth2AuthenticationRulePipelet\`.
+
+### Fixed (1 change)
+
+- Fixed default manual message files and changelog list handling if NEXUSe2e is used as a library.
+
+### Dependency updates (8 changes)
+
+- com.azure:azure-identity-broker from 1.1.7 to 1.1.8
+- com.evolvsys:esc-app-core-test from 3.2.1 to 3.3.0
+- com.evolvsys:esc-app-core from 3.2.1 to 3.3.0
+- com.evolvsys:esc-common-parent-pom from 6.1.1 to 6.1.2
+- io.github.classgraph:classgraph from 4.8.177 to 4.8.179
+- org.codehaus.mojo:versions-maven-plugin from 2.17.1 to 2.18.0
+- org.mapstruct:mapstruct-processor from 1.6.2 to 1.6.3
+- org.projectlombok:lombok from 1.18.34 to 1.18.36
+
+
+[10.1.6] - 2024-11-15
+---------------------
+
+### Important notes
+
+- With the new \`Valid response statuses\` parameter for \`HttpSender\` Outflow Services the accepted status codes include all in the range 2xx. This is a change from the old behavior, where only status codes 200 and 204 were considered valid responses.
+
+### Added (3 changes)
+
+- Added \`PlainHttpAcknowledgmentReferencePipelet\` to allow reliable connections with plain http requests.
+- Added a hover effect on a duration field for certificates.
+- Added a \`Valid response statuses\` parameter to \`HttpSender\` Outflow Services. The default value is \`2xx\`.
+
+### Changed (1 change)
+
+- Removed choreography and action as required parameters for \`RoutingByRequestParameterPipelet\`. If neither is provided in any other way there will still be a an error.
+
+### Fixed (2 changes)
+
+- Fixed a bug in the message table row that routed instead of selected.
+- Fixed default values for parameters of type \`List\` not showing up.
+
+
 [10.1.5] - 2024-11-08
 ---------------------
 
