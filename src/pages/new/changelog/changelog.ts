@@ -4,6 +4,31 @@ export const changelog = marked(`
 
 # Changelog
 
+
+[10.2.1] - 2025-03-20
+---------------------
+
+### Fixed (1 change)
+
+- Fixed a bug in the route edit view, where it was not possible to save a route.
+
+### Dependency updates (13 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 5.19.0 to 5.20.0
+- com.azure:azure-identity-broker from 1.1.9 to 1.1.12
+- com.evolvsys:esc-app-core-test from 4.0.1 to 4.1.3
+- com.evolvsys:esc-app-core from 4.0.1 to 4.1.3
+- com.evolvsys:esc-common-parent-pom from 6.1.8 to 6.1.12
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.18.2 to 2.18.3
+- com.networknt:json-schema-validator from 1.5.5 to 1.5.6
+- dev.logchange:logchange-maven-plugin from 1.16.8 to 1.16.10
+- org.awaitility:awaitility from 4.2.2 to 4.3.0
+- org.springframework.boot:spring-boot-configuration-processor from 3.4.2 to 3.4.3
+- org.springframework.boot:spring-boot-maven-plugin from 3.4.2 to 3.4.3
+- org.springframework.boot:spring-boot-starter-parent from 3.4.2 to 3.4.3
+- org.wiremock:wiremock-jetty12 from 3.11.0 to 3.12.1
+
+
 [10.2.0] - 2025-02-27
 ---------------------
 
