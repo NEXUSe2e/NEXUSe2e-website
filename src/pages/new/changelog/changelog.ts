@@ -5,6 +5,31 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.2.2] - 2025-04-16
+---------------------
+
+### Added (4 changes)
+
+- Added \`CopyPayloadMetaDataPipelet\` to copy payload metadata to the message.
+- Added default key value replacements for \`$\{NOW}\` as current datetime as ISO8601 string, \`$\{NOW_MILLIS}\` as current datetime in milliseconds, and \`$\{NOW_EPOCH}\` as current datetime in epoch time and \`$\{NOW_DATE} as current date in ISO_DATE format.
+- Added \`HttpHeaderPipelet\` to add custom HttpHeaders to message metadata to be later processed by HttpSenderServices.
+- Added \`JsonAggregatorTransformatorService\` as a new transformator support service to aggregate JSON payloads.
+
+### Changed (1 change)
+
+- Changed maven compile plugin configuration to be more reliable for development
+
+### Fixed (3 changes)
+
+- Fixed \`BatchLoaderUtilsTest\` to be more reliable
+- Optimized startup for the \`KeyValueService\` to prevent unnecessary errors
+- Fixed internal MetaData add Method to correctly adding all values and not overwriting them.
+
+### Dependency updates (1 change)
+
+- Updated frontend packages.
+
+
 [10.2.1] - 2025-03-20
 ---------------------
 
