@@ -138,6 +138,12 @@
             :active="route.path === '/new/docs/configuration/server-auth'"
             @click="router.push('/new/docs/configuration/server-auth')"
           />
+          <v-list-item
+            title="Key Store"
+            color="accent"
+            :active="route.path === '/new/docs/configuration/key-store'"
+            @click="router.push('/new/docs/configuration/key-store')"
+          />
         </v-list-group>
         <v-list-item
           title="Dictionary"
