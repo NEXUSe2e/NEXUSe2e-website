@@ -148,12 +148,35 @@
           />
         </v-list-group>
 
-        <v-list-item
-          title="Security"
-          color="accent"
-          :active="route.path === '/documentation/security'"
-          @click="router.push('/documentation/security')"
-        />
+        <v-list-group value="security">
+          <template #activator="{ props }">
+            <v-list-item
+              v-bind="props"
+              title="Security"
+              color="accent"
+            />
+          </template>
+
+          <v-list-item
+            title="Client Authentication"
+            color="accent"
+            :active="route.path === '/documentation/security/client-authentication'"
+            @click="router.push('/documentation/security/client-authentication')"
+          />
+          <v-list-item
+            title="Legacy Key Store"
+            color="accent"
+            :active="route.path === '/documentation/security/legacy-key-store'"
+            @click="router.push('/documentation/security/legacy-key-store')"
+          />
+          <v-list-item
+            title="Secure Web Service Endpoint"
+            color="accent"
+            :active="route.path === '/documentation/security/web-service-endpoint'"
+            @click="router.push('/documentation/security/web-service-endpoint')"
+          />
+        </v-list-group>
+
 
         <v-list-group value="messaging">
           <template #activator="{ props }">
@@ -253,6 +276,8 @@ const currentlyOpen = computed(() => {
   if (route.path.includes('/documentation/configuration')) return ['documentation', 'configuration']
 
   if (route.path.includes('/documentation/installation')) return ['documentation', 'installation']
+
+  if (route.path.includes('/documentation/security')) return ['documentation', 'security']
 
   if (route.path.includes('/documentation')) return ['documentation']
 

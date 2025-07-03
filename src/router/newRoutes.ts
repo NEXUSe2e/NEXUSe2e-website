@@ -60,6 +60,10 @@ export default [
     component: () => import('@/pages/new/docs/configuration/server-auth/index.vue')
   },
   {
+    path: 'docs/configuration/key-store',
+    component: () => import('@/pages/new/docs/configuration/key-store/index.vue')
+  },
+  {
     path: 'docs/dictionary',
     component: () => import('@/pages/new/docs/dictionary/index.vue')
   },

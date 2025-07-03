@@ -60,8 +60,16 @@ export default [
     component: () => import('@/pages/old/documentation/configuration/log4jLogging/index.vue')
   },
   {
-    path: 'documentation/security',
-    component: () => import('@/pages/old/documentation/security/index.vue')
+    path: 'documentation/security/client-authentication',
+    component: () => import('@/pages/old/documentation/security/clientAuthentication/index.vue')
+  },
+  {
+    path: 'documentation/security/legacy-key-store',
+    component: () => import('@/pages/old/documentation/security/legacyKeyStore/index.vue')
+  },
+  {
+    path: 'documentation/security/web-service-endpoint',
+    component: () => import('@/pages/old/documentation/security/webServiceEndpoint/index.vue')
   },
   {
     path: 'documentation/messaging/first-steps',
