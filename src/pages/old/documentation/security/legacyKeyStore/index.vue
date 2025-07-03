@@ -24,7 +24,8 @@ Another case when you might need to create your own keystore file is when you en
 \`\`\`Caused by: java.security.NoSuchAlgorithmException: Algorithm HmacPBESHA256 not available\`\`\`
 
 If you are using NEXUSe2e 5.x and encounter this Hmac error, it is likely that your keystore file (.p12 or .pfx) is using a newer algorithm that is not supported by the Java version you are using.\\
-In that case, you need to create a new keystore file created using a legacy algorithm.
+The issue is usually not related to the certificates or private key themselves, but "only" the container (the keystore file) containing the certificates and private key.\\
+In that case, you need to create a new keystore file (containing the already provided private key and certificates) created using a legacy algorithm.
 
 OpenSSL 1.1.1 introduced a new encryption algorithm (HmacPBESHA256), which is not supported by older Java versions.\\
 While OpenSSL 1.1.1 does not allow using a legacy algorithm, OpenSSL 3.x does through the -legacy parameter.
@@ -45,7 +46,7 @@ These instructions are for creating a keystore file using OpenSSL 3.x with the l
   - You can use Powershell to create the chain pem file, e.g.: \`\`\`Get-Content cert.cer, int.cer, root.cer | Out-File -Encoding UTF8 clientcertchain.pem\`\`\`
 
 ### OpenSSL command
-\`\`\`openssl pkcs12 -export -out {NEW_KEYSTORE_FILE_NAME} -inkey {PRIVATE_KEY_FILE_NAME} -in {PUBLIC_CERTIFICATE_FILE_NAME} -certfile {COMPLETE_CERT_CHAIN_FILE_NAME} -legacy -provider-path {OPENSSL_BIN_DIRECTORY}\`\`\`
+\`\`\`openssl pkcs12 -export -out <NEW_KEYSTORE_FILE_NAME> -inkey <PRIVATE_KEY_FILE_NAME> -in <PUBLIC_CERTIFICATE_FILE_NAME> -certfile <COMPLETE_CERT_CHAIN_FILE_NAME> -legacy -provider-path <OPENSSL_BIN_DIRECTORY>\`\`\`
 
 Example with file names:
 

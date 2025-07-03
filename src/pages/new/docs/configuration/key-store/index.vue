@@ -34,7 +34,7 @@ These instructions are for creating a keystore file using OpenSSL. There might a
   - You can use Powershell to create the chain pem file, e.g.: \`\`\`Get-Content cert.cer, int.cer, root.cer | Out-File -Encoding UTF8 clientcertchain.pem\`\`\`
 
 ### OpenSSL command
-\`\`\`openssl pkcs12 -export -out {NEW_KEYSTORE_FILE_NAME} -inkey {PRIVATE_KEY_FILE_NAME} -in {PUBLIC_CERTIFICATE_FILE_NAME} -certfile {COMPLETE_CERT_CHAIN_FILE_NAME}\`\`\`
+\`\`\`openssl pkcs12 -export -out <NEW_KEYSTORE_FILE_NAME> -inkey <PRIVATE_KEY_FILE_NAME> -in <PUBLIC_CERTIFICATE_FILE_NAME> -certfile <COMPLETE_CERT_CHAIN_FILE_NAME>\`\`\`
 
 Example with file names:
 
