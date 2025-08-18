@@ -5,6 +5,132 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.3.1] - 2025-08-15
+---------------------
+
+### Added (3 changes)
+
+- New Sftp Push Service for file transfers to SFTP servers added.
+- Added \`RoutingMappingPipelet\` that uses multiple \`StringMapperSupportService\` to map routing information (choreographyId, actionId, sourcePartnerId and targetPartnerId) of a message.
+- Added \`StringMapperSupportService\` that has a mapping table to convert string values to other string values.
+
+### Changed (2 changes)
+
+- Sftp Polling service now uses duration instead of long for interval. This requires a configuration change on existing installations.
+- Prevent \`choreographyId\`, \`actionId\`, \`messageId\` and \`partnerIds\` from being updated after the message has been resolved. This only effects persisting of the message, a temporary change while sending the messages will still work.
+
+### Fixed (2 changes)
+
+- Fixed early message logs (before the message id is generated) being assigned to the wrong or no message at all.
+- Fixed \`HttpReceiverService\` handling requests with \`Transfer-Encoding: chunked\` header. The service now correctly processes chunked transfer encoding, ensuring that the request body is fully read and processed without errors.
+
+### Security (1 change)
+
+- Update vue-i18n to 11.1.11
+
+### Dependency updates (26 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 5.20.0 to 5.23.0
+- com.azure:azure-identity-broker from 1.1.12 to 1.1.16
+- com.evolvsys:esc-app-core-test from 4.3.0 to 4.3.1
+- com.evolvsys:esc-app-core from 4.3.0 to 4.3.1
+- com.evolvsys:esc-common-parent-pom from 6.2.2 to 6.2.3
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.18.3 to 2.19.2
+- com.google.guava:guava from 33.4.0-jre to 33.4.8-jre
+- com.microsoft.sqlserver:mssql-jdbc from 12.8.1.jre11 to 12.10.1.jre11
+- com.networknt:json-schema-validator from 1.5.6 to 1.5.8
+- com.sun.mail:jakarta.mail from 2.0.1 to 2.0.2
+- commons-io:commons-io from 2.18.0 to 2.20.0
+- dev.logchange:logchange-maven-plugin from 1.16.10 to 1.19.8
+- io.github.classgraph:classgraph from 4.8.179 to 4.8.181
+- net.javacrumbs.json-unit:json-unit-assertj from 4.1.0 to 4.1.1
+- org.apache.commons:commons-collections4 from 4.4 to 4.5.0
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.4.2 to 5.5
+- org.apache.tika:tika-core from 3.1.0 to 3.2.2
+- org.bouncycastle:bcpkix-jdk18on from 1.80 to 1.81
+- org.bouncycastle:bcprov-jdk18on from 1.80 to 1.81
+- org.codehaus.mojo:jaxb2-maven-plugin from 3.2.0 to 3.3.0
+- org.eclipse.angus:angus-mail from 2.0.3 to 2.0.4
+- org.projectlombok:lombok from 1.18.36 to 1.18.38
+- org.springframework.boot:spring-boot-configuration-processor from 3.4.3 to 3.5.4
+- org.springframework.boot:spring-boot-maven-plugin from 3.4.3 to 3.5.4
+- org.springframework.boot:spring-boot-starter-parent from 3.4.3 to 3.5.4
+- org.wiremock:wiremock-jetty12 from 3.12.1 to 3.13.1
+
+
+[10.3.0] - 2025-08-06
+---------------------
+
+### Added (6 changes)
+
+- Added created range filter as default for log list page.
+- Temp files created by the application (with a "NEXUSe2e"-prefix) are deleted on a scheduled basis.
+- Added return pipeline functionality to the \`HttpReceiverService\`. This allows the service to return a response to the client after processing the request.
+- Added indexes to improve log query performance with default filters.
+- Added multiple SOAP components to provide SOAP support (\`SoapPackagerPipelet\`, \`SoapUnpackagerPipelet\`, \`WsSecurityPipelet\`).
+- Added the following routing properties to the \`XPathRoutingPipelet\`: \`choreographyId\`, \`actionId\`, \`sourcePartnerId\` and \`targetPartnerId\`.
+
+### Changed (1 change)
+
+- Changed log filter to use equals instead of like comparisons. Depends on case insensitive database collation.
+
+### Dependency updates (2 changes)
+
+- org.postgresql:postgresql from 42.7.5 to 42.7.7
+- Updated frontend packages.
+
+
+[10.2.6] - 2025-06-12
+---------------------
+
+### Added (1 change)
+
+- Sftp Polling service now supports optionally the insecure DSS signature algorithm for backwards compatibility.
+
+
+[10.2.5] - 2025-06-05
+---------------------
+
+### Added (1 change)
+
+- Added multiple indexes for foreign keys to improve performance and prevent deadlocks
+
+### Removed (1 change)
+
+- Removed the external date picker npm package and used the vuetify component instead.
+
+### Fixed (1 change)
+
+- Fixed the translation key for manual action type filters in the frontend.
+
+
+[10.2.4] - 2025-05-23
+---------------------
+
+
+[10.2.3] - 2025-05-21
+---------------------
+
+### Added (2 changes)
+
+- The payload and meta data cards on the message detail page can be expanded and collapsed to reduce vertical space.
+- Sftp polling service added.
+
+### Changed (3 changes)
+
+- Changed logic for the message status progress bar on the dashboard, so that small percentage values still show as a bar.
+- CvsToJsonSplitter: handling of numbers modified for decimal separators and empty key objects are now removed.
+- Show only messages from type normal in the failed messages table on the dashboard page
+
+### Fixed (1 change)
+
+- Fixed log caching unit test in devops pipeline
+
+### Dependency updates (1 change)
+
+- Updated frontend packages.
+
+
 [10.2.2] - 2025-04-16
 ---------------------
 
