@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UnzipTransformatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">UnzipTransformatorService.java</span></div><h1>UnzipTransformatorService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import net.lingala.zip4j.io.inputstream.ZipInputStream;
+import net.lingala.zip4j.model.LocalFileHeader;
+import org.apache.commons.lang3.ObjectUtils;
+
+/**
+ *
+ */
+<span class="fc" id="L23">@Slf4j</span>
+<span class="fc" id="L24">public class UnzipTransformatorService extends TransformatorSupportService {</span>
+
+    private static final String PARAM_PASSWORD = &quot;password&quot;;
+
+    private static final String PARAM_TRANSFORM_AFTER = &quot;transform_after&quot;;
+    private static final String PARAM_MULTIPLE_FILES = &quot;multiple_files&quot;;
+    private static final String PARAM_ENCODING_HINT = &quot;encoding_hint&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L34">        return List.of(</span>
+<span class="fc" id="L35">                ParameterDefinition.builder()</span>
+<span class="fc" id="L36">                        .name(PARAM_PASSWORD)</span>
+<span class="fc" id="L37">                        .required(false)</span>
+<span class="fc" id="L38">                        .displayName(&quot;Encryption Password&quot;)</span>
+<span class="fc" id="L39">                        .description(&quot;An optional password required for encrypted zip files.&quot;)</span>
+<span class="fc" id="L40">                        .type(ParameterType.PASSWORD)</span>
+<span class="fc" id="L41">                        .build(),</span>
+<span class="fc" id="L42">                ParameterDefinition.builder()</span>
+<span class="fc" id="L43">                        .name(PARAM_TRANSFORM_AFTER)</span>
+<span class="fc" id="L44">                        .required(false)</span>
+<span class="fc" id="L45">                        .displayName(&quot;Post Transformer&quot;)</span>
+<span class="fc" id="L46">                        .description(&quot;An optional Transformer Service which is executed after this transformer.&quot;)</span>
+<span class="fc" id="L47">                        .type(ParameterType.SUPPORT_SERVICE)</span>
+<span class="fc" id="L48">                        .build(),</span>
+<span class="fc" id="L49">                ParameterDefinition.builder()</span>
+<span class="fc" id="L50">                        .name(PARAM_MULTIPLE_FILES)</span>
+<span class="fc" id="L51">                        .required(true)</span>
+<span class="fc" id="L52">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L53">                        .displayName(&quot;Allow multiple files&quot;)</span>
+<span class="fc" id="L54">                        .description(</span>
+                                &quot;By default, only one file in the zip file is allowed, this switch will allow multiple files within the zip file.&quot;)
+<span class="fc" id="L56">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L57">                        .build(),</span>
+<span class="fc" id="L58">                ParameterDefinition.builder()</span>
+<span class="fc" id="L59">                        .name(PARAM_ENCODING_HINT)</span>
+<span class="fc" id="L60">                        .required(false)</span>
+<span class="fc" id="L61">                        .displayName(&quot;Content Encoding Hint&quot;)</span>
+<span class="fc" id="L62">                        .description(&quot;Hint for the expected Content Encoding inside the zip file.&quot;)</span>
+<span class="fc" id="L63">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L64">                        .build());</span>
+    }
+
+    @Override
+    public List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+
+<span class="fc" id="L70">        List&lt;ContextPayload&gt; result = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (payloads != null) {</span>
+
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            for (ContextPayload payload : payloads) {</span>
+<span class="fc" id="L74">                processPayload(payload, result);</span>
+<span class="fc" id="L75">            }</span>
+        }
+<span class="fc" id="L77">        return result;</span>
+    }
+
+    private void processPayload(ContextPayload payload, List&lt;ContextPayload&gt; result) throws NexusException {
+<span class="fc" id="L81">        try (ZipInputStream zipInputStream =</span>
+<span class="fc" id="L82">                new ZipInputStream(payload.getContent().getInputStream())) {</span>
+<span class="fc" id="L83">            String password = parameters.value(PARAM_PASSWORD);</span>
+
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (password != null) {</span>
+<span class="fc" id="L86">                zipInputStream.setPassword(password.toCharArray());</span>
+            }
+<span class="fc" id="L88">            LocalFileHeader localFileHeader = zipInputStream.getNextEntry();</span>
+<span class="fc" id="L89">            boolean first = true;</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">            while (localFileHeader != null) {</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">                if (first) {</span>
+<span class="fc" id="L92">                    first = false;</span>
+                } else {
+<span class="nc" id="L94">                    Boolean multipleFiles = parameters.value(PARAM_MULTIPLE_FILES);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                    if (!multipleFiles) {</span>
+<span class="nc" id="L96">                        throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L97">                                .message(&quot;only one file is expected in zip file.&quot;)</span>
+<span class="nc" id="L98">                                .build());</span>
+                    }
+                }
+
+<span class="fc" id="L102">                try (PayloadContentOutputStream payloadContentOutputStream = PayloadContent.createOutputStream()) {</span>
+<span class="fc" id="L103">                    long count = zipInputStream.transferTo(payloadContentOutputStream);</span>
+<span class="fc" id="L104">                    MetaData metaData = new MetaData();</span>
+<span class="fc" id="L105">                    metaData.add(&quot;zip-entry-name&quot;, localFileHeader.getFileName());</span>
+<span class="fc" id="L106">                    metaData.add(&quot;copied-bytes&quot;, count);</span>
+                    final String encoding;
+
+<span class="pc bpc" id="L109" title="1 of 2 branches missed.">                    if (parameters.value(PARAM_ENCODING_HINT) != null) {</span>
+<span class="fc" id="L110">                        encoding = parameters.value(PARAM_ENCODING_HINT);</span>
+                    } else {
+<span class="nc" id="L112">                        encoding = ObjectUtils.defaultIfNull(payload.getEncoding(), &quot;UTF-8&quot;);</span>
+                    }
+<span class="fc" id="L114">                    PayloadContent payloadContent = payloadContentOutputStream.finish();</span>
+
+<span class="fc" id="L116">                    ContextPayload contextPayload = ContextPayload.builder()</span>
+<span class="fc" id="L117">                            .metaData(metaData)</span>
+<span class="fc" id="L118">                            .encoding(encoding)</span>
+<span class="fc" id="L119">                            .content(payloadContent)</span>
+<span class="fc" id="L120">                            .size(payloadContent.getSize())</span>
+<span class="fc" id="L121">                            .build();</span>
+
+<span class="pc bpc" id="L123" title="1 of 2 branches missed.">                    if (parameters.value(PARAM_TRANSFORM_AFTER) != null) {</span>
+<span class="nc" id="L124">                        TransformatorSupportService transformatorSupportService =</span>
+<span class="nc" id="L125">                                parameters.value(PARAM_TRANSFORM_AFTER);</span>
+<span class="nc" id="L126">                        result.addAll(transformatorSupportService.transform(List.of(contextPayload)));</span>
+<span class="nc" id="L127">                    } else {</span>
+<span class="fc" id="L128">                        result.add(contextPayload);</span>
+                    }
+                }
+
+<span class="fc" id="L132">                localFileHeader = zipInputStream.getNextEntry();</span>
+            }
+<span class="nc" id="L134">        } catch (IOException e) {</span>
+<span class="nc" id="L135">            throw new NexusException(</span>
+<span class="nc" id="L136">                    NexusError.builder().message(&quot;failed to unzip content.&quot;).build(), e);</span>
+<span class="fc" id="L137">        }</span>
+<span class="fc" id="L138">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

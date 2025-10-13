@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ParameterBatchLoaderHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.parameter</a> &gt; <span class="el_source">ParameterBatchLoaderHelper.java</span></div><h1>ParameterBatchLoaderHelper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.parameter;
+
+import com.evolvsys.app.core.auth.model.CurrentUserData;
+import com.evolvsys.app.core.graphql.repository.BatchLoaderRepository;
+import com.evolvsys.app.core.persistence.model.IdEntity;
+import com.evolvsys.nexuse2e.core.component.Configurable;
+import com.evolvsys.nexuse2e.core.component.RegisteredNexusComponent;
+import com.evolvsys.nexuse2e.core.model.entity.ParameterEntity;
+import com.evolvsys.nexuse2e.core.model.entity.QParameterEntity;
+import com.evolvsys.nexuse2e.core.parameter.mapper.ParameterMapper;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import java.util.*;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 19.03.2024
+ */
+<span class="fc" id="L23">@Slf4j</span>
+@Component
+@RequiredArgsConstructor
+public class ParameterBatchLoaderHelper {
+    private final ParameterMapper parameterMapper;
+    private final BatchLoaderRepository batchLoaderRepository;
+
+    private ParameterDto entityToDto(
+            ParameterEntity parameterEntity,
+            ParameterDefinition definition,
+            CurrentUserData currentUserData,
+            Map&lt;Long, List&lt;String&gt;&gt; parameterStringLists) {
+<span class="nc" id="L35">        List&lt;String&gt; strings = parameterStringLists.get(parameterEntity.getId());</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (strings == null) {</span>
+<span class="nc" id="L37">            parameterEntity.setStringValues(Collections.emptyList());</span>
+        } else {
+<span class="nc" id="L39">            parameterEntity.setStringValues(strings);</span>
+        }
+<span class="nc" id="L41">        return parameterMapper.entityToDto(parameterEntity, definition, currentUserData);</span>
+    }
+
+    public Set&lt;ParameterDto&gt; loadInternalById(
+            RegisteredNexusComponent component,
+            CurrentUserData currentUserData,
+            Set&lt;ParameterEntity&gt; parameterEntities,
+            Map&lt;Long, List&lt;String&gt;&gt; parameterStringLists) {
+<span class="nc" id="L49">        return loadInternalById(component, currentUserData, parameterEntities, parameterStringLists, true);</span>
+    }
+
+    public Set&lt;ParameterDto&gt; loadInternalById(
+            RegisteredNexusComponent component,
+            CurrentUserData currentUserData,
+            Set&lt;ParameterEntity&gt; parameterEntities,
+            Map&lt;Long, List&lt;String&gt;&gt; parameterStringLists,
+            boolean addDefaults) {
+
+<span class="nc" id="L59">        Set&lt;ParameterDto&gt; parameterDtos = new LinkedHashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (Configurable.class.isAssignableFrom(component.getLoadedClass())</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                &amp;&amp; CollectionUtils.isNotEmpty(component.getParameterDefinitions())) {</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">            for (ParameterDefinition definition : component.getParameterDefinitions()) {</span>
+<span class="nc" id="L64">                LOGGER.trace(&quot;Processing parameter '{}'&quot;, definition.getName());</span>
+
+<span class="nc" id="L66">                ParameterDto parameterDto = parameterEntities.stream()</span>
+<span class="nc" id="L67">                        .filter(entity -&gt; entity.getName().equalsIgnoreCase(definition.getName()))</span>
+<span class="nc" id="L68">                        .findFirst()</span>
+<span class="nc" id="L69">                        .map(entity -&gt; entityToDto(entity, definition, currentUserData, parameterStringLists))</span>
+<span class="nc" id="L70">                        .orElseGet(() -&gt; parameterMapper.definitionToDto(definition, currentUserData));</span>
+
+<span class="nc bnc" id="L72" title="All 4 branches missed.">                if (addDefaults || parameterDto.getId() != null) {</span>
+<span class="nc" id="L73">                    parameterDtos.add(parameterDto);</span>
+                }
+<span class="nc" id="L75">            }</span>
+        }
+<span class="nc" id="L77">        return parameterDtos;</span>
+    }
+
+    public Map&lt;Long, List&lt;String&gt;&gt; getStringList(Map&lt;Long, Set&lt;ParameterEntity&gt;&gt; entityMap) {
+<span class="nc" id="L81">        Set&lt;Long&gt; parameterIds = entityMap.values().stream()</span>
+<span class="nc" id="L82">                .flatMap(parameterEntities -&gt; parameterEntities.stream()</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                        .filter(entity -&gt; entity.getType() == ParameterType.STRING_LIST)</span>
+<span class="nc" id="L84">                        .map(IdEntity::getId)</span>
+<span class="nc" id="L85">                        .distinct())</span>
+<span class="nc" id="L86">                .collect(Collectors.toSet());</span>
+<span class="nc" id="L87">        return batchLoaderRepository.loadList(parameterIds, QParameterEntity.parameterEntity.stringValues);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

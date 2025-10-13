@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CsvPayloadProcessor.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">CsvPayloadProcessor.java</span></div><h1>CsvPayloadProcessor.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.fasterxml.jackson.core.JsonEncoding;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.ObjectUtils;
+
+<span class="fc" id="L24">@Slf4j</span>
+public class CsvPayloadProcessor {
+
+    private final ContextPayload payload;
+    private final CsvMapper csvMapper;
+    private final CsvSchema csvSchema;
+    private final JsonFactory jsonFactory;
+
+    private final List&lt;String&gt; keys;
+    private final Map&lt;String, JsonFieldRenderType&gt; columnTypeMapping;
+    private final List&lt;String&gt; blackListFilter;
+    private final List&lt;String&gt; whiteListFilter;
+    private final boolean generateTableOfContents;
+
+    private PayloadContentOutputStream currentContextPayloadContentStream;
+    private JsonGenerator currentJsonGenerator;
+    private ContextPayload currentPayload;
+    private JsonSplitKey currentKey;
+
+<span class="fc" id="L43">    public CsvPayloadProcessor(CsvProcessorConfig csvProcessorConfig) {</span>
+<span class="fc" id="L44">        payload = csvProcessorConfig.getPayload();</span>
+<span class="fc" id="L45">        csvMapper = csvProcessorConfig.getCsvMapper();</span>
+<span class="fc" id="L46">        csvSchema = csvProcessorConfig.getCsvSchema();</span>
+<span class="fc" id="L47">        jsonFactory = csvProcessorConfig.getJsonFactory();</span>
+<span class="fc" id="L48">        keys = csvProcessorConfig.getKeys();</span>
+<span class="fc" id="L49">        columnTypeMapping = csvProcessorConfig.getColumnTypeMapping();</span>
+<span class="fc" id="L50">        blackListFilter = csvProcessorConfig.getBlackListFilter();</span>
+<span class="fc" id="L51">        whiteListFilter = csvProcessorConfig.getWhiteListFilter();</span>
+<span class="fc" id="L52">        generateTableOfContents = csvProcessorConfig.isGenerateTableOfContents();</span>
+<span class="fc" id="L53">    }</span>
+
+    @SuppressWarnings(&quot;PMD.UseTryWithResources&quot;)
+    List&lt;ContextPayload&gt; processPayload() throws NexusException {
+
+<span class="fc" id="L58">        Map&lt;JsonSplitKey, ContextPayload&gt; payloadLookup = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L60">        try (IteratorWrapper lines = createLineIterator()) {</span>
+
+<span class="fc" id="L62">            currentContextPayloadContentStream = PayloadContent.createOutputStream();</span>
+<span class="fc" id="L63">            currentJsonGenerator = jsonFactory.createGenerator(currentContextPayloadContentStream, JsonEncoding.UTF8);</span>
+
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">            if (!lines.hasNext()) {</span>
+<span class="nc" id="L66">                throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L67">                        .message(&quot;no lines found in payload&quot;)</span>
+<span class="nc" id="L68">                        .build());</span>
+            }
+
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            while (lines.hasNext()) {</span>
+<span class="fc" id="L72">                Map&lt;String, String&gt; line = lines.next();</span>
+<span class="fc" id="L73">                JsonSplitKey splitKey = new JsonSplitKey(keys, line);</span>
+
+<span class="fc" id="L75">                filterLine(line);</span>
+
+<span class="fc bfc" id="L77" title="All 2 branches covered.">                if (!splitKey.equals(currentKey)) {</span>
+
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                    if (currentKey != null) {</span>
+<span class="fc" id="L80">                        finalizeDocument();</span>
+<span class="fc" id="L81">                        currentContextPayloadContentStream.close();</span>
+<span class="fc" id="L82">                        currentJsonGenerator.close();</span>
+                    }
+                    // switch to new segment
+<span class="fc" id="L85">                    ContextPayload contextPayload = payloadLookup.get(splitKey);</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">                    if (contextPayload == null) { // new lines, still proper grouping</span>
+
+<span class="fc" id="L88">                        contextPayload = ContextPayload.builder()</span>
+<span class="fc" id="L89">                                .contentType(&quot;application/json&quot;)</span>
+<span class="fc" id="L90">                                .encoding(StandardCharsets.UTF_8.toString())</span>
+<span class="fc" id="L91">                                .build();</span>
+
+<span class="fc" id="L93">                        payloadLookup.put(splitKey, contextPayload);</span>
+
+<span class="fc" id="L95">                        currentContextPayloadContentStream = PayloadContent.createOutputStream();</span>
+<span class="fc" id="L96">                        currentJsonGenerator =</span>
+<span class="fc" id="L97">                                jsonFactory.createGenerator(currentContextPayloadContentStream, JsonEncoding.UTF8);</span>
+
+<span class="fc" id="L99">                        serializeProlog(splitKey);</span>
+
+                    } else {
+<span class="nc" id="L102">                        throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L103">                                .message(&quot;grouping not correct, lines are mixed for the defined key&quot;)</span>
+<span class="nc" id="L104">                                .build());</span>
+                    }
+<span class="fc" id="L106">                    currentPayload = contextPayload;</span>
+<span class="fc" id="L107">                    currentKey = splitKey;</span>
+                }
+<span class="fc" id="L109">                serializeLine(line);</span>
+<span class="fc" id="L110">            }</span>
+
+<span class="fc" id="L112">            finalizeDocument();</span>
+
+<span class="nc" id="L114">        } catch (IOException e) {</span>
+<span class="nc" id="L115">            throw new NexusException(</span>
+<span class="nc" id="L116">                    NexusError.builder().message(&quot;failed to process payload&quot;).build(), e);</span>
+        } finally {
+            try {
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">                if (currentJsonGenerator != null) {</span>
+<span class="fc" id="L120">                    currentJsonGenerator.close();</span>
+                }
+<span class="nc" id="L122">            } catch (IOException e) {</span>
+<span class="nc" id="L123">                LOGGER.error(&quot;unable to close generator after failed processing&quot;, e);</span>
+<span class="fc" id="L124">            }</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">            if (currentContextPayloadContentStream != null) {</span>
+<span class="fc" id="L126">                currentContextPayloadContentStream.finish();</span>
+            }
+        }
+
+<span class="fc" id="L130">        List&lt;ContextPayload&gt; resultPayloads = new ArrayList&lt;&gt;(payloadLookup.values());</span>
+<span class="pc bpc" id="L131" title="1 of 4 branches missed.">        if (generateTableOfContents &amp;&amp; MapUtils.isNotEmpty(payloadLookup)) {</span>
+<span class="fc" id="L132">            ContextPayload contextPayloadToC = generateTableOfContents(payloadLookup);</span>
+<span class="fc" id="L133">            resultPayloads.add(contextPayloadToC);</span>
+        }
+
+<span class="fc" id="L136">        return resultPayloads;</span>
+    }
+
+    private ContextPayload generateTableOfContents(Map&lt;JsonSplitKey, ContextPayload&gt; payloadLookup)
+            throws NexusException {
+<span class="fc" id="L141">        try (PayloadContentOutputStream contextPayloadContentStream = PayloadContent.createOutputStream();</span>
+<span class="fc" id="L142">                JsonGenerator jsonGenerator =</span>
+<span class="fc" id="L143">                        jsonFactory.createGenerator(contextPayloadContentStream, JsonEncoding.UTF8)) {</span>
+
+<span class="fc" id="L145">            jsonGenerator.writeStartObject(&quot;tableOfContents&quot;);</span>
+<span class="fc" id="L146">            jsonGenerator.writeFieldName(&quot;keys&quot;);</span>
+<span class="fc" id="L147">            jsonGenerator.writeStartArray(&quot;entries&quot;);</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">            for (JsonSplitKey splitKey : payloadLookup.keySet()) {</span>
+<span class="fc" id="L149">                renderKeys(jsonGenerator, splitKey);</span>
+<span class="fc" id="L150">            }</span>
+<span class="fc" id="L151">            jsonGenerator.writeEndArray();</span>
+<span class="fc" id="L152">            jsonGenerator.writeEndObject();</span>
+<span class="fc" id="L153">            jsonGenerator.close();</span>
+<span class="fc" id="L154">            PayloadContent payloadContent = contextPayloadContentStream.finish();</span>
+<span class="fc" id="L155">            MetaData metaData = new MetaData();</span>
+<span class="fc" id="L156">            metaData.add(&quot;TOC&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L157">            return ContextPayload.builder()</span>
+<span class="fc" id="L158">                    .contentType(&quot;application/json&quot;)</span>
+<span class="fc" id="L159">                    .metaData(metaData)</span>
+<span class="fc" id="L160">                    .encoding(StandardCharsets.UTF_8.toString())</span>
+<span class="fc" id="L161">                    .content(payloadContent)</span>
+<span class="fc" id="L162">                    .size(payloadContent.getSize())</span>
+<span class="fc" id="L163">                    .build();</span>
+<span class="nc" id="L164">        } catch (IOException e) {</span>
+<span class="nc" id="L165">            throw new NexusException(</span>
+<span class="nc" id="L166">                    NexusError.builder()</span>
+<span class="nc" id="L167">                            .message(&quot;failed to generate ToC payload&quot;)</span>
+<span class="nc" id="L168">                            .build(),</span>
+                    e);
+        }
+    }
+
+    private void renderKeys(JsonGenerator jsonGenerator, JsonSplitKey splitKey) throws IOException {
+<span class="fc" id="L174">        jsonGenerator.writeStartObject();</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : splitKey.keys.entrySet()) {</span>
+<span class="fc" id="L176">            String key = entry.getKey();</span>
+<span class="fc" id="L177">            String value = entry.getValue();</span>
+<span class="fc" id="L178">            ObjectUtils.defaultIfNull(columnTypeMapping.get(key), JsonFieldRenderType.STRING)</span>
+<span class="fc" id="L179">                    .render(jsonGenerator, key, value);</span>
+<span class="fc" id="L180">        }</span>
+<span class="fc" id="L181">        jsonGenerator.writeEndObject();</span>
+<span class="fc" id="L182">    }</span>
+
+    private void closeProlog() throws IOException {
+<span class="fc" id="L185">        currentJsonGenerator.writeEndArray();</span>
+<span class="fc" id="L186">        currentJsonGenerator.writeEndObject();</span>
+<span class="fc" id="L187">    }</span>
+
+    private void serializeProlog(JsonSplitKey splitKey) throws IOException {
+<span class="fc" id="L190">        currentJsonGenerator.writeStartObject();</span>
+
+<span class="fc bfc" id="L192" title="All 2 branches covered.">        if (MapUtils.isNotEmpty(splitKey.keys)) {</span>
+<span class="fc" id="L193">            currentJsonGenerator.writeFieldName(&quot;keys&quot;);</span>
+<span class="fc" id="L194">            renderKeys(currentJsonGenerator, splitKey);</span>
+        }
+<span class="fc" id="L196">        currentJsonGenerator.writeFieldName(&quot;rows&quot;);</span>
+<span class="fc" id="L197">        currentJsonGenerator.writeStartArray();</span>
+<span class="fc" id="L198">    }</span>
+
+    private void serializeLine(Map&lt;String, String&gt; currentLine) throws IOException {
+
+<span class="fc" id="L202">        currentJsonGenerator.writeStartObject();</span>
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        for (Map.Entry&lt;String, String&gt; entry : currentLine.entrySet()) {</span>
+<span class="fc" id="L204">            String key = entry.getKey();</span>
+<span class="fc" id="L205">            String value = entry.getValue();</span>
+
+<span class="fc" id="L207">            ObjectUtils.defaultIfNull(columnTypeMapping.get(key), JsonFieldRenderType.STRING)</span>
+<span class="fc" id="L208">                    .render(currentJsonGenerator, key, value);</span>
+<span class="fc" id="L209">        }</span>
+<span class="fc" id="L210">        currentJsonGenerator.writeEndObject();</span>
+<span class="fc" id="L211">    }</span>
+
+    private void filterLine(Map&lt;String, String&gt; line) {
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (!keys.isEmpty()) {</span>
+<span class="fc" id="L215">            keys.forEach(line::remove);</span>
+        }
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        if (!blackListFilter.isEmpty()) {</span>
+<span class="fc" id="L218">            blackListFilter.forEach(line::remove);</span>
+        }
+<span class="pc bpc" id="L220" title="1 of 2 branches missed.">        if (!whiteListFilter.isEmpty()) {</span>
+<span class="nc" id="L221">            line.keySet().retainAll(whiteListFilter);</span>
+        }
+<span class="fc" id="L223">    }</span>
+
+    private IteratorWrapper createLineIterator() throws IOException {
+
+<span class="fc" id="L227">        return IteratorWrapper.createInstance(payload, csvMapper, csvSchema);</span>
+    }
+
+    private void finalizeDocument() throws IOException {
+<span class="fc" id="L231">        closeProlog();</span>
+<span class="fc" id="L232">        currentJsonGenerator.close();</span>
+<span class="fc" id="L233">        PayloadContent payloadContent = currentContextPayloadContentStream.finish();</span>
+<span class="fc" id="L234">        currentPayload.setContent(payloadContent);</span>
+<span class="fc" id="L235">        currentPayload.setSize(payloadContent.getSize());</span>
+<span class="fc" id="L236">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

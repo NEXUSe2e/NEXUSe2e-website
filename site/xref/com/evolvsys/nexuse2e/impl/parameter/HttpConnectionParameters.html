@@ -1,0 +1,105 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>HttpConnectionParameters xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../apidocs/com/evolvsys/nexuse2e/impl/parameter/HttpConnectionParameters.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.impl.parameter;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.parameter.ParameterType;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.time.Duration;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> java.util.function.Supplier;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> org.springframework.http.HttpMethod;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment"> * @author SvenBarden</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment"> * @since 16.09.2024</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">interface</strong> <a name="HttpConnectionParameters" href="../../../../../com/evolvsys/nexuse2e/impl/parameter/HttpConnectionParameters.html#HttpConnectionParameters">HttpConnectionParameters</a> {
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>      String PARAM_URL = <span class="jxr_string">"url"</span>;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>      String PARAM_METHOD = <span class="jxr_string">"method"</span>;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>      String PARAM_CONNECTION_TIMEOUT = <span class="jxr_string">"connection_timeout"</span>;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>      String PARAM_RESPONSE_TIMEOUT = <span class="jxr_string">"response_timeout"</span>;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>      String PARAM_SSL_PROTOCOLS = <span class="jxr_string">"ssl_protocols"</span>;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>      String PARAM_SSL_CIPHERS = <span class="jxr_string">"ssl_ciphers"</span>;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>      String PARAM_CONTENT_AS_STREAM = <span class="jxr_string">"content_as_stream"</span>;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>      String PARAM_ENABLE_HOSTNAME_VERIFICATION = <span class="jxr_string">"disable_hostname_verification"</span>;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      String PARAM_VALIDATE_CERT_CHAIN = <span class="jxr_string">"validate_cert_chain"</span>;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>      String PARAM_AUTH_SERVICE = <span class="jxr_string">"auth_service"</span>;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      String MESSAGE_ID = <span class="jxr_string">"messageId"</span>;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      Duration DEFAULT_RESPONSE_TIMEOUT = Duration.ofSeconds(30);
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>      Duration DEFAULT_CONNECTION_TIMEOUT = Duration.ofSeconds(30);
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; URL = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>              .name(PARAM_URL)
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>              .description(<span class="jxr_string">"Url where the message should be send to"</span>)
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>              .type(ParameterType.STRING)
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>              .required(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; METHOD = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>              .name(PARAM_METHOD)
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>              .description(<span class="jxr_string">"Method to indicate which action is to be performed"</span>)
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>              .type(ParameterType.DROPDOWN_LIST)
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>              .required(<strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>              .defaultValue(HttpMethod.POST.toString())
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>              .option(HttpMethod.POST.toString())
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>              .option(HttpMethod.GET.toString())
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>              .option(HttpMethod.PUT.toString());
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; CONTENT_AS_STREAM = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>              .name(PARAM_CONTENT_AS_STREAM)
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>              .displayName(<span class="jxr_string">"Send content as stream"</span>)
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>              .description(<span class="jxr_string">"Sends content as stream. Saves memory for large payloads."</span>)
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>              .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>              .defaultValue(Boolean.FALSE);
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; CONNECTION_TIMEOUT = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>              .name(PARAM_CONNECTION_TIMEOUT)
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>              .displayName(<span class="jxr_string">"Connection timeout"</span>)
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>              .description(<span class="jxr_string">"Amount of time allowed for the connection to be established"</span>)
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>              .type(ParameterType.DURATION)
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>              .defaultValue(DEFAULT_CONNECTION_TIMEOUT);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; RESPONSE_TIMEOUT = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>              .name(PARAM_RESPONSE_TIMEOUT)
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>              .displayName(<span class="jxr_string">"Response timeout"</span>)
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>              .description(<span class="jxr_string">"Amount of time allowed for the http response to be received"</span>)
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>              .type(ParameterType.DURATION)
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>              .defaultValue(DEFAULT_RESPONSE_TIMEOUT);
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; SSL_PROTOCOLS = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>              .name(PARAM_SSL_PROTOCOLS)
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>              .displayName(<span class="jxr_string">"SSL protocols"</span>)
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>              .description(
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>                      <span class="jxr_string">"SSL/TLS protocol versions to use for the outbound https connection (e.g. \&quot;TLSv1.2, TLSv1.3\&quot;) (optional)"</span>)
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>              .type(ParameterType.STRING_LIST);
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; SSL_CIPHERS = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>              .name(PARAM_SSL_CIPHERS)
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>              .displayName(<span class="jxr_string">"SSL ciphers"</span>)
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>              .description(
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                      <span class="jxr_string">"SSL ciphers to use for the outbound https connection (\&quot;ECDHE-ECDSA-AES128-GCM-SHA256, ECDHE-ECDSA-CHACHA20-POLY1305\&quot;) (optional) "</span>)
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>              .type(ParameterType.STRING_LIST);
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; ENABLE_HOSTNAME_VERIFICATION =
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>              () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                      .name(PARAM_ENABLE_HOSTNAME_VERIFICATION)
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                      .displayName(<span class="jxr_string">"Enable hostname verification"</span>)
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>                      .description(<span class="jxr_string">"Enables the hostname verification for https connections"</span>)
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>                      .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>                      .defaultValue(Boolean.TRUE);
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; VALIDATE_CERT_CHAIN = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>              .name(PARAM_VALIDATE_CERT_CHAIN)
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>              .displayName(<span class="jxr_string">"Validate trusted cert chain"</span>)
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>              .description(<span class="jxr_string">"Validates the complete cert chain for each trusted partner certificate."</span>)
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>              .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>              .defaultValue(Boolean.TRUE);
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>      Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; AUTH_SERVICE = () -&gt; ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>              .name(PARAM_AUTH_SERVICE)
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>              .displayName(<span class="jxr_string">"Authentication service"</span>)
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>              .description(<span class="jxr_string">"The Http Support Service to use for authentication"</span>)
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>              .type(ParameterType.SUPPORT_SERVICE);
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

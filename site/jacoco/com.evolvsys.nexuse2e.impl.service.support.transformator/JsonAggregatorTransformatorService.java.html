@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonAggregatorTransformatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">JsonAggregatorTransformatorService.java</span></div><h1>JsonAggregatorTransformatorService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+
+/**
+ * Aggregates json payloads into one or more json payloads and optionally adds a general header to the new generated payload
+ *
+ * @author SvenBarden
+ * @see JsonAggregatorProcessor
+ * @since 08.04.2025
+ */
+<span class="fc" id="L21">@Slf4j</span>
+<span class="fc" id="L22">public class JsonAggregatorTransformatorService extends TransformatorSupportService {</span>
+    static final String PARAM_HEADER_ATTRIBUTES = &quot;header_attributes&quot;;
+    static final String PARAM_ADD_HEADER = &quot;add_header&quot;;
+    static final String PARAM_HEADER_NAME = &quot;header_name&quot;;
+    static final String PARAM_USE_CONTAINER = &quot;use_container&quot;;
+    static final String PARAM_PAYLOAD_CONTAINER_NAME = &quot;payload_container_name&quot;;
+    static final String PARAM_USE_INNER_CONTAINER = &quot;use_inner_container&quot;;
+    static final String PARAM_INNER_CONTAINER_NAME = &quot;inner_container_name&quot;;
+    static final String PARAM_PAYLOADS_PER_MESSAGE = &quot;payloads_per_message&quot;;
+    static final String PARAM_ATTRIBUTES_TO_META_DATA = &quot;attributes_to_meta_data&quot;;
+    static final String PARAM_COPY_PAYLOAD_META_DATA = &quot;copy_payload_meta_data&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L36">        return List.of(</span>
+<span class="fc" id="L37">                ParameterDefinition.builder()</span>
+<span class="fc" id="L38">                        .name(PARAM_ADD_HEADER)</span>
+<span class="fc" id="L39">                        .displayName(&quot;Add header&quot;)</span>
+<span class="fc" id="L40">                        .description(</span>
+                                &quot;Adds a header object to the payload, filled with the header attributes values. This automatically creates a container object for the payloads.&quot;)
+<span class="fc" id="L42">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L43">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L44">                        .build(),</span>
+<span class="fc" id="L45">                ParameterDefinition.builder()</span>
+<span class="fc" id="L46">                        .name(PARAM_HEADER_NAME)</span>
+<span class="fc" id="L47">                        .displayName(&quot;Header name&quot;)</span>
+<span class="fc" id="L48">                        .description(&quot;Name of the header attribute&quot;)</span>
+<span class="fc" id="L49">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L50">                        .defaultValue(&quot;header&quot;)</span>
+<span class="fc" id="L51">                        .build(),</span>
+<span class="fc" id="L52">                ParameterDefinition.builder()</span>
+<span class="fc" id="L53">                        .name(PARAM_HEADER_ATTRIBUTES)</span>
+<span class="fc" id="L54">                        .displayName(&quot;Header attributes&quot;)</span>
+<span class="fc" id="L55">                        .description(&quot;List of header attributes to add to the json payload.&quot;)</span>
+<span class="fc" id="L56">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L57">                        .build(),</span>
+<span class="fc" id="L58">                ParameterDefinition.builder()</span>
+<span class="fc" id="L59">                        .name(PARAM_USE_CONTAINER)</span>
+<span class="fc" id="L60">                        .displayName(&quot;Use a container for payloads&quot;)</span>
+<span class="fc" id="L61">                        .description(&quot;If activated a container object will be wrapped around the payload array.&quot;)</span>
+<span class="fc" id="L62">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L63">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L64">                        .build(),</span>
+<span class="fc" id="L65">                ParameterDefinition.builder()</span>
+<span class="fc" id="L66">                        .name(PARAM_PAYLOAD_CONTAINER_NAME)</span>
+<span class="fc" id="L67">                        .displayName(&quot;Payload container name&quot;)</span>
+<span class="fc" id="L68">                        .description(&quot;Name of the json attribute for the payloads if use container is enabled.&quot;)</span>
+<span class="fc" id="L69">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L70">                        .defaultValue(&quot;payloads&quot;)</span>
+<span class="fc" id="L71">                        .build(),</span>
+<span class="fc" id="L72">                ParameterDefinition.builder()</span>
+<span class="fc" id="L73">                        .name(PARAM_USE_INNER_CONTAINER)</span>
+<span class="fc" id="L74">                        .displayName(&quot;Use inner container&quot;)</span>
+<span class="fc" id="L75">                        .description(&quot;If enabled, wraps each payload in a single container object.&quot;)</span>
+<span class="fc" id="L76">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L77">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L78">                        .build(),</span>
+<span class="fc" id="L79">                ParameterDefinition.builder()</span>
+<span class="fc" id="L80">                        .name(PARAM_INNER_CONTAINER_NAME)</span>
+<span class="fc" id="L81">                        .displayName(&quot;Inner container name&quot;)</span>
+<span class="fc" id="L82">                        .description(&quot;Name of the json attribute for the inner container wrapper.&quot;)</span>
+<span class="fc" id="L83">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L84">                        .defaultValue(&quot;payload&quot;)</span>
+<span class="fc" id="L85">                        .build(),</span>
+<span class="fc" id="L86">                ParameterDefinition.builder()</span>
+<span class="fc" id="L87">                        .name(PARAM_PAYLOADS_PER_MESSAGE)</span>
+<span class="fc" id="L88">                        .displayName(&quot;Payloads per message&quot;)</span>
+<span class="fc" id="L89">                        .description(&quot;How many payloads should be aggregated per message.&quot;)</span>
+<span class="fc" id="L90">                        .type(ParameterType.LONG)</span>
+<span class="fc" id="L91">                        .defaultValue(10L)</span>
+<span class="fc" id="L92">                        .build(),</span>
+<span class="fc" id="L93">                ParameterDefinition.builder()</span>
+<span class="fc" id="L94">                        .name(PARAM_ATTRIBUTES_TO_META_DATA)</span>
+<span class="fc" id="L95">                        .displayName(&quot;Attributes to meta data&quot;)</span>
+<span class="fc" id="L96">                        .description(</span>
+                                &quot;Extracts attribute values from payloads and adds them to the aggregated payload`s meta data. Note that due to technical reasons only single attribute names are evaluated and no nested parsing is supported.&quot;)
+<span class="fc" id="L98">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L99">                        .build(),</span>
+<span class="fc" id="L100">                ParameterDefinition.builder()</span>
+<span class="fc" id="L101">                        .name(PARAM_COPY_PAYLOAD_META_DATA)</span>
+<span class="fc" id="L102">                        .displayName(&quot;Copy all meta&quot;)</span>
+<span class="fc" id="L103">                        .description(&quot;Copy all meta data from original payloads in the new payload&quot;)</span>
+<span class="fc" id="L104">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L105">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L106">                        .build());</span>
+    }
+
+    @Override
+    public List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+        List&lt;ContextPayload&gt; transformedPayloads;
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (CollectionUtils.isEmpty(payloads)) {</span>
+<span class="nc" id="L113">            LOGGER.debug(&quot;No payloads to transform&quot;);</span>
+<span class="nc" id="L114">            transformedPayloads = new ArrayList&lt;&gt;();</span>
+        } else {
+<span class="fc" id="L116">            transformedPayloads = transformInternal(payloads);</span>
+        }
+<span class="fc" id="L118">        return transformedPayloads;</span>
+    }
+
+    private List&lt;ContextPayload&gt; transformInternal(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+<span class="fc" id="L122">        long objectsPerMessage = parameters.value(PARAM_PAYLOADS_PER_MESSAGE);</span>
+
+<span class="fc" id="L124">        List&lt;ContextPayload&gt; payloadsToProcess = new ArrayList&lt;&gt;(payloads);</span>
+
+<span class="fc" id="L126">        List&lt;List&lt;ContextPayload&gt;&gt; payloadPartition = ListUtils.partition(payloadsToProcess, (int) objectsPerMessage);</span>
+<span class="fc" id="L127">        LOGGER.trace(</span>
+                &quot;split {} payloads into {} partitions of size {}&quot;,
+<span class="fc" id="L129">                payloadsToProcess.size(),</span>
+<span class="fc" id="L130">                payloadPartition.size(),</span>
+<span class="fc" id="L131">                objectsPerMessage);</span>
+
+<span class="fc" id="L133">        List&lt;ContextPayload&gt; processedPayloads = new ArrayList&lt;&gt;(payloadPartition.size());</span>
+
+<span class="fc" id="L135">        JsonAggregatorProcessor processor = JsonAggregatorProcessor.create(this);</span>
+
+<span class="fc bfc" id="L137" title="All 2 branches covered.">        for (List&lt;ContextPayload&gt; contextPayloads : payloadPartition) {</span>
+<span class="fc" id="L138">            processedPayloads.add(processor.process(contextPayloads));</span>
+<span class="fc" id="L139">        }</span>
+<span class="fc" id="L140">        return processedPayloads;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

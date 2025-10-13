@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PayloadEntityContent.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.payload.content</a> &gt; <span class="el_source">PayloadEntityContent.java</span></div><h1>PayloadEntityContent.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.payload.content;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.message.payload.model.PayloadEntity;
+import com.evolvsys.nexuse2e.core.message.payload.repository.BinaryRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * @author SvenBarden
+ * @since 22.02.2024
+ */
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+@SuppressFBWarnings({&quot;EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS&quot;, &quot;EXS_EXCEPTION_SOFTENING_NO_CHECKED&quot;})
+sealed class PayloadEntityContent implements PayloadContent permits CachingFileEntityContent {
+    private final Long binaryId;
+    private final long size;
+    private final BinaryRepository binaryRepository;
+
+    static PayloadEntityContent of(PayloadEntity payloadEntity, BinaryRepository binaryRepository) {
+<span class="fc" id="L26">        return new PayloadEntityContent(payloadEntity.getContent().getId(), payloadEntity.getSize(), binaryRepository);</span>
+    }
+
+    private InputStream loadContent() {
+        try {
+<span class="fc" id="L31">            return binaryRepository</span>
+<span class="fc" id="L32">                    .findById(binaryId)</span>
+<span class="pc" id="L33">                    .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L34">                            .message(&quot;binary file for payload could not be found&quot;)</span>
+<span class="nc" id="L35">                            .extension(&quot;id&quot;, binaryId)</span>
+<span class="nc" id="L36">                            .build()))</span>
+<span class="fc" id="L37">                    .getContent()</span>
+<span class="fc" id="L38">                    .getBinaryStream();</span>
+<span class="nc" id="L39">        } catch (SQLException e) {</span>
+<span class="nc" id="L40">            throw new NexusRuntimeException(</span>
+<span class="nc" id="L41">                    NexusError.builder()</span>
+<span class="nc" id="L42">                            .message(&quot;could not load payload binary entity&quot;)</span>
+<span class="nc" id="L43">                            .extension(&quot;id&quot;, binaryId)</span>
+<span class="nc" id="L44">                            .build(),</span>
+                    e);
+        }
+    }
+
+    @Override
+    public Long getId() {
+<span class="fc" id="L51">        return binaryId;</span>
+    }
+
+    @Override
+    public InputStream getInputStream() {
+<span class="fc" id="L56">        return loadContent();</span>
+    }
+
+    @Override
+    public byte[] getByteArray() {
+<span class="fc" id="L61">        try (InputStream inputStream = loadContent()) {</span>
+<span class="fc" id="L62">            return inputStream.readAllBytes();</span>
+<span class="nc" id="L63">        } catch (IOException e) {</span>
+<span class="nc" id="L64">            throw new NexusRuntimeException(</span>
+<span class="nc" id="L65">                    NexusError.builder()</span>
+<span class="nc" id="L66">                            .message(&quot;could not get byte array from binary content&quot;)</span>
+<span class="nc" id="L67">                            .extension(&quot;id&quot;, binaryId)</span>
+<span class="nc" id="L68">                            .build(),</span>
+                    e);
+        }
+    }
+
+    @Override
+    public long getSize() {
+<span class="fc" id="L75">        return size;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

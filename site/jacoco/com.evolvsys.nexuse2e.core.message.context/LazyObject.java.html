@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LazyObject.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.context</a> &gt; <span class="el_source">LazyObject.java</span></div><h1>LazyObject.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.context;
+
+import java.util.Objects;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * @author SvenBarden
+ * @since 24.01.2024
+ */
+@RequiredArgsConstructor
+final class LazyObject&lt;K, T&gt; {
+    private final Function&lt;K, T&gt; get;
+    private K key;
+    private T value;
+
+    public T getValue(K key) {
+<span class="fc bfc" id="L18" title="All 4 branches covered.">        if (value == null || (Objects.equals(this.key, key) == false)) {</span>
+<span class="fc bfc" id="L19" title="All 2 branches covered.">            if (key == null) {</span>
+<span class="fc" id="L20">                value = null;</span>
+            } else {
+<span class="fc" id="L22">                value = get.apply(key);</span>
+            }
+<span class="fc" id="L24">            this.key = key;</span>
+        }
+<span class="fc" id="L26">        return value;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ActionGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.action.service</a> &gt; <span class="el_source">ActionGraphQLService.java</span></div><h1>ActionGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.action.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.app.core.persistence.model.IdDto;
+import com.evolvsys.nexuse2e.core.action.model.ActionDto;
+import com.evolvsys.nexuse2e.core.action.validation.ValidActionHasMessages;
+import com.evolvsys.nexuse2e.core.action.validation.ValidActionHasNextActions;
+import com.evolvsys.nexuse2e.core.config.service.ConfigGraphQLService;
+import com.evolvsys.nexuse2e.core.pipeline.PipelineBatchLoader;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineDto;
+import com.evolvsys.nexuse2e.core.route.model.RouteDto;
+import io.leangen.graphql.annotations.*;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import jakarta.validation.Valid;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @author Florian Drees
+ * @since 20.12.2023
+ */
+@GraphQLService
+@RequiredArgsConstructor
+<span class="fc" id="L30">@Slf4j</span>
+public class ActionGraphQLService {
+    private final ActionService actionService;
+    private final DataLoaderService dataLoaderService;
+
+    @GraphQLMutation(name = &quot;action_update&quot;, description = &quot;Update an existing or create a new action&quot;)
+    @GraphQLNonNull
+    public ActionDto update(@GraphQLNonNull @Valid ActionDto actionDto) {
+<span class="fc" id="L38">        return ConfigGraphQLService.notifySubscribers(actionService.save(actionDto));</span>
+    }
+
+    @GraphQLMutation(name = &quot;action_delete&quot;, description = &quot;Delete an existing action&quot;)
+    public boolean delete(@ValidActionHasMessages @ValidActionHasNextActions long actionId) {
+<span class="fc" id="L43">        actionService.delete(actionId);</span>
+<span class="fc" id="L44">        ConfigGraphQLService.notifySubscribers();</span>
+<span class="fc" id="L45">        return true;</span>
+    }
+
+    @GraphQLMutation(name = &quot;action_updateWithValidNextActions&quot;)
+    @GraphQLNonNull
+    public ActionDto updateWithValidNextActions(
+            @GraphQLNonNull @Valid ActionDto action,
+            @GraphQLNonNull Collection&lt;@GraphQLNonNull ActionDto&gt; validNextActions) {
+<span class="fc" id="L53">        return ConfigGraphQLService.notifySubscribers(actionService.save(action, validNextActions));</span>
+    }
+
+    @GraphQLMutation(name = &quot;action_addRoute&quot;)
+    @GraphQLNonNull
+    public ActionDto addRoute(long actionId, @GraphQLNonNull @Valid RouteDto route) {
+<span class="fc" id="L59">        return ConfigGraphQLService.notifySubscribers(actionService.addRoute(actionId, route));</span>
+    }
+
+    @GraphQLMutation(name = &quot;action_linkRoutes&quot;, description = &quot;Links existing routes to the action&quot;)
+    @GraphQLNonNull
+    public ActionDto linkRoutes(long actionId, List&lt;@GraphQLNonNull Long&gt; routeIds) {
+<span class="fc" id="L65">        return ConfigGraphQLService.notifySubscribers(actionService.linkRoutes(actionId, routeIds));</span>
+    }
+
+    @GraphQLMutation(name = &quot;action_removeRoute&quot;, description = &quot;Removes the route from the action&quot;)
+    @GraphQLNonNull
+    public ActionDto removeRoute(long actionId, long routeId) {
+<span class="fc" id="L71">        return ConfigGraphQLService.notifySubscribers(actionService.removeRoute(actionId, routeId));</span>
+    }
+
+    @GraphQLQuery(name = &quot;action_getById&quot;, description = &quot;Gets an action&quot;)
+    public Optional&lt;ActionDto&gt; getById(long actionId) {
+<span class="fc" id="L76">        return actionService.getById(actionId);</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull ActionDto&gt;&gt; validNextActions(
+            @GraphQLContext ActionDto actionDto, @GraphQLEnvironment ResolutionEnvironment environment) {
+<span class="fc" id="L82">        return dataLoaderService.load(environment, ValidNextActionsBatchLoader.class, actionDto, IdDto::getId);</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull RouteDto&gt;&gt; routes(
+            @GraphQLContext ActionDto actionDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L88">        return dataLoaderService.loadRelation(resolutionEnvironment, ActionRouteBatchLoader.class, actionDto);</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;PipelineDto&gt; forwardPipeline(
+            @GraphQLContext ActionDto actionDto, @GraphQLEnvironment ResolutionEnvironment environment) {
+<span class="fc" id="L94">        return dataLoaderService.load(</span>
+                environment,
+                PipelineBatchLoader.class,
+                actionDto,
+                &quot;forwardPipelineId&quot;,
+                ActionDto::getForwardPipelineId);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;PipelineDto&gt; returnPipeline(
+            @GraphQLContext ActionDto actionDto, @GraphQLEnvironment ResolutionEnvironment environment) {
+<span class="fc" id="L105">        return dataLoaderService.load(</span>
+                environment, PipelineBatchLoader.class, actionDto, &quot;returnPipelineId&quot;, ActionDto::getReturnPipelineId);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;PipelineDto&gt; acknowledgmentPipeline(
+            @GraphQLContext ActionDto actionDto, @GraphQLEnvironment ResolutionEnvironment environment) {
+<span class="fc" id="L112">        return dataLoaderService.load(</span>
+                environment,
+                PipelineBatchLoader.class,
+                actionDto,
+                &quot;acknowledgmentPipelineId&quot;,
+                ActionDto::getAcknowledgmentPipelineId);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextMessageMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.mapper</a> &gt; <span class="el_source">ContextMessageMapper.java</span></div><h1>ContextMessageMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.mapper;
+
+import com.evolvsys.app.core.mapper.DefaultMapperConfiguration;
+import com.evolvsys.nexuse2e.core.action.mapper.ContextActionMapper;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.repository.MessageRepository;
+import com.evolvsys.nexuse2e.core.model.MessageDirection;
+import com.evolvsys.nexuse2e.core.model.entity.MessageEntity;
+import com.evolvsys.nexuse2e.core.partner.mapper.ContextConnectionMapper;
+import com.evolvsys.nexuse2e.core.partner.mapper.ContextPartnerMapper;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import java.time.ZonedDateTime;
+import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * @author SvenBarden
+ * @since 30.01.2024
+ */
+@Mapper(
+        config = DefaultMapperConfiguration.class,
+        uses = {
+            ContextConversationMapper.class,
+            ContextMetaDataMapper.class,
+            ContextConnectionMapper.class,
+            ContextActionMapper.class,
+            ContextPayloadMapper.class,
+            ContextPartnerMapper.class
+        },
+        imports = ZonedDateTime.class)
+<span class="fc" id="L33">public abstract class ContextMessageMapper {</span>
+    private static final String UPDATE_ONLY_CONDITION = &quot;updateOnly&quot;;
+    private MessageRepository messageRepository;
+
+    @Autowired
+    protected void config(MessageRepository messageRepository) {
+<span class="fc" id="L39">        this.messageRepository = messageRepository;</span>
+<span class="fc" id="L40">    }</span>
+
+    public MessageEntity stringToEntity(String messageId) {
+<span class="fc" id="L43">        return messageRepository.findByMessageId(messageId).orElse(null);</span>
+    }
+
+    protected MessageDirection calculateDirection(MessageContext messageContext) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        return switch (messageContext.getSourcePartner().getPartnerType()) {</span>
+            case EXTERN -&gt;
+<span class="fc bfc" id="L49" title="All 2 branches covered.">                switch (messageContext.getTargetPartner().getPartnerType()) {</span>
+<span class="fc" id="L50">                    case EXTERN -&gt; MessageDirection.EXTERN_TO_EXTERN;</span>
+<span class="fc" id="L51">                    case INTERN -&gt; MessageDirection.EXTERN_TO_INTERN;</span>
+                };
+            case INTERN -&gt;
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">                switch (messageContext.getTargetPartner().getPartnerType()) {</span>
+<span class="fc" id="L55">                    case EXTERN -&gt; MessageDirection.INTERN_TO_EXTERN;</span>
+<span class="nc" id="L56">                    case INTERN -&gt; MessageDirection.INTERN_TO_INTERN;</span>
+                };
+        };
+    }
+
+    @Condition
+    @Named(UPDATE_ONLY_CONDITION)
+    protected boolean updateOnlyCondition(@MappingTarget MessageEntity messageEntity) {
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        return messageEntity.getId() == null;</span>
+    }
+
+    @Mapping(target = &quot;finished&quot;, ignore = true)
+    @Mapping(target = &quot;nextRequeue&quot;, ignore = true)
+    @Mapping(target = &quot;maxRetries&quot;, ignore = true)
+    @Mapping(target = &quot;targetPartner&quot;, ignore = true)
+    @Mapping(target = &quot;sourcePartner&quot;, ignore = true)
+    @Mapping(target = &quot;outboundAcknowledgment&quot;, ignore = true)
+    @Mapping(target = &quot;id&quot;, ignore = true)
+    @Mapping(target = &quot;version&quot;, ignore = true)
+    @Mapping(target = &quot;status&quot;, source = &quot;messageStatus&quot;)
+    @Mapping(target = &quot;sourceComponent&quot;, ignore = true)
+    @Mapping(target = &quot;sent&quot;, ignore = true)
+    @Mapping(target = &quot;referenceMessage&quot;, source = &quot;referenceMessageId&quot;)
+    @Mapping(target = &quot;metaDatas&quot;, source = &quot;metaData&quot;)
+    @Mapping(
+            target = &quot;messageId&quot;,
+            source = &quot;id&quot;,
+            conditionQualifiedByName = UPDATE_ONLY_CONDITION,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = &quot;lastUpdated&quot;, ignore = true)
+    @Mapping(target = &quot;lastTry&quot;, ignore = true)
+    @Mapping(
+            target = &quot;conversation&quot;,
+            source = &quot;conversationId&quot;) // TODO the messageQueue test fails if the condition here returns false at any
+    // point, needs further investigation
+    @Mapping(target = &quot;component&quot;, ignore = true)
+    @Mapping(target = &quot;action&quot;, ignore = true)
+    @Mapping(target = &quot;created&quot;, ignore = true)
+    public abstract void updateEntity(Message message, @MappingTarget MessageEntity messageEntity);
+
+    @Mapping(target = &quot;payloads&quot;, ignore = true)
+    @Mapping(target = &quot;finished&quot;, ignore = true)
+    @Mapping(target = &quot;nextRequeue&quot;, ignore = true)
+    @Mapping(target = &quot;maxRetries&quot;, ignore = true)
+    @Mapping(target = &quot;outboundAcknowledgment&quot;, ignore = true)
+    @Mapping(
+            target = &quot;targetPartner&quot;,
+            source = &quot;context.targetPartnerId&quot;,
+            conditionQualifiedByName = UPDATE_ONLY_CONDITION,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(
+            target = &quot;sourcePartner&quot;,
+            source = &quot;context.sourcePartnerId&quot;,
+            conditionQualifiedByName = UPDATE_ONLY_CONDITION,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = &quot;id&quot;, ignore = true)
+    @Mapping(target = &quot;version&quot;, ignore = true)
+    @Mapping(target = &quot;status&quot;, source = &quot;message.messageStatus&quot;)
+    @Mapping(target = &quot;sourceComponent&quot;, ignore = true)
+    @Mapping(target = &quot;sent&quot;, ignore = true)
+    @Mapping(target = &quot;referenceMessage&quot;, source = &quot;message.referenceMessageId&quot;)
+    @Mapping(target = &quot;metaDatas&quot;, source = &quot;message.metaData&quot;)
+    @Mapping(
+            target = &quot;messageId&quot;,
+            source = &quot;message.id&quot;,
+            conditionQualifiedByName = UPDATE_ONLY_CONDITION,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = &quot;lastUpdated&quot;, ignore = true)
+    @Mapping(target = &quot;lastTry&quot;, ignore = true)
+    @Mapping(
+            target = &quot;conversation&quot;,
+            source =
+                    &quot;message.conversationId&quot;) // TODO the messageQueue test fails if the condition here returns false at
+    // any point, needs further investigation
+    @Mapping(target = &quot;component&quot;, ignore = true)
+    @Mapping(
+            target = &quot;direction&quot;,
+            source = &quot;message.direction&quot;,
+            defaultExpression = &quot;java(calculateDirection(context))&quot;)
+    @Mapping(
+            target = &quot;action&quot;,
+            conditionQualifiedByName = UPDATE_ONLY_CONDITION,
+            nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    @Mapping(target = &quot;created&quot;, ignore = true)
+    public abstract void updateEntity(
+            Message message, MessageContext context, @MappingTarget MessageEntity messageEntity);
+
+    @InheritConfiguration
+    @Mapping(target = &quot;payloads&quot;, source = &quot;message.payloads&quot;)
+    public abstract void updateEntityWithPayloads(
+            Message message, MessageContext context, @MappingTarget MessageEntity messageEntity);
+
+    @InheritConfiguration(name = &quot;entityToMessage&quot;)
+    public abstract void updateMessage(MessageEntity messageEntity, @MappingTarget Message message);
+
+    @Mapping(target = &quot;id&quot;, source = &quot;messageId&quot;)
+    @Mapping(target = &quot;referenceMessageId&quot;, source = &quot;referenceMessage.messageId&quot;)
+    @Mapping(target = &quot;metaData&quot;, source = &quot;metaDatas&quot;)
+    @Mapping(target = &quot;messageStatus&quot;, source = &quot;status&quot;)
+    @Mapping(target = &quot;conversationId&quot;, source = &quot;conversation.conversationId&quot;)
+    public abstract Message entityToMessage(MessageEntity messageEntity);
+
+    @Mapping(target = &quot;newContext&quot;, ignore = true)
+    @Mapping(target = &quot;clientCertificate&quot;, ignore = true)
+    @Mapping(target = &quot;route&quot;, ignore = true)
+    @Mapping(target = &quot;targetPartnerId&quot;, source = &quot;targetPartner.partnerId&quot;)
+    @Mapping(target = &quot;sourcePartnerId&quot;, source = &quot;sourcePartner.partnerId&quot;)
+    @Mapping(target = &quot;sourcePartner&quot;, ignore = true)
+    @Mapping(target = &quot;sourceMessage&quot;, ignore = true)
+    @Mapping(target = &quot;sourceData&quot;, ignore = true)
+    @Mapping(target = &quot;sender&quot;, ignore = true)
+    @Mapping(target = &quot;returnMessage&quot;, ignore = true)
+    @Mapping(target = &quot;returnData&quot;, ignore = true)
+    @Mapping(target = &quot;messageErrors&quot;, ignore = true)
+    @Mapping(target = &quot;errorMessage&quot;, ignore = true)
+    @Mapping(target = &quot;errorData&quot;, ignore = true)
+    @Mapping(target = &quot;doReturnPipelines&quot;, ignore = true)
+    @Mapping(target = &quot;choreographyId&quot;, source = &quot;conversation.choreography.choreographyId&quot;)
+    @Mapping(target = &quot;actionId&quot;, source = &quot;action.actionId&quot;)
+    @Mapping(target = &quot;acknowledgmentMessage&quot;, ignore = true)
+    @Mapping(target = &quot;acknowledgmentData&quot;, ignore = true)
+    public abstract void updateContext(MessageEntity messageEntity, @MappingTarget MessageContext messageContext);
+
+    @BeforeMapping
+    protected void beforeUpdateEntity(
+            Message message, MessageContext context, @MappingTarget MessageEntity messageEntity) {
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        for (ContextPayload payload : message.getPayloads()) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            if (StringUtils.isBlank(payload.getContentId())) {</span>
+<span class="fc" id="L184">                payload.setContentId(message.getId() + &quot;_&quot; + payload.getSequenceNumber());</span>
+            }
+<span class="fc" id="L186">        }</span>
+<span class="fc" id="L187">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

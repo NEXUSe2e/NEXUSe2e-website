@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpOauth2AuthenticationSupportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support</a> &gt; <span class="el_source">HttpOauth2AuthenticationSupportService.java</span></div><h1>HttpOauth2AuthenticationSupportService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support;
+
+import com.evolvsys.nexuse2e.core.component.BeanFactoryAware;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.service.http.WebClientContext;
+import com.evolvsys.nexuse2e.core.service.http.client.reactive.NexusWebClientFactory;
+import com.evolvsys.nexuse2e.core.service.http.client.rest.NexusRestClientFactory;
+import java.util.List;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.http.converter.FormHttpMessageConverter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.client.*;
+import org.springframework.security.oauth2.client.endpoint.DefaultOAuth2TokenRequestHeadersConverter;
+import org.springframework.security.oauth2.client.endpoint.OAuth2ClientCredentialsGrantRequest;
+import org.springframework.security.oauth2.client.endpoint.RestClientClientCredentialsTokenResponseClient;
+import org.springframework.security.oauth2.client.endpoint.WebClientReactiveClientCredentialsTokenResponseClient;
+import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
+import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.registration.InMemoryReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.client.OAuth2ClientHttpRequestInterceptor;
+import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.core.AuthenticationMethod;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.OAuth2AuthorizationException;
+import org.springframework.security.oauth2.core.http.converter.OAuth2AccessTokenResponseHttpMessageConverter;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+/**
+ * @author SvenBarden
+ * @since 11.06.2024
+ */
+<span class="fc" id="L41">@Slf4j</span>
+<span class="fc" id="L42">public class HttpOauth2AuthenticationSupportService extends HttpAuthenticationSupportService</span>
+        implements BeanFactoryAware {
+    private static final String PARAM_OAUTH2_TOKEN_URL = &quot;oauth2_token_url&quot;;
+    private static final String PARAM_OAUTH2_CLIENT_ID = &quot;oauth2_client_id&quot;;
+    private static final String PARAM_OAUTH2_CLIENT_SECRET = &quot;oauth2_client_secret&quot;;
+    private static final String PARAM_OAUTH2_SCOPES = &quot;oauth2_scopes&quot;;
+    private static final String PARAM_OAUTH2_ESCAPE_BASIC_SECRET = &quot;oauth2_escape_basic_secret&quot;;
+    private static final String PARAM_OAUTH2_AUTHORIZATION_GRANT_TYPE = &quot;oauth2_authorization_grant_type&quot;;
+    private static final String PARAM_OAUTH2_CLIENT_AUTHENTICATION_METHOD = &quot;oauth2_client_authentication_method&quot;;
+    private static final String PARAM_OAUTH2_USER_INFO_AUTHENTICATION_METHOD = &quot;oauth2_user_info_authentication_method&quot;;
+    private static final String PARAM_OAUTH2_DISABLE_HOST_NAME_VERIFICATION = &quot;oauth2_disable_host_name_verification&quot;;
+    private BeanFactory beanFactory;
+
+    private ClientRegistration createClientRegistration() {
+<span class="fc" id="L56">        return ClientRegistration.withRegistrationId(getServiceId())</span>
+<span class="fc" id="L57">                .tokenUri(parameters.value(PARAM_OAUTH2_TOKEN_URL))</span>
+<span class="fc" id="L58">                .clientId(parameters.value(PARAM_OAUTH2_CLIENT_ID))</span>
+<span class="fc" id="L59">                .clientSecret(parameters.value(PARAM_OAUTH2_CLIENT_SECRET))</span>
+<span class="fc" id="L60">                .authorizationGrantType(</span>
+<span class="fc" id="L61">                        new AuthorizationGrantType(parameters.value(PARAM_OAUTH2_AUTHORIZATION_GRANT_TYPE)))</span>
+<span class="fc" id="L62">                .scope((List&lt;String&gt;) parameters.value(PARAM_OAUTH2_SCOPES))</span>
+<span class="fc" id="L63">                .clientAuthenticationMethod(</span>
+<span class="fc" id="L64">                        new ClientAuthenticationMethod(parameters.value(PARAM_OAUTH2_CLIENT_AUTHENTICATION_METHOD)))</span>
+<span class="fc" id="L65">                .userInfoAuthenticationMethod(</span>
+<span class="fc" id="L66">                        new AuthenticationMethod(parameters.value(PARAM_OAUTH2_USER_INFO_AUTHENTICATION_METHOD)))</span>
+<span class="fc" id="L67">                .build();</span>
+    }
+
+    private DefaultOAuth2TokenRequestHeadersConverter&lt;OAuth2ClientCredentialsGrantRequest&gt; createHeadersConverter() {
+<span class="fc" id="L71">        DefaultOAuth2TokenRequestHeadersConverter&lt;OAuth2ClientCredentialsGrantRequest&gt; headersConverter =</span>
+                new DefaultOAuth2TokenRequestHeadersConverter&lt;&gt;();
+<span class="fc" id="L73">        headersConverter.setEncodeClientCredentials(parameters.value(PARAM_OAUTH2_ESCAPE_BASIC_SECRET));</span>
+<span class="fc" id="L74">        return headersConverter;</span>
+    }
+
+    @Override
+    public void addAuthentication(WebClient.Builder webClientBuilder) throws NexusException {
+<span class="fc" id="L79">        ClientRegistration clientRegistration = createClientRegistration();</span>
+<span class="fc" id="L80">        InMemoryReactiveClientRegistrationRepository registrationRepository =</span>
+                new InMemoryReactiveClientRegistrationRepository(clientRegistration);
+<span class="fc" id="L82">        InMemoryReactiveOAuth2AuthorizedClientService clientService =</span>
+                new InMemoryReactiveOAuth2AuthorizedClientService(registrationRepository);
+<span class="fc" id="L84">        WebClientReactiveClientCredentialsTokenResponseClient tokenResponseClient =</span>
+                new WebClientReactiveClientCredentialsTokenResponseClient();
+
+<span class="fc" id="L87">        NexusWebClientFactory webClientFactory = beanFactory.getBean(NexusWebClientFactory.class);</span>
+<span class="fc" id="L88">        WebClientContext oauth2Context = webClientFactory</span>
+<span class="fc" id="L89">                .createContextBuilder()</span>
+<span class="fc" id="L90">                .ssl(true)</span>
+<span class="fc" id="L91">                .disableHostNameVerification(parameters.value(PARAM_OAUTH2_DISABLE_HOST_NAME_VERIFICATION))</span>
+<span class="fc" id="L92">                .build();</span>
+<span class="fc" id="L93">        WebClient.Builder webClient = webClientFactory.createWebClient(oauth2Context);</span>
+<span class="fc" id="L94">        tokenResponseClient.setWebClient(webClient.build());</span>
+
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">        if (&quot;client_secret_basic&quot;.equals(parameters.value(PARAM_OAUTH2_CLIENT_AUTHENTICATION_METHOD))) {</span>
+<span class="fc" id="L97">            tokenResponseClient.setHeadersConverter(createHeadersConverter());</span>
+        }
+
+<span class="fc" id="L100">        ReactiveOAuth2AuthorizedClientProvider clientProvider = ReactiveOAuth2AuthorizedClientProviderBuilder.builder()</span>
+<span class="fc" id="L101">                .clientCredentials(clientCredentialsGrantBuilder -&gt; clientCredentialsGrantBuilder</span>
+<span class="fc" id="L102">                        .accessTokenResponseClient(tokenResponseClient)</span>
+<span class="fc" id="L103">                        .build())</span>
+<span class="fc" id="L104">                .build();</span>
+
+<span class="fc" id="L106">        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager clientManager =</span>
+                new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(registrationRepository, clientService);
+<span class="fc" id="L108">        clientManager.setAuthorizedClientProvider(clientProvider);</span>
+<span class="fc" id="L109">        ServerOAuth2AuthorizedClientExchangeFilterFunction clientFilter =</span>
+                new ServerOAuth2AuthorizedClientExchangeFilterFunction(clientManager);
+
+<span class="fc" id="L112">        RemoveAuthorizedClientReactiveOAuth2AuthorizationFailureHandler failureHandler =</span>
+                new RemoveAuthorizedClientReactiveOAuth2AuthorizationFailureHandler(
+<span class="pc" id="L114">                        (clientRegistrationId, principal, attributes) -&gt; Mono.empty()) {</span>
+                    @Override
+                    public Mono&lt;Void&gt; onAuthorizationFailure(
+                            OAuth2AuthorizationException authorizationException,
+                            Authentication principal,
+                            Map&lt;String, Object&gt; attributes) {
+<span class="fc" id="L120">                        LOGGER.error(&quot;error using oauth2 authentication {}&quot;, attributes, authorizationException);</span>
+<span class="fc" id="L121">                        return super.onAuthorizationFailure(authorizationException, principal, attributes);</span>
+                    }
+                };
+
+<span class="fc" id="L125">        clientFilter.setAuthorizationFailureHandler(failureHandler);</span>
+<span class="fc" id="L126">        clientManager.setAuthorizationFailureHandler(failureHandler);</span>
+<span class="fc" id="L127">        clientFilter.setDefaultClientRegistrationId(getServiceId());</span>
+
+<span class="fc" id="L129">        webClientBuilder.filter(clientFilter);</span>
+<span class="fc" id="L130">    }</span>
+
+    @Override
+    public void addAuthentication(RestClient.Builder restClientBuilder) throws NexusException {
+<span class="fc" id="L134">        NexusRestClientFactory restClientFactory = beanFactory.getBean(NexusRestClientFactory.class);</span>
+
+<span class="fc" id="L136">        ClientRegistration clientRegistration = createClientRegistration();</span>
+<span class="fc" id="L137">        InMemoryClientRegistrationRepository registrationRepository =</span>
+                new InMemoryClientRegistrationRepository(clientRegistration);
+<span class="fc" id="L139">        InMemoryOAuth2AuthorizedClientService clientService =</span>
+                new InMemoryOAuth2AuthorizedClientService(registrationRepository);
+
+<span class="fc" id="L142">        ClientCredentialsOAuth2AuthorizedClientProvider clientProvider =</span>
+                new ClientCredentialsOAuth2AuthorizedClientProvider();
+<span class="fc" id="L144">        RestClientClientCredentialsTokenResponseClient tokenResponseClient =</span>
+                new RestClientClientCredentialsTokenResponseClient();
+<span class="fc" id="L146">        clientProvider.setAccessTokenResponseClient(tokenResponseClient);</span>
+
+<span class="fc" id="L148">        WebClientContext oauth2Context = restClientFactory</span>
+<span class="fc" id="L149">                .createContextBuilder()</span>
+<span class="fc" id="L150">                .ssl(true)</span>
+<span class="fc" id="L151">                .disableHostNameVerification(parameters.value(PARAM_OAUTH2_DISABLE_HOST_NAME_VERIFICATION))</span>
+<span class="fc" id="L152">                .build();</span>
+
+<span class="fc" id="L154">        tokenResponseClient.setRestClient(restClientFactory</span>
+<span class="fc" id="L155">                .createClientBuilder(oauth2Context)</span>
+<span class="fc" id="L156">                .messageConverters(</span>
+<span class="fc" id="L157">                        List.of(new FormHttpMessageConverter(), new OAuth2AccessTokenResponseHttpMessageConverter()))</span>
+<span class="fc" id="L158">                .defaultStatusHandler(new OAuth2ErrorResponseErrorHandler())</span>
+<span class="fc" id="L159">                .build());</span>
+
+<span class="fc" id="L161">        tokenResponseClient.setHeadersConverter(createHeadersConverter());</span>
+
+<span class="fc" id="L163">        AuthorizedClientServiceOAuth2AuthorizedClientManager clientManager =</span>
+                new AuthorizedClientServiceOAuth2AuthorizedClientManager(registrationRepository, clientService);
+
+<span class="fc" id="L166">        clientManager.setAuthorizedClientProvider(clientProvider);</span>
+
+<span class="fc" id="L168">        OAuth2ClientHttpRequestInterceptor requestInterceptor =</span>
+<span class="fc" id="L169">                createRequestInterceptor(clientManager, clientRegistration);</span>
+
+<span class="fc" id="L171">        restClientBuilder.requestInterceptor(requestInterceptor);</span>
+<span class="fc" id="L172">    }</span>
+
+    private static OAuth2ClientHttpRequestInterceptor createRequestInterceptor(
+            OAuth2AuthorizedClientManager clientManager, ClientRegistration clientRegistration) {
+<span class="fc" id="L176">        OAuth2ClientHttpRequestInterceptor requestInterceptor = new OAuth2ClientHttpRequestInterceptor(clientManager);</span>
+<span class="fc" id="L177">        requestInterceptor.setClientRegistrationIdResolver(request -&gt; clientRegistration.getRegistrationId());</span>
+<span class="fc" id="L178">        requestInterceptor.setPrincipalResolver(request -&gt; new AbstractAuthenticationToken(null) {</span>
+
+            @Override
+            public Object getCredentials() {
+<span class="nc" id="L182">                return &quot;&quot;;</span>
+            }
+
+            @Override
+            public Object getPrincipal() {
+<span class="fc" id="L187">                return clientRegistration.getClientId();</span>
+            }
+        });
+<span class="fc" id="L190">        return requestInterceptor;</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L195">        return List.of(</span>
+<span class="fc" id="L196">                ParameterDefinition.builder()</span>
+<span class="fc" id="L197">                        .name(PARAM_OAUTH2_TOKEN_URL)</span>
+<span class="fc" id="L198">                        .displayName(&quot;Oauth2 Access token url&quot;)</span>
+<span class="fc" id="L199">                        .description(&quot;URL to get the oauth2 token from&quot;)</span>
+<span class="fc" id="L200">                        .required(true)</span>
+<span class="fc" id="L201">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L202">                        .build(),</span>
+<span class="fc" id="L203">                ParameterDefinition.builder()</span>
+<span class="fc" id="L204">                        .name(PARAM_OAUTH2_CLIENT_ID)</span>
+<span class="fc" id="L205">                        .displayName(&quot;Oauth2 client id&quot;)</span>
+<span class="fc" id="L206">                        .description(&quot;The client id for retrieving the access token&quot;)</span>
+<span class="fc" id="L207">                        .required(true)</span>
+<span class="fc" id="L208">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L209">                        .build(),</span>
+<span class="fc" id="L210">                ParameterDefinition.builder()</span>
+<span class="fc" id="L211">                        .name(PARAM_OAUTH2_CLIENT_SECRET)</span>
+<span class="fc" id="L212">                        .displayName(&quot;Oauth2 client secret&quot;)</span>
+<span class="fc" id="L213">                        .description(&quot;The client secret for retrieving the access token&quot;)</span>
+<span class="fc" id="L214">                        .required(true)</span>
+<span class="fc" id="L215">                        .type(ParameterType.PASSWORD)</span>
+<span class="fc" id="L216">                        .build(),</span>
+<span class="fc" id="L217">                ParameterDefinition.builder()</span>
+<span class="fc" id="L218">                        .name(PARAM_OAUTH2_SCOPES)</span>
+<span class="fc" id="L219">                        .displayName(&quot;Oauth2 scopes&quot;)</span>
+<span class="fc" id="L220">                        .description(&quot;Scopes to request for the oauth2 access token&quot;)</span>
+<span class="fc" id="L221">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L222">                        .build(),</span>
+<span class="fc" id="L223">                ParameterDefinition.builder()</span>
+<span class="fc" id="L224">                        .name(PARAM_OAUTH2_ESCAPE_BASIC_SECRET)</span>
+<span class="fc" id="L225">                        .displayName(&quot;Escape oauth2 basic auth&quot;)</span>
+<span class="fc" id="L226">                        .description(&quot;Escape the client id and client secret for the oauth2 token request.&quot;)</span>
+<span class="fc" id="L227">                        .required(true)</span>
+<span class="fc" id="L228">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L229">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L230">                        .build(),</span>
+<span class="fc" id="L231">                ParameterDefinition.builder()</span>
+<span class="fc" id="L232">                        .name(PARAM_OAUTH2_AUTHORIZATION_GRANT_TYPE)</span>
+<span class="fc" id="L233">                        .displayName(&quot;Authorization grant type&quot;)</span>
+<span class="fc" id="L234">                        .description(&quot;Grant type used for the oauth2 token request&quot;)</span>
+<span class="fc" id="L235">                        .required(true)</span>
+<span class="fc" id="L236">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L237">                        .option(&quot;authorization_code&quot;)</span>
+<span class="fc" id="L238">                        .option(&quot;refresh_token&quot;)</span>
+<span class="fc" id="L239">                        .option(&quot;client_credentials&quot;)</span>
+<span class="fc" id="L240">                        .defaultValue(&quot;client_credentials&quot;)</span>
+<span class="fc" id="L241">                        .build(),</span>
+<span class="fc" id="L242">                ParameterDefinition.builder()</span>
+<span class="fc" id="L243">                        .name(PARAM_OAUTH2_CLIENT_AUTHENTICATION_METHOD)</span>
+<span class="fc" id="L244">                        .displayName(&quot;Client authentication method&quot;)</span>
+<span class="fc" id="L245">                        .description(&quot;Authentication method used to get the oauth2 token&quot;)</span>
+<span class="fc" id="L246">                        .required(true)</span>
+<span class="fc" id="L247">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L248">                        .option(&quot;client_secret_basic&quot;)</span>
+<span class="fc" id="L249">                        .option(&quot;client_secret_post&quot;)</span>
+<span class="fc" id="L250">                        .option(&quot;client_secret_jwt&quot;)</span>
+<span class="fc" id="L251">                        .option(&quot;private_key_jwt&quot;)</span>
+<span class="fc" id="L252">                        .option(&quot;none&quot;)</span>
+<span class="fc" id="L253">                        .defaultValue(&quot;client_secret_basic&quot;)</span>
+<span class="fc" id="L254">                        .build(),</span>
+<span class="fc" id="L255">                ParameterDefinition.builder()</span>
+<span class="fc" id="L256">                        .name(PARAM_OAUTH2_USER_INFO_AUTHENTICATION_METHOD)</span>
+<span class="fc" id="L257">                        .displayName(&quot;User info authentication method&quot;)</span>
+<span class="fc" id="L258">                        .description(&quot;he authentication method used when sending bearer access tokens&quot;)</span>
+<span class="fc" id="L259">                        .required(true)</span>
+<span class="fc" id="L260">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L261">                        .option(&quot;header&quot;)</span>
+<span class="fc" id="L262">                        .option(&quot;form&quot;)</span>
+<span class="fc" id="L263">                        .option(&quot;query&quot;)</span>
+<span class="fc" id="L264">                        .defaultValue(&quot;header&quot;)</span>
+<span class="fc" id="L265">                        .build(),</span>
+<span class="fc" id="L266">                ParameterDefinition.builder()</span>
+<span class="fc" id="L267">                        .name(PARAM_OAUTH2_DISABLE_HOST_NAME_VERIFICATION)</span>
+<span class="fc" id="L268">                        .displayName(&quot;Disable ssl host name verification&quot;)</span>
+<span class="fc" id="L269">                        .description(&quot;Disables the ssl host name verification for the oauth2 token request&quot;)</span>
+<span class="fc" id="L270">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L271">                        .build());</span>
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) {
+<span class="fc" id="L276">        this.beanFactory = beanFactory;</span>
+<span class="fc" id="L277">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

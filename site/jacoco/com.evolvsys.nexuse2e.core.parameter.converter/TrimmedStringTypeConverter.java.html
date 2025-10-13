@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TrimmedStringTypeConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.parameter.converter</a> &gt; <span class="el_source">TrimmedStringTypeConverter.java</span></div><h1>TrimmedStringTypeConverter.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.parameter.converter;
+
+import com.evolvsys.nexuse2e.core.model.entity.ParameterEntity;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author Florian Drees
+ * @since 12.01.2024
+ */
+@Component
+<span class="fc" id="L11">public class TrimmedStringTypeConverter extends StringTypeConverter {</span>
+    @Override
+    public String toDtoValue(ParameterEntity parameterEntity) {
+<span class="fc" id="L14">        String dtoValue = super.toDtoValue(parameterEntity);</span>
+<span class="fc bfc" id="L15" title="All 2 branches covered.">        if (dtoValue != null) {</span>
+<span class="fc" id="L16">            dtoValue = dtoValue.trim();</span>
+        }
+<span class="fc" id="L18">        return dtoValue;</span>
+    }
+
+    @Override
+    public void updateFromDto(ParameterEntity parameterEntity, String dtoValue) {
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        super.updateFromDto(parameterEntity, dtoValue == null ? null : dtoValue.trim());</span>
+<span class="fc" id="L24">    }</span>
+
+    @Override
+    public String toDtoValue(String contextValue) {
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        return super.toDtoValue(contextValue == null ? null : contextValue.trim());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

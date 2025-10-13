@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FileSaveSenderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.outbound</a> &gt; <span class="el_source">FileSaveSenderService.java</span></div><h1>FileSaveSenderService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.outbound;
+
+import static com.evolvsys.nexuse2e.impl.util.FileSaveUtils.persistPayloads;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.service.NexusOutflowService;
+import com.evolvsys.nexuse2e.core.utils.PatternReplaceUtils;
+import com.evolvsys.nexuse2e.impl.util.FileSaveAware;
+import com.evolvsys.nexuse2e.internal.Message;
+import java.io.IOException;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.utils.StringUtils;
+
+/**
+ * @author GuidoEsch
+ * @since 02.02.2024
+ */
+<span class="fc" id="L23">@Slf4j</span>
+<span class="fc" id="L24">public class FileSaveSenderService extends NexusOutflowService implements FileSaveAware {</span>
+
+    @Override
+    public MessageContext executeInternal(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L28">        LOGGER.trace(&quot;running file save sender.&quot;);</span>
+<span class="fc" id="L29">        MessageContext messageContext = executionContext.getMessageContext();</span>
+<span class="fc" id="L30">        Message message = executionContext.getMessage();</span>
+
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (StringUtils.isBlank(parameters.value(PARAM_TARGET_DIRECTORY))) {</span>
+<span class="nc" id="L33">            throw new IllegalArgumentException(&quot;parameter 'Directory' must be provided to the sender service!&quot;);</span>
+        }
+
+<span class="fc" id="L36">        String directoryString = parameters.value(PARAM_TARGET_DIRECTORY);</span>
+<span class="fc" id="L37">        LOGGER.trace(&quot;replacing directory pattern {}&quot;, directoryString);</span>
+<span class="fc" id="L38">        directoryString = PatternReplaceUtils.replaceContextTokens(directoryString, executionContext);</span>
+<span class="fc" id="L39">        directoryString = directoryString.replace('\\', '/');</span>
+
+        try {
+<span class="fc" id="L42">            String filePattern = parameters.value(PARAM_TARGET_FILENAME);</span>
+<span class="fc" id="L43">            persistPayloads(</span>
+<span class="fc" id="L44">                    executionContext, message, directoryString, filePattern, parameters.value(PARAM_CREATE_DIRECTORY));</span>
+
+<span class="nc" id="L46">        } catch (IOException e) {</span>
+<span class="nc" id="L47">            throw new NexusException(</span>
+<span class="nc" id="L48">                    NexusError.builder()</span>
+<span class="nc" id="L49">                            .message(&quot;Error while writing file to disk&quot;)</span>
+<span class="nc" id="L50">                            .extension(&quot;reason&quot;, e.getMessage())</span>
+<span class="nc" id="L51">                            .build(),</span>
+                    e);
+<span class="fc" id="L53">        }</span>
+<span class="fc" id="L54">        return messageContext;</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L59">        return List.of(getTargetDirectory(), getTargetFilename(), getCreateMissingDirectories());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

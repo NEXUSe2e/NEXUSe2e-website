@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LogRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.logging.repository</a> &gt; <span class="el_source">LogRepository.java</span></div><h1>LogRepository.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.logging.repository;
+
+import com.evolvsys.nexuse2e.core.logging.model.LogEntity;
+import com.evolvsys.nexuse2e.core.logging.model.LogFilter;
+import com.evolvsys.nexuse2e.core.logging.model.QLogEntity;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.lang.Nullable;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 04.01.2024
+ */
+public interface LogRepository extends JpaRepository&lt;LogEntity, Long&gt;, QuerydslPredicateExecutor&lt;LogEntity&gt; {
+
+    default Page&lt;LogEntity&gt; findAllToRead(
+            Pageable pageable, @Nullable LogFilter filter, String timeZone, BooleanExpression securityPredicate) {
+<span class="nc" id="L24">        return findAll(securityPredicate.and(QLogEntity.logEntity.filter(filter, timeZone)), pageable);</span>
+    }
+
+    @Transactional
+    @Modifying
+    @Query(
+            &quot;update LogEntity l set l.messageId = :messageId where l.mdcId = :mdcId and l.inMessageContext = true and (l.messageId is null or l.messageId != :messageId)&quot;)
+    int updateMessageIdByMdcId(String messageId, String mdcId);
+
+    @Transactional
+    @Modifying
+    @Query(
+            &quot;update LogEntity l set l.messageId = NULL, l.conversationId = NULL where l.mdcId = :mdcId and l.messageId = :messageId&quot;)
+    int removeMessageIdByMdcId(String mdcId, String messageId);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

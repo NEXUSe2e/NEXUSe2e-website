@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonToCsvTransformerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">JsonToCsvTransformerService.java</span></div><h1>JsonToCsvTransformerService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.component.BeanFactoryAware;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.KeyValue;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.BeanFactory;
+
+/**
+ * Converts json payload's to csv using a json field/csv column mapping.
+ *
+ * @author Julian Drees
+ * @since 08.09.2025
+ */
+<span class="fc" id="L32">@Slf4j</span>
+<span class="fc" id="L33">public class JsonToCsvTransformerService extends TransformatorSupportService implements BeanFactoryAware {</span>
+    static final String PARAM_FIELD_COLUMN_MAPPING = &quot;field_column_mapping&quot;;
+    static final String PARAM_INCLUDE_HEADERS = &quot;include_headers&quot;;
+    static final String PARAM_INCLUDE_ORIGINAL_PAYLOAD = &quot;include_original_payload&quot;;
+    static final String PARAM_CHARSET = &quot;charset&quot;;
+    static final String PARAM_CSV_COLUMN_SEPARATOR = &quot;csv_column_separator&quot;;
+
+    static final String METADATA_ORIGINAL_PAYLOAD_KEY = &quot;originalPayload&quot;;
+
+    @Setter
+    private BeanFactory beanFactory;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L47">        return List.of(</span>
+<span class="fc" id="L48">                ParameterDefinition.builder()</span>
+<span class="fc" id="L49">                        .name(PARAM_FIELD_COLUMN_MAPPING)</span>
+<span class="fc" id="L50">                        .displayName(&quot;Json field &amp; CSV column&quot;)</span>
+<span class="fc" id="L51">                        .description(</span>
+                                &quot;Mapping of the json field to the csv column (required even if the header line should not be included in the csv).&quot;)
+<span class="fc" id="L53">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L54">                        .build(),</span>
+<span class="fc" id="L55">                ParameterDefinition.builder()</span>
+<span class="fc" id="L56">                        .name(PARAM_INCLUDE_HEADERS)</span>
+<span class="fc" id="L57">                        .displayName(&quot;Include column headers in csv?&quot;)</span>
+<span class="fc" id="L58">                        .description(</span>
+                                &quot;Whether the column names should be included as an additional first line in the csv result.&quot;)
+<span class="fc" id="L60">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L61">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L62">                        .build(),</span>
+<span class="fc" id="L63">                ParameterDefinition.builder()</span>
+<span class="fc" id="L64">                        .name(PARAM_INCLUDE_ORIGINAL_PAYLOAD)</span>
+<span class="fc" id="L65">                        .displayName(&quot;Include original payload?&quot;)</span>
+<span class="fc" id="L66">                        .description(&quot;Add the original payload (json) as metadata to the transformed payload?&quot;)</span>
+<span class="fc" id="L67">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L68">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L69">                        .build(),</span>
+<span class="fc" id="L70">                ParameterDefinition.builder()</span>
+<span class="fc" id="L71">                        .name(PARAM_CHARSET)</span>
+<span class="fc" id="L72">                        .displayName(&quot;Charset&quot;)</span>
+<span class="fc" id="L73">                        .description(&quot;Charset for the csv payload. Defaults to UTF-8.&quot;)</span>
+<span class="fc" id="L74">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L75">                        .defaultValue(StandardCharsets.UTF_8.name())</span>
+<span class="fc" id="L76">                        .build(),</span>
+<span class="fc" id="L77">                ParameterDefinition.builder()</span>
+<span class="fc" id="L78">                        .name(PARAM_CSV_COLUMN_SEPARATOR)</span>
+<span class="fc" id="L79">                        .displayName(&quot;CSV column separator&quot;)</span>
+<span class="fc" id="L80">                        .description(&quot;Character for separating the csv columns.&quot;)</span>
+<span class="fc" id="L81">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L82">                        .defaultValue(&quot;,&quot;)</span>
+<span class="fc" id="L83">                        .build());</span>
+    }
+
+    @Override
+    public List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+<span class="fc" id="L88">        List&lt;KeyValue&lt;String, String&gt;&gt; fieldColumnMappings = getParameters().value(PARAM_FIELD_COLUMN_MAPPING);</span>
+<span class="fc" id="L89">        Charset charset = Charset.forName(getParameters().value(PARAM_CHARSET));</span>
+<span class="fc" id="L90">        boolean includeHeaders = getParameters().value(PARAM_INCLUDE_HEADERS);</span>
+<span class="fc" id="L91">        boolean includeOriginalPayload = getParameters().value(PARAM_INCLUDE_ORIGINAL_PAYLOAD);</span>
+<span class="fc" id="L92">        char columnSeparator = ((String) getParameters().value(PARAM_CSV_COLUMN_SEPARATOR)).charAt(0);</span>
+
+<span class="fc" id="L94">        if (fieldColumnMappings.stream()</span>
+<span class="fc" id="L95">                .map(keyValue -&gt; List.of(keyValue.getKey(), keyValue.getValue()))</span>
+<span class="fc" id="L96">                .flatMap(Collection::stream)</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                .anyMatch(StringUtils::isBlank)) {</span>
+<span class="fc" id="L98">            throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L99">                    .message(&quot;A unique and non-blank json &lt;&gt; csv field/column mapping is required.&quot;)</span>
+<span class="fc" id="L100">                    .build());</span>
+        }
+<span class="fc" id="L102">        ObjectMapper objectMapper = beanFactory.getBean(ObjectMapper.class);</span>
+
+<span class="fc" id="L104">        JsonToCsvReader jsonReader = new JsonToCsvReader(objectMapper, fieldColumnMappings);</span>
+<span class="fc" id="L105">        JsonToCsvWriter csvWriter = new JsonToCsvWriter(fieldColumnMappings, includeHeaders, charset, columnSeparator);</span>
+
+<span class="fc" id="L107">        List&lt;ContextPayload&gt; transformedPayloads = new ArrayList&lt;&gt;(payloads.size());</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        for (ContextPayload originalPayload : payloads) {</span>
+<span class="fc" id="L109">            Iterator&lt;Map&lt;String, Optional&lt;Object&gt;&gt;&gt; recordIterator = jsonReader.iterator(originalPayload);</span>
+
+            try {
+<span class="fc" id="L112">                PayloadContent payloadContent = csvWriter.write(recordIterator);</span>
+<span class="fc" id="L113">                ContextPayload contextPayload = ContextPayload.builder()</span>
+<span class="fc" id="L114">                        .contentId(originalPayload.getContentId())</span>
+<span class="fc" id="L115">                        .content(payloadContent)</span>
+<span class="fc" id="L116">                        .size(payloadContent.getSize())</span>
+<span class="fc" id="L117">                        .encoding(StandardCharsets.UTF_8.name())</span>
+<span class="fc" id="L118">                        .contentType(&quot;text/csv&quot;)</span>
+<span class="fc" id="L119">                        .build();</span>
+
+<span class="pc bpc" id="L121" title="1 of 2 branches missed.">                if (includeOriginalPayload) {</span>
+<span class="fc" id="L122">                    LOGGER.debug(&quot;Adding originalPayload to payload '{}'.&quot;, contextPayload.getContentId());</span>
+<span class="fc" id="L123">                    contextPayload.getMetaData().add(METADATA_ORIGINAL_PAYLOAD_KEY, originalPayload);</span>
+                }
+
+<span class="fc" id="L126">                transformedPayloads.add(contextPayload);</span>
+<span class="fc" id="L127">                LOGGER.info(&quot;Successfully transformed payload '{}' from json to csv.&quot;, contextPayload.getContentId());</span>
+<span class="nc" id="L128">            } catch (IOException ex) {</span>
+<span class="nc" id="L129">                throw new NexusException(</span>
+<span class="nc" id="L130">                        NexusError.builder()</span>
+<span class="nc" id="L131">                                .message(&quot;Failed to serialize values into csv.&quot;)</span>
+<span class="nc" id="L132">                                .build(),</span>
+                        ex);
+<span class="fc" id="L134">            }</span>
+<span class="fc" id="L135">        }</span>
+<span class="fc" id="L136">        return transformedPayloads;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

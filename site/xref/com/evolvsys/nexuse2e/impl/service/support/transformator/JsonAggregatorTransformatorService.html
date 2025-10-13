@@ -1,0 +1,155 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>JsonAggregatorTransformatorService xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../../apidocs/com/evolvsys/nexuse2e/impl/service/support/transformator/JsonAggregatorTransformatorService.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.impl.service.support.transformator;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.exception.NexusException;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.parameter.ParameterType;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.ContextPayload;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> java.util.ArrayList;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> java.util.Collection;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> lombok.extern.slf4j.Slf4j;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> org.apache.commons.collections4.CollectionUtils;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> org.apache.commons.collections4.ListUtils;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_javadoccomment"> * Aggregates json payloads into one or more json payloads and optionally adds a general header to the new generated payload</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_javadoccomment"> * @author SvenBarden</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment"> * @see JsonAggregatorProcessor</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment"> * @since 08.04.2025</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  @Slf4j
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="JsonAggregatorTransformatorService" href="../../../../../../../com/evolvsys/nexuse2e/impl/service/support/transformator/JsonAggregatorTransformatorService.html#JsonAggregatorTransformatorService">JsonAggregatorTransformatorService</a> <strong class="jxr_keyword">extends</strong> <a name="TransformatorSupportService" href="../../../../../../../com/evolvsys/nexuse2e/impl/service/support/transformator/TransformatorSupportService.html#TransformatorSupportService">TransformatorSupportService</a> {
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_HEADER_ATTRIBUTES = <span class="jxr_string">"header_attributes"</span>;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_ADD_HEADER = <span class="jxr_string">"add_header"</span>;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_HEADER_NAME = <span class="jxr_string">"header_name"</span>;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_USE_CONTAINER = <span class="jxr_string">"use_container"</span>;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_PAYLOAD_CONTAINER_NAME = <span class="jxr_string">"payload_container_name"</span>;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_USE_INNER_CONTAINER = <span class="jxr_string">"use_inner_container"</span>;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_INNER_CONTAINER_NAME = <span class="jxr_string">"inner_container_name"</span>;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_PAYLOADS_PER_MESSAGE = <span class="jxr_string">"payloads_per_message"</span>;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_ATTRIBUTES_TO_META_DATA = <span class="jxr_string">"attributes_to_meta_data"</span>;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>      <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String PARAM_COPY_PAYLOAD_META_DATA = <span class="jxr_string">"copy_payload_meta_data"</span>;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>      @Override
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>      <strong class="jxr_keyword">public</strong> List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>          <strong class="jxr_keyword">return</strong> List.of(
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>                          .name(PARAM_ADD_HEADER)
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>                          .displayName(<span class="jxr_string">"Add header"</span>)
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>                          .description(
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>                                  <span class="jxr_string">"Adds a header object to the payload, filled with the header attributes values. This automatically creates a container object for the payloads."</span>)
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>                          .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>                          .defaultValue(Boolean.FALSE)
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>                          .build(),
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>                          .name(PARAM_HEADER_NAME)
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>                          .displayName(<span class="jxr_string">"Header name"</span>)
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>                          .description(<span class="jxr_string">"Name of the header attribute"</span>)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                          .type(ParameterType.TRIMMED_STRING)
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                          .defaultValue(<span class="jxr_string">"header"</span>)
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>                          .build(),
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>                          .name(PARAM_HEADER_ATTRIBUTES)
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>                          .displayName(<span class="jxr_string">"Header attributes"</span>)
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>                          .description(<span class="jxr_string">"List of header attributes to add to the json payload."</span>)
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>                          .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>                          .build(),
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>                          .name(PARAM_USE_CONTAINER)
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>                          .displayName(<span class="jxr_string">"Use a container for payloads"</span>)
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>                          .description(<span class="jxr_string">"If activated a container object will be wrapped around the payload array."</span>)
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>                          .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>                          .defaultValue(Boolean.FALSE)
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>                          .build(),
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>                          .name(PARAM_PAYLOAD_CONTAINER_NAME)
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>                          .displayName(<span class="jxr_string">"Payload container name"</span>)
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                          .description(<span class="jxr_string">"Name of the json attribute for the payloads if use container is enabled."</span>)
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                          .type(ParameterType.TRIMMED_STRING)
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                          .defaultValue(<span class="jxr_string">"payloads"</span>)
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>                          .build(),
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>                          .name(PARAM_USE_INNER_CONTAINER)
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>                          .displayName(<span class="jxr_string">"Use inner container"</span>)
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>                          .description(<span class="jxr_string">"If enabled, wraps each payload in a single container object."</span>)
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                          .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                          .defaultValue(Boolean.FALSE)
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>                          .build(),
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>                          .name(PARAM_INNER_CONTAINER_NAME)
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>                          .displayName(<span class="jxr_string">"Inner container name"</span>)
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>                          .description(<span class="jxr_string">"Name of the json attribute for the inner container wrapper."</span>)
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>                          .type(ParameterType.TRIMMED_STRING)
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>                          .defaultValue(<span class="jxr_string">"payload"</span>)
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>                          .build(),
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>                          .name(PARAM_PAYLOADS_PER_MESSAGE)
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>                          .displayName(<span class="jxr_string">"Payloads per message"</span>)
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>                          .description(<span class="jxr_string">"How many payloads should be aggregated per message."</span>)
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>                          .type(ParameterType.LONG)
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>                          .defaultValue(10L)
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>                          .build(),
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>                  ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>                          .name(PARAM_ATTRIBUTES_TO_META_DATA)
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>                          .displayName(<span class="jxr_string">"Attributes to meta data"</span>)
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>                          .description(
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>                                  <span class="jxr_string">"Extracts attribute values from payloads and adds them to the aggregated payload`s meta data. Note that due to technical reasons only single attribute names are evaluated and no nested parsing is supported."</span>)
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>                          .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>                          .build(),
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>                 ParameterDefinition.builder()
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>                         .name(PARAM_COPY_PAYLOAD_META_DATA)
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>                         .displayName(<span class="jxr_string">"Copy all meta"</span>)
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>                         .description(<span class="jxr_string">"Copy all meta data from original payloads in the new payload"</span>)
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>                         .type(ParameterType.BOOLEAN)
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>                         .defaultValue(Boolean.TRUE)
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>                         .build());
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>     }
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> 
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     @Override
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>     <strong class="jxr_keyword">public</strong> List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) <strong class="jxr_keyword">throws</strong> <a name="NexusException" href="../../../../../../../com/evolvsys/nexuse2e/core/exception/NexusException.html#NexusException">NexusException</a> {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>         List&lt;ContextPayload&gt; transformedPayloads;
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>         <strong class="jxr_keyword">if</strong> (CollectionUtils.isEmpty(payloads)) {
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>             LOGGER.debug(<span class="jxr_string">"No payloads to transform"</span>);
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>             transformedPayloads = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>         } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>             transformedPayloads = transformInternal(payloads);
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>         }
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>         <strong class="jxr_keyword">return</strong> transformedPayloads;
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>     }
+<a class="jxr_linenumber" name="L120" href="#L120">120</a> 
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>     <strong class="jxr_keyword">private</strong> List&lt;ContextPayload&gt; transformInternal(Collection&lt;ContextPayload&gt; payloads) <strong class="jxr_keyword">throws</strong> <a name="NexusException" href="../../../../../../../com/evolvsys/nexuse2e/core/exception/NexusException.html#NexusException">NexusException</a> {
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>         <strong class="jxr_keyword">long</strong> objectsPerMessage = parameters.value(PARAM_PAYLOADS_PER_MESSAGE);
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> 
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>         List&lt;ContextPayload&gt; payloadsToProcess = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;(payloads);
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> 
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>         List&lt;List&lt;ContextPayload&gt;&gt; payloadPartition = ListUtils.partition(payloadsToProcess, (<strong class="jxr_keyword">int</strong>) objectsPerMessage);
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>         LOGGER.trace(
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>                 <span class="jxr_string">"split {} payloads into {} partitions of size {}"</span>,
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>                 payloadsToProcess.size(),
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>                 payloadPartition.size(),
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>                 objectsPerMessage);
+<a class="jxr_linenumber" name="L132" href="#L132">132</a> 
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>         List&lt;ContextPayload&gt; processedPayloads = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;(payloadPartition.size());
+<a class="jxr_linenumber" name="L134" href="#L134">134</a> 
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>         <a name="JsonAggregatorProcessor" href="../../../../../../../com/evolvsys/nexuse2e/impl/service/support/transformator/JsonAggregatorProcessor.html#JsonAggregatorProcessor">JsonAggregatorProcessor</a> processor = JsonAggregatorProcessor.create(<strong class="jxr_keyword">this</strong>);
+<a class="jxr_linenumber" name="L136" href="#L136">136</a> 
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>         <strong class="jxr_keyword">for</strong> (List&lt;ContextPayload&gt; contextPayloads : payloadPartition) {
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>             processedPayloads.add(processor.process(contextPayloads));
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         }
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>         <strong class="jxr_keyword">return</strong> processedPayloads;
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>     }
+<a class="jxr_linenumber" name="L142" href="#L142">142</a> }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

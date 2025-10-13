@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PartnerFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.partner</a> &gt; <span class="el_source">PartnerFactory.java</span></div><h1>PartnerFactory.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.partner;
+
+import com.evolvsys.nexuse2e.core.message.context.ContextObjectFactory;
+import com.evolvsys.nexuse2e.core.partner.mapper.ContextPartnerMapper;
+import com.evolvsys.nexuse2e.core.partner.model.ContextPartner;
+import com.evolvsys.nexuse2e.core.partner.repository.PartnerRepository;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 24.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L17">@Slf4j</span>
+public class PartnerFactory implements ContextObjectFactory&lt;String, ContextPartner&gt; {
+    private final PartnerRepository partnerRepository;
+    private final ContextPartnerMapper contextPartnerMapper;
+
+    @Override
+    public ContextPartner create(String partnerId) {
+<span class="fc" id="L24">        return partnerRepository</span>
+<span class="fc" id="L25">                .findByPartnerId(partnerId)</span>
+<span class="fc" id="L26">                .map(contextPartnerMapper::entityToPartner)</span>
+<span class="fc" id="L27">                .orElseThrow(() -&gt; new IllegalArgumentException(&quot;no partner for id &quot; + partnerId + &quot; found&quot;));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

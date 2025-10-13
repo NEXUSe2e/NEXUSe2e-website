@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PipelineRearrangePipeletsAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.pipeline.action</a> &gt; <span class="el_source">PipelineRearrangePipeletsAction.java</span></div><h1>PipelineRearrangePipeletsAction.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.pipeline.action;
+
+import com.evolvsys.app.core.process.*;
+import com.evolvsys.nexuse2e.core.model.entity.PipeletEntity;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineEntity;
+import com.evolvsys.nexuse2e.core.pipeline.repository.PipelineRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 08.04.2024
+ */
+@Component
+@RequiredArgsConstructor
+public class PipelineRearrangePipeletsAction implements ProcessAction&lt;PipelineEntity&gt; {
+<span class="fc" id="L18">    public static final ProcessParameter&lt;List&lt;Long&gt;&gt; PIPELET_IDS = new ProcessParameter&lt;&gt;() {};</span>
+    private final PipelineRepository pipelineRepository;
+
+    @Override
+    public PipelineEntity execute(
+            PipelineEntity entity, ProcessActionChain chain, ProcessParameters processParameters) {
+<span class="fc" id="L24">        List&lt;Long&gt; pipeletIdsInOrder = processParameters.get(PIPELET_IDS);</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        for (PipeletEntity pipeletEntity : entity.getPipelets()) {</span>
+<span class="fc" id="L26">            pipeletEntity.setOrder(pipeletIdsInOrder.indexOf(pipeletEntity.getId()));</span>
+<span class="fc" id="L27">        }</span>
+
+<span class="fc" id="L29">        return pipelineRepository.save(entity);</span>
+    }
+
+    @Override
+    public ProcessActionConditions conditions(PipelineEntity entity, ProcessParameters processParameters) {
+<span class="fc" id="L34">        return ProcessActionConditions.builder()</span>
+<span class="fc" id="L35">                .condition(processParameters.containsValue(PIPELET_IDS), &quot;PipeletIds parameter is required&quot;)</span>
+<span class="fc" id="L36">                .condition(</span>
+<span class="fc" id="L37">                        () -&gt; entity.getPipelets().size()</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">                                == processParameters.get(PIPELET_IDS).size(),</span>
+                        &quot;All pipelets must be provided in the order&quot;)
+<span class="fc" id="L40">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

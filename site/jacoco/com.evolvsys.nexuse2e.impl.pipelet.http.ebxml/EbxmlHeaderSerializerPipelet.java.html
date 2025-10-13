@@ -1,0 +1,427 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EbxmlHeaderSerializerPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http.ebxml</a> &gt; <span class="el_source">EbxmlHeaderSerializerPipelet.java</span></div><h1>EbxmlHeaderSerializerPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http.ebxml;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.FileConstants;
+import com.evolvsys.nexuse2e.core.ebxml.*;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.parameter.Parameters;
+import com.evolvsys.nexuse2e.core.partner.model.ContextPartner;
+import com.evolvsys.nexuse2e.internal.*;
+import jakarta.xml.soap.*;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.time.ZonedDateTime;
+import java.util.*;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+
+/**
+ * @author Florian Drees
+ * @since 17.10.2023
+ */
+<span class="fc" id="L31">@Slf4j</span>
+@SuppressWarnings(&quot;PMD.GodClass&quot;)
+<span class="fc" id="L33">public class EbxmlHeaderSerializerPipelet extends Pipelet {</span>
+    private SOAPFactory soapFactory;
+<span class="fc" id="L35">    private CpaIdScheme cpaIdScheme = CpaIdScheme.DEFAULT_SCHEME;</span>
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L39">        resolveParameters(parameters);</span>
+        try {
+<span class="fc" id="L41">            soapFactory = SOAPFactory.newInstance();</span>
+
+<span class="fc" id="L43">            MessageFactory messageFactory = MessageFactory.newInstance();</span>
+
+<span class="fc" id="L45">            SOAPMessage soapMessage = messageFactory.createMessage();</span>
+<span class="fc" id="L46">            soapMessage.setProperty(SOAPMessage.WRITE_XML_DECLARATION, &quot;true&quot;);</span>
+
+<span class="fc" id="L48">            prepareSoapEnvelope(soapMessage.getSOAPPart().getEnvelope());</span>
+
+<span class="fc" id="L50">            SOAPHeader soapHeader = soapMessage.getSOAPHeader();</span>
+<span class="fc" id="L51">            prepareSoapHeader(soapHeader);</span>
+<span class="fc" id="L52">            SOAPHeaderElement soapMessageHeader = prepareSoapMessageHeader(soapHeader);</span>
+
+<span class="fc" id="L54">            createFromAndToElements(soapMessageHeader, executionContext);</span>
+
+<span class="fc" id="L56">            Message message = executionContext.getMessage();</span>
+
+<span class="fc" id="L58">            createSoapChildElement(soapMessageHeader, &quot;CPAId&quot;, cpaIdScheme.generateCpaId(executionContext));</span>
+<span class="fc" id="L59">            createSoapChildElement(soapMessageHeader, &quot;ConversationId&quot;, message.getConversationId());</span>
+
+<span class="fc" id="L61">            createServiceElement(soapMessageHeader, message.getType(), executionContext.getChoreographyId());</span>
+<span class="fc" id="L62">            createActionElement(soapMessageHeader, executionContext.getActionId(), message.getType());</span>
+
+            // MessageData
+<span class="fc" id="L65">            createMessageData(soapMessageHeader, executionContext);</span>
+<span class="fc" id="L66">            createMessageTypeDependantElements(</span>
+<span class="fc" id="L67">                    soapHeader, soapMessage.getSOAPBody(), soapMessageHeader, executionContext);</span>
+
+<span class="fc" id="L69">            soapMessage.saveChanges();</span>
+
+            PayloadContent payloadContent;
+<span class="fc" id="L72">            try (PayloadContentOutputStream outputStream = PayloadContent.createOutputStream()) {</span>
+<span class="fc" id="L73">                soapMessage.writeTo(outputStream);</span>
+
+<span class="fc" id="L75">                payloadContent = outputStream.finish();</span>
+            }
+
+<span class="fc" id="L78">            ContextPayload payload = ContextPayload.builder()</span>
+<span class="fc" id="L79">                    .contentType(MediaType.TEXT_XML_VALUE)</span>
+<span class="fc" id="L80">                    .size(payloadContent.getSize())</span>
+<span class="fc" id="L81">                    .content(payloadContent)</span>
+<span class="fc" id="L82">                    .encoding(StandardCharsets.UTF_8.name())</span>
+<span class="fc" id="L83">                    .build();</span>
+
+<span class="fc" id="L85">            message.getMetaData().set(EbxmlConstants.HEADER_DATA, payload);</span>
+
+<span class="nc" id="L87">        } catch (SOAPException | IOException e) {</span>
+<span class="nc" id="L88">            throw new NexusException(</span>
+<span class="nc" id="L89">                    NexusError.builder()</span>
+<span class="nc" id="L90">                            .message(&quot;Error while serializing ebxml header&quot;)</span>
+<span class="nc" id="L91">                            .extension(&quot;reason&quot;, e.getMessage())</span>
+<span class="nc" id="L92">                            .build(),</span>
+                    e);
+<span class="fc" id="L94">        }</span>
+<span class="fc" id="L95">        return executionContext;</span>
+    }
+
+    private String getCreatedDate(ZonedDateTime zonedDateTime) {
+<span class="fc" id="L99">        return EbxmlTimestampFormatter.getInstance().getTimestamp(zonedDateTime);</span>
+    }
+
+    private void createFromAndToElements(SOAPHeaderElement soapHeaderElement, ExecutionContext executionContext)
+            throws SOAPException {
+<span class="fc" id="L104">        Message message = executionContext.getMessage();</span>
+<span class="fc" id="L105">        MetaData messageMetaData = message.getMetaData();</span>
+
+<span class="fc" id="L107">        ContextPartner sourcePartner = executionContext.getSourcePartner();</span>
+<span class="fc" id="L108">        ContextPartner targetPartner = executionContext.getTargetPartner();</span>
+<span class="fc" id="L109">        String fromRole = messageMetaData.getFirstOrNull(PartyType.FROM.getPartnerRoleConstant());</span>
+<span class="fc" id="L110">        String toRole = messageMetaData.getFirstOrNull(PartyType.TO.getPartnerRoleConstant());</span>
+
+<span class="fc" id="L112">        String from = sourcePartner.getPartnerId();</span>
+<span class="fc" id="L113">        LOGGER.trace(&quot;setting source partner {}&quot;, from);</span>
+<span class="fc" id="L114">        String fromType = Optional.ofNullable(sourcePartner.getType()).orElse(&quot;dummyFromType&quot;);</span>
+
+<span class="fc" id="L116">        String to = targetPartner.getPartnerId();</span>
+<span class="fc" id="L117">        String toType = Optional.ofNullable(targetPartner.getType()).orElse(&quot;dummyToType&quot;);</span>
+
+<span class="fc" id="L119">        SOAPElement fromPartyElement =</span>
+<span class="fc" id="L120">                createPartyElement(soapHeaderElement, from, fromType, PartyType.FROM.getDisplayName());</span>
+<span class="fc" id="L121">        SOAPElement toPartyElement = createPartyElement(soapHeaderElement, to, toType, PartyType.TO.getDisplayName());</span>
+
+<span class="pc bpc" id="L123" title="3 of 4 branches missed.">        if (StringUtils.isNotBlank(fromRole) &amp;&amp; StringUtils.isNotBlank(toRole)) {</span>
+<span class="nc" id="L124">            createSoapChildElement(fromPartyElement, &quot;Role&quot;, fromRole);</span>
+<span class="nc" id="L125">            createSoapChildElement(toPartyElement, &quot;Role&quot;, toRole);</span>
+        }
+
+<span class="fc" id="L128">        soapHeaderElement.addChildElement(fromPartyElement);</span>
+<span class="fc" id="L129">        soapHeaderElement.addChildElement(toPartyElement);</span>
+<span class="fc" id="L130">    }</span>
+
+    private SOAPElement createPartyElement(
+            SOAPElement soapParentElement, String partnerId, String partnerType, String partyType)
+            throws SOAPException {
+<span class="pc bpc" id="L135" title="1 of 2 branches missed.">        partnerId = partnerId == null ? String.format(&quot;dummy%s&quot;, partyType) : partnerId;</span>
+
+<span class="fc" id="L137">        SOAPElement soapElement = createSoapChildElement(soapParentElement, partyType);</span>
+<span class="fc" id="L138">        SOAPElement partnerIdElement = createSoapChildElement(soapElement, &quot;PartyId&quot;);</span>
+
+<span class="pc bpc" id="L140" title="1 of 2 branches missed.">        if (StringUtils.isNotEmpty(partnerType)) {</span>
+<span class="fc" id="L141">            partnerIdElement.addAttribute(</span>
+<span class="fc" id="L142">                    soapFactory.createName(String.format(&quot;%s:%s&quot;, EbxmlConstants.EBXML_NAMESPACE_PREFIX, &quot;:type&quot;)),</span>
+                    partnerType);
+<span class="fc" id="L144">            partnerIdElement.addTextNode(partnerId);</span>
+        } else {
+            // If the PartyId type attribute is not present, the content of the PartyId element MUST be a URI
+<span class="nc bnc" id="L147" title="All 4 branches missed.">            if (partnerId.startsWith(&quot;uri:&quot;) || partnerId.contains(&quot;:&quot;)) {</span>
+<span class="nc" id="L148">                partnerIdElement.addTextNode(partnerId);</span>
+            } else {
+<span class="nc" id="L150">                partnerIdElement.addTextNode(String.format(&quot;uri:%s&quot;, partnerId));</span>
+            }
+        }
+<span class="fc" id="L153">        return soapElement;</span>
+    }
+
+    private void createServiceElement(SOAPElement soapMessageHeader, MessageType messageType, String choreographyId)
+            throws SOAPException {
+<span class="fc" id="L158">        createSoapChildElement(soapMessageHeader, &quot;Service&quot;, resolveService(messageType, choreographyId));</span>
+<span class="fc" id="L159">    }</span>
+
+    private String resolveService(MessageType messageType, String choreographyId) {
+<span class="fc" id="L162">        String service = choreographyId;</span>
+
+<span class="pc bpc" id="L164" title="1 of 4 branches missed.">        if (messageType == MessageType.ACKNOWLEDGMENT || messageType == MessageType.ERROR) {</span>
+<span class="fc" id="L165">            service = EbxmlConstants.DEFAULT_SERVICE;</span>
+        }
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        if (!StringUtils.startsWithAny(service, &quot;uri:&quot;, &quot;urn:&quot;)) {</span>
+            // As the type attribute is not present, the content of the Service element MUST be a URI
+<span class="fc" id="L169">            service = String.format(&quot;uri:%s&quot;, service);</span>
+        }
+<span class="fc" id="L171">        return service;</span>
+    }
+
+    private void createActionElement(SOAPHeaderElement soapHeaderElement, String actionId, MessageType messageType)
+            throws SOAPException {
+<span class="fc" id="L176">        createSoapChildElement(soapHeaderElement, &quot;Action&quot;, getActionName(messageType, actionId));</span>
+<span class="fc" id="L177">    }</span>
+
+    private String getActionName(MessageType messageType, String actionName) {
+<span class="pc bpc" id="L180" title="1 of 3 branches missed.">        return switch (messageType) {</span>
+<span class="fc" id="L181">            case ACKNOWLEDGMENT -&gt; &quot;Acknowledgment&quot;;</span>
+<span class="nc" id="L182">            case ERROR -&gt; &quot;MessageError&quot;;</span>
+<span class="fc" id="L183">            default -&gt; actionName;</span>
+        };
+    }
+
+    private void createMessageData(SOAPHeaderElement soapHeaderElement, ExecutionContext executionContext)
+            throws SOAPException {
+<span class="fc" id="L189">        SOAPElement soapMessageData = createSoapChildElement(soapHeaderElement, &quot;MessageData&quot;);</span>
+<span class="fc" id="L190">        Message message = executionContext.getMessage();</span>
+<span class="fc" id="L191">        createSoapChildElement(soapMessageData, &quot;MessageId&quot;, message.getId());</span>
+
+<span class="fc" id="L193">        createSoapChildElement(</span>
+<span class="fc" id="L194">                soapMessageData, EbxmlConstants.TIMESTAMP_ID, getCreatedDate(message.getOriginalCreated()));</span>
+
+<span class="fc" id="L196">        MessageType messageType = message.getType();</span>
+
+<span class="pc bpc" id="L198" title="1 of 4 branches missed.">        if (messageType == MessageType.ACKNOWLEDGMENT || messageType == MessageType.ERROR) {</span>
+            // Reference to the original message
+<span class="fc" id="L200">            createSoapChildElement(</span>
+                    soapMessageData,
+                    EbxmlConstants.REFERENCE_TO_MESSAGE_ID,
+<span class="fc" id="L203">                    executionContext.getSourceMessage().getId());</span>
+        }
+<span class="fc" id="L205">        soapHeaderElement.addChildElement(soapMessageData);</span>
+<span class="fc" id="L206">    }</span>
+
+    private void createMessageTypeDependantElements(
+            SOAPHeader soapHeader,
+            SOAPBody soapBody,
+            SOAPHeaderElement soapMessageHeader,
+            ExecutionContext executionContext)
+            throws SOAPException {
+<span class="pc bpc" id="L214" title="1 of 3 branches missed.">        switch (executionContext.getMessage().getType()) {</span>
+<span class="fc" id="L215">            case ACKNOWLEDGMENT -&gt; createAcknowledgmentElement(soapHeader, executionContext);</span>
+<span class="nc" id="L216">            case ERROR -&gt; createErrorElement(soapHeader, executionContext);</span>
+            default -&gt; {
+<span class="pc bpc" id="L218" title="1 of 2 branches missed.">                if (executionContext.getRoute().getTargetConnection().isReliable()) {</span>
+<span class="fc" id="L219">                    createAcknowledgmentRequestedElement(soapHeader, soapMessageHeader);</span>
+                }
+<span class="fc" id="L221">                createManifestAndReferencesElements(soapBody, executionContext);</span>
+            }
+        }
+<span class="fc" id="L224">    }</span>
+
+    private void createAcknowledgmentElement(SOAPHeader soapHeader, ExecutionContext executionContext)
+            throws SOAPException {
+
+<span class="fc" id="L229">        Message message = executionContext.getMessage();</span>
+
+<span class="fc" id="L231">        SOAPHeaderElement acknowledgmentHeader = createSoapHeaderElement(soapHeader, &quot;Acknowledgment&quot;);</span>
+<span class="fc" id="L232">        acknowledgmentHeader.setActor(EbxmlConstants.SOAP_ACTOR);</span>
+<span class="fc" id="L233">        acknowledgmentHeader.setMustUnderstand(true);</span>
+<span class="fc" id="L234">        addEbxmlVersionAttribute(acknowledgmentHeader);</span>
+<span class="fc" id="L235">        createSoapChildElement(acknowledgmentHeader, &quot;Timestamp&quot;, getCreatedDate(message.getOriginalCreated()));</span>
+<span class="fc" id="L236">        createSoapChildElement(</span>
+                acknowledgmentHeader,
+                EbxmlConstants.REFERENCE_TO_MESSAGE_ID,
+<span class="fc" id="L239">                executionContext.getSourceMessage().getId());</span>
+
+<span class="fc" id="L241">        ContextPartner sourcePartner = executionContext.getSourcePartner();</span>
+<span class="fc" id="L242">        String from = Objects.requireNonNullElse(sourcePartner.getPartnerId(), &quot;dummyfrom&quot;);</span>
+<span class="fc" id="L243">        String fromType = Objects.requireNonNullElse(sourcePartner.getType(), &quot;dummyFromType&quot;);</span>
+
+<span class="fc" id="L245">        acknowledgmentHeader.addChildElement(createPartyElement(acknowledgmentHeader, from, fromType, &quot;From&quot;));</span>
+<span class="fc" id="L246">    }</span>
+
+    private void createErrorElement(SOAPHeader soapHeader, ExecutionContext executionContext) throws SOAPException {
+<span class="nc" id="L249">        SOAPHeaderElement errorHeaderElement = createSoapHeaderElement(soapHeader, &quot;ErrorList&quot;);</span>
+<span class="nc" id="L250">        errorHeaderElement.setMustUnderstand(true);</span>
+<span class="nc" id="L251">        addEbxmlAttribute(errorHeaderElement, &quot;version&quot;, EbxmlConstants.EBXML_VERSION);</span>
+<span class="nc" id="L252">        addEbxmlAttribute(errorHeaderElement, &quot;id&quot;, &quot;unknown&quot;);</span>
+<span class="nc" id="L253">        addEbxmlAttribute(</span>
+                errorHeaderElement,
+                &quot;highestSeverity&quot;,
+<span class="nc" id="L256">                highestSeverity(executionContext.getMessageErrors()).name());</span>
+
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        if (executionContext.getMessageErrors() != null</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">                &amp;&amp; !executionContext.getMessageErrors().isEmpty()) {</span>
+<span class="nc bnc" id="L260" title="All 2 branches missed.">            for (MessageError messageError : executionContext.getMessageErrors()) {</span>
+<span class="nc" id="L261">                SOAPElement errorElement = errorHeaderElement.addChildElement(</span>
+                        &quot;Error&quot;, EbxmlConstants.EBXML_NAMESPACE_PREFIX, EbxmlConstants.EBXML_NAMESPACE);
+<span class="nc" id="L263">                addEbxmlAttribute(errorElement, &quot;errorCode&quot;, messageError.getErrorCode());</span>
+<span class="nc" id="L264">                addEbxmlAttribute(</span>
+<span class="nc" id="L265">                        errorElement, &quot;severity&quot;, messageError.getSeverity().name());</span>
+<span class="nc" id="L266">                addEbxmlAttribute(errorElement, &quot;location&quot;, messageError.getLocation());</span>
+
+<span class="nc" id="L268">                SOAPElement descriptionElement = errorElement.addChildElement(</span>
+                        &quot;Description&quot;, EbxmlConstants.EBXML_NAMESPACE_PREFIX, EbxmlConstants.EBXML_NAMESPACE);
+<span class="nc" id="L270">                addAttribute(descriptionElement, &quot;xml:lang&quot;, Locale.US.getLanguage());</span>
+<span class="nc" id="L271">                descriptionElement.addTextNode(messageError.getDescription());</span>
+<span class="nc" id="L272">            }</span>
+        }
+<span class="nc" id="L274">    }</span>
+
+    public static Severity highestSeverity(Collection&lt;MessageError&gt; messageErrors) {
+<span class="nc" id="L277">        return messageErrors.stream()</span>
+<span class="nc" id="L278">                .map(MessageError::getSeverity)</span>
+<span class="nc" id="L279">                .max(Comparator.comparingInt(Severity::ordinal))</span>
+<span class="nc" id="L280">                .orElseThrow();</span>
+    }
+
+    private void createAcknowledgmentRequestedElement(SOAPHeader soapHeader, SOAPHeaderElement soapMessageHeader)
+            throws SOAPException {
+<span class="fc" id="L285">        SOAPHeaderElement ackRequestedElement = createSoapHeaderElement(soapHeader, &quot;AckRequested&quot;);</span>
+<span class="fc" id="L286">        ackRequestedElement.setMustUnderstand(true);</span>
+<span class="fc" id="L287">        addEbxmlVersionAttribute(ackRequestedElement);</span>
+<span class="fc" id="L288">        addEbxmlAttribute(ackRequestedElement, &quot;signed&quot;, &quot;false&quot;);</span>
+<span class="fc" id="L289">        createSoapChildElementWithEbxmlNamespace(soapMessageHeader, &quot;DuplicateElimination&quot;);</span>
+<span class="fc" id="L290">    }</span>
+
+    private void createManifestAndReferencesElements(SOAPBody soapBody, ExecutionContext messageContext)
+            throws SOAPException {
+<span class="fc" id="L294">        Message message = messageContext.getMessage();</span>
+
+<span class="pc bpc" id="L296" title="1 of 2 branches missed.">        if (CollectionUtils.isNotEmpty(message.getPayloads())) {</span>
+<span class="fc" id="L297">            SOAPElement manifestElement = createManifestElement(soapBody);</span>
+<span class="fc" id="L298">            List&lt;ContextPayload&gt; payloads = message.getPayloads();</span>
+<span class="fc bfc" id="L299" title="All 2 branches covered.">            for (int i = 0; i &lt; payloads.size(); i++) {</span>
+<span class="fc" id="L300">                int sequenceNumber = i + 1;</span>
+<span class="fc" id="L301">                ContextPayload payload = payloads.get(i);</span>
+<span class="fc" id="L302">                SOAPElement referenceElement = createSoapChildElementWithEbxmlNamespace(manifestElement, &quot;Reference&quot;);</span>
+<span class="fc" id="L303">                addAttribute(referenceElement, &quot;xmlns:xlink&quot;, &quot;http://www.w3.org/1999/xlink&quot;);</span>
+
+<span class="fc" id="L305">                addAttribute(</span>
+                        referenceElement,
+<span class="fc" id="L307">                        EbxmlConstants.EBXML_NAMESPACE_PREFIX.concat(&quot;:id&quot;),</span>
+<span class="fc" id="L308">                        String.format(&quot;Payload-%d&quot;, sequenceNumber));</span>
+
+<span class="fc" id="L310">                String contentId = payload.getContentId();</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">                if (StringUtils.isBlank(contentId)) {</span>
+<span class="fc" id="L312">                    String fileName = payload.getMetaData().getFirstOrNull(FileConstants.FILE_NAME);</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">                    if (StringUtils.isBlank(fileName)) {</span>
+<span class="fc" id="L314">                        contentId = String.format(&quot;%s__body%d&quot;, message.getId(), sequenceNumber);</span>
+                    } else {
+<span class="fc" id="L316">                        contentId = String.format(&quot;%s__body_%d&quot;, fileName, sequenceNumber);</span>
+                    }
+<span class="fc" id="L318">                    payload.setContentId(contentId);</span>
+                }
+
+<span class="fc" id="L321">                addAttribute(referenceElement, &quot;xlink:href&quot;, String.format(&quot;cid:%s&quot;, contentId));</span>
+
+                // this attribute defines the element as being an XLINK simple link. It has a fixed value of 'simple'.
+                // (section 3.2.1)
+<span class="fc" id="L325">                addAttribute(referenceElement, &quot;xlink:type&quot;, &quot;simple&quot;);</span>
+            }
+        }
+<span class="fc" id="L328">    }</span>
+
+    private SOAPElement createManifestElement(SOAPBody soapBody) throws SOAPException {
+<span class="fc" id="L331">        SOAPElement manifestElement =</span>
+<span class="fc" id="L332">                soapBody.addBodyElement(EbxmlUtils.createNameWithEbxmlNamespace(soapFactory, &quot;Manifest&quot;));</span>
+<span class="fc" id="L333">        addEbxmlVersionAttribute(manifestElement);</span>
+<span class="fc" id="L334">        addEbxmlAttribute(manifestElement, &quot;id&quot;, &quot;Manifest&quot;);</span>
+<span class="fc" id="L335">        return manifestElement;</span>
+    }
+
+    private SOAPElement createSoapChildElement(SOAPElement parentElement, String childName) throws SOAPException {
+<span class="fc" id="L339">        return createSoapChildElement(parentElement, childName, null);</span>
+    }
+
+    private SOAPElement createSoapChildElement(SOAPElement parentElement, String childName, String childText)
+            throws SOAPException {
+<span class="fc" id="L344">        SOAPElement childElement = parentElement.addChildElement(</span>
+                childName, EbxmlConstants.EBXML_NAMESPACE_PREFIX, EbxmlConstants.EBXML_NAMESPACE);
+<span class="fc" id="L346">        childElement.removeNamespaceDeclaration(EbxmlConstants.EBXML_NAMESPACE_PREFIX);</span>
+<span class="fc bfc" id="L347" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(childText)) {</span>
+<span class="fc" id="L348">            childElement.addTextNode(childText);</span>
+        }
+<span class="fc" id="L350">        return childElement;</span>
+    }
+
+    private SOAPElement createSoapChildElementWithEbxmlNamespace(SOAPElement parentElement, String childName)
+            throws SOAPException {
+<span class="fc" id="L355">        return parentElement.addChildElement(</span>
+                childName, EbxmlConstants.EBXML_NAMESPACE_PREFIX, EbxmlConstants.EBXML_NAMESPACE);
+    }
+
+    private void addAttribute(SOAPElement soapElement, String localName, String value) throws SOAPException {
+<span class="fc" id="L360">        soapElement.addAttribute(soapFactory.createName(localName), value);</span>
+<span class="fc" id="L361">    }</span>
+
+    private void addEbxmlAttribute(SOAPElement soapElement, String localName, String value) throws SOAPException {
+<span class="fc" id="L364">        soapElement.addAttribute(EbxmlUtils.createNameWithEbxmlNamespace(soapFactory, localName), value);</span>
+<span class="fc" id="L365">    }</span>
+
+    private void addEbxmlVersionAttribute(SOAPElement soapElement) throws SOAPException {
+<span class="fc" id="L368">        addEbxmlAttribute(soapElement, &quot;version&quot;, EbxmlConstants.EBXML_VERSION);</span>
+<span class="fc" id="L369">    }</span>
+
+    private void prepareSoapEnvelope(SOAPEnvelope soapEnvelope) throws SOAPException {
+<span class="fc" id="L372">        soapEnvelope</span>
+<span class="fc" id="L373">                .addNamespaceDeclaration(EbxmlConstants.EBXML_NAMESPACE_PREFIX, EbxmlConstants.EBXML_NAMESPACE)</span>
+<span class="fc" id="L374">                .addNamespaceDeclaration(EbxmlConstants.XSI_NAMESPACE_PREFIX, EbxmlConstants.XSI_NAMESPACE)</span>
+<span class="fc" id="L375">                .addNamespaceDeclaration(EbxmlConstants.XLINK_NAMESPACE_PREFIX, EbxmlConstants.XLINK_NAMESPACE)</span>
+<span class="fc" id="L376">                .addAttribute(</span>
+<span class="fc" id="L377">                        soapFactory.createName(&quot;xsi:schemaLocation&quot;), EbxmlConstants.XSI_ENVELOPE_SCHEMA_LOCATION);</span>
+<span class="fc" id="L378">    }</span>
+
+    private void prepareSoapHeader(SOAPHeader soapHeader) throws SOAPException {
+<span class="fc" id="L381">        soapHeader.addAttribute(</span>
+<span class="fc" id="L382">                soapFactory.createName(&quot;xsi:schemaLocation&quot;), EbxmlConstants.XSI_HEADER_SCHEMA_LOCATION);</span>
+<span class="fc" id="L383">    }</span>
+
+    private SOAPHeaderElement prepareSoapMessageHeader(SOAPHeader soapHeader) throws SOAPException {
+<span class="fc" id="L386">        SOAPHeaderElement soapHeaderElement = createSoapHeaderElement(soapHeader, &quot;MessageHeader&quot;);</span>
+<span class="fc" id="L387">        soapHeaderElement.setMustUnderstand(true);</span>
+<span class="fc" id="L388">        addEbxmlVersionAttribute(soapHeaderElement);</span>
+<span class="fc" id="L389">        return soapHeaderElement;</span>
+    }
+
+    private SOAPHeaderElement createSoapHeaderElement(SOAPHeader soapHeader, String localName) throws SOAPException {
+<span class="fc" id="L393">        return soapHeader.addHeaderElement(EbxmlUtils.createNameWithEbxmlNamespace(soapFactory, localName));</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L398">        List&lt;ParameterDefinition&gt; parameterDefinitions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L399">        parameterDefinitions.add(ParameterDefinition.builder()</span>
+<span class="fc" id="L400">                .name(EbxmlConstants.CPA_ID_SCHEME.getName())</span>
+<span class="fc" id="L401">                .displayName(&quot;CPA id scheme&quot;)</span>
+<span class="fc" id="L402">                .description(</span>
+                        &quot;scheme to generate the required cpaId for ebXML messages (URI scheme has the pattern uri://SOURCE_PARTNER_ID/TARGET_PARTNER_ID/CHOREOGRAPHY_ID)&quot;)
+<span class="fc" id="L404">                .required(false)</span>
+<span class="fc" id="L405">                .defaultValue(CpaIdScheme.DEFAULT_SCHEME.name())</span>
+<span class="fc" id="L406">                .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L407">                .option(CpaIdScheme.CHOREOGRAPHY_ID.name())</span>
+<span class="fc" id="L408">                .option(CpaIdScheme.URI.name())</span>
+<span class="fc" id="L409">                .build());</span>
+<span class="fc" id="L410">        return parameterDefinitions;</span>
+    }
+
+    private void resolveParameters(Parameters parameters) {
+<span class="fc bfc" id="L414" title="All 2 branches covered.">        if (parameters != null) {</span>
+<span class="pc bpc" id="L415" title="1 of 2 branches missed.">            if (parameters.containsKey(EbxmlConstants.CPA_ID_SCHEME.getName())) {</span>
+<span class="fc" id="L416">                Object cpaIdSchemeValue = parameters.value(EbxmlConstants.CPA_ID_SCHEME.getName());</span>
+<span class="pc bpc" id="L417" title="1 of 2 branches missed.">                if (cpaIdSchemeValue instanceof String) {</span>
+<span class="fc" id="L418">                    cpaIdScheme = CpaIdScheme.valueOf(cpaIdSchemeValue.toString());</span>
+                } else {
+<span class="nc" id="L420">                    cpaIdScheme = (CpaIdScheme) cpaIdSchemeValue;</span>
+                }
+<span class="fc" id="L422">                LOGGER.trace(&quot;using {} as cpaId scheme&quot;, cpaIdScheme.name());</span>
+            }
+        }
+<span class="fc" id="L425">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

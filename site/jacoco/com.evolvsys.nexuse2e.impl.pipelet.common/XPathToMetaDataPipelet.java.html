@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XPathToMetaDataPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.common</a> &gt; <span class="el_source">XPathToMetaDataPipelet.java</span></div><h1>XPathToMetaDataPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.common;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.impl.parameter.XPathParameters;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.KeyValue;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+/**
+ *
+ */
+<span class="fc" id="L32">@Slf4j</span>
+<span class="fc" id="L33">public class XPathToMetaDataPipelet extends Pipelet implements XPathParameters {</span>
+
+    public static final String PARAM_XPATH_KEY_VALUE_PAIRS = &quot;xpath_key_value_pairs&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L39">        return List.of(</span>
+<span class="fc" id="L40">                ParameterDefinition.builder()</span>
+<span class="fc" id="L41">                        .name(PARAM_XPATH_KEY_VALUE_PAIRS)</span>
+<span class="fc" id="L42">                        .displayName(&quot;MetaData/Xpath Pairs&quot;)</span>
+<span class="fc" id="L43">                        .description(&quot;Define metadata keys and xpath statements as key value pairs.&quot;)</span>
+<span class="fc" id="L44">                        .required(true)</span>
+<span class="fc" id="L45">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L46">                        .build(),</span>
+<span class="fc" id="L47">                STOP_ON_FAIL.get().build(),</span>
+<span class="fc" id="L48">                STOP_ON_NOT_FOUND.get().build(),</span>
+<span class="fc" id="L49">                TRIM_RESULT.get().build());</span>
+    }
+
+    @Override
+    @SuppressFBWarnings({&quot;XPATH_INJECTION&quot;, &quot;XXE_DOCUMENT&quot;, &quot;SPP_PASSING_THIS_AS_PARM&quot;})
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L55">        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L56">        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, &quot;&quot;);</span>
+<span class="fc" id="L57">        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, &quot;&quot;);</span>
+        DocumentBuilder builder;
+        Document xmlDocument;
+        try {
+<span class="fc" id="L61">            builder = builderFactory.newDocumentBuilder();</span>
+
+<span class="fc" id="L63">            ContextPayload payload = Optional.ofNullable(executionContext)</span>
+<span class="fc" id="L64">                    .map(ExecutionContext::getMessage)</span>
+<span class="fc" id="L65">                    .map(Message::getPayloads)</span>
+<span class="fc" id="L66">                    .map(List::getFirst)</span>
+<span class="pc" id="L67">                    .orElseThrow(() -&gt; new IOException(&quot;No payload found in message.&quot;));</span>
+
+<span class="fc" id="L69">            xmlDocument = builder.parse(payload.getContent().getInputStream());</span>
+
+<span class="fc" id="L71">            XPathFactory xPathFactory = XPathFactory.newInstance();</span>
+<span class="fc" id="L72">            XPath xPath = xPathFactory.newXPath();</span>
+<span class="fc" id="L73">            List&lt;KeyValue&lt;String, String&gt;&gt; pairs = getParameters().value(PARAM_XPATH_KEY_VALUE_PAIRS);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">            for (KeyValue&lt;String, String&gt; keyValuePair : pairs) {</span>
+
+<span class="fc" id="L76">                String expression = keyValuePair.getValue();</span>
+<span class="fc" id="L77">                String result = (String) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.STRING);</span>
+<span class="fc" id="L78">                Boolean stopOnNotFound = getParameters().value(PARAM_STOP_ON_NOT_FOUND);</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                if (result.isEmpty()) {</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                    if (stopOnNotFound) {</span>
+<span class="fc" id="L81">                        throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L82">                                .message(&quot;No value found for xpath statement.&quot;)</span>
+<span class="fc" id="L83">                                .extension(&quot;key&quot;, keyValuePair.getKey())</span>
+<span class="fc" id="L84">                                .extension(&quot;xpath&quot;, keyValuePair.getValue())</span>
+<span class="fc" id="L85">                                .build());</span>
+                    } else {
+<span class="fc" id="L87">                        return executionContext;</span>
+                    }
+                }
+<span class="fc" id="L90">                String key = keyValuePair.getKey();</span>
+<span class="fc" id="L91">                result = trimResult(result, this);</span>
+<span class="fc" id="L92">                executionContext.getMessage().getMetaData().add(key, result);</span>
+<span class="fc" id="L93">            }</span>
+
+<span class="fc" id="L95">        } catch (ParserConfigurationException | SAXException | IOException | XPathExpressionException e) {</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">            if (getParameters().value(PARAM_STOP_ON_FAIL)) {</span>
+<span class="fc" id="L97">                throw new NexusException(</span>
+<span class="fc" id="L98">                        NexusError.builder()</span>
+<span class="fc" id="L99">                                .message(&quot;Error while executing xpath statement.&quot;)</span>
+<span class="fc" id="L100">                                .build(),</span>
+                        e);
+            }
+<span class="fc" id="L103">        }</span>
+<span class="fc" id="L104">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

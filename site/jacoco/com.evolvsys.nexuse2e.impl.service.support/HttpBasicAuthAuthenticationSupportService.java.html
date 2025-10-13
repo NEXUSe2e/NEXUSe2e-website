@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpBasicAuthAuthenticationSupportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support</a> &gt; <span class="el_source">HttpBasicAuthAuthenticationSupportService.java</span></div><h1>HttpBasicAuthAuthenticationSupportService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support;
+
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.web.client.RestClient;
+import org.springframework.web.reactive.function.client.ExchangeFilterFunctions;
+import org.springframework.web.reactive.function.client.WebClient;
+
+/**
+ * @author SvenBarden
+ * @since 11.06.2024
+ */
+<span class="fc" id="L17">public class HttpBasicAuthAuthenticationSupportService extends HttpAuthenticationSupportService {</span>
+    private static final String PARAM_BASIC_AUTH_USER = &quot;basic_auth_user&quot;;
+    private static final String PARAM_BASIC_AUTH_PASSWORD = &quot;basic_auth_password&quot;;
+
+    @Override
+    public void addAuthentication(WebClient.Builder webClientBuilder) throws NexusException {
+<span class="fc" id="L23">        String userName = parameters.value(PARAM_BASIC_AUTH_USER);</span>
+<span class="fc" id="L24">        String password = parameters.value(PARAM_BASIC_AUTH_PASSWORD);</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">        if (StringUtils.isNoneBlank(userName, password)) {</span>
+<span class="fc" id="L26">            webClientBuilder.filter(ExchangeFilterFunctions.basicAuthentication(userName, password));</span>
+        }
+<span class="fc" id="L28">    }</span>
+
+    @Override
+    public void addAuthentication(RestClient.Builder restClientBuilder) throws NexusException {
+<span class="fc" id="L32">        String userName = parameters.value(PARAM_BASIC_AUTH_USER);</span>
+<span class="fc" id="L33">        String password = parameters.value(PARAM_BASIC_AUTH_PASSWORD);</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        if (StringUtils.isNoneBlank(userName, password)) {</span>
+<span class="fc" id="L35">            restClientBuilder.requestInterceptor(new BasicAuthenticationInterceptor(userName, password));</span>
+        }
+<span class="fc" id="L37">    }</span>
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L41">        return List.of(</span>
+<span class="fc" id="L42">                ParameterDefinition.builder()</span>
+<span class="fc" id="L43">                        .name(PARAM_BASIC_AUTH_USER)</span>
+<span class="fc" id="L44">                        .displayName(&quot;Username - basic auth&quot;)</span>
+<span class="fc" id="L45">                        .description(&quot;Username for basic auth&quot;)</span>
+<span class="fc" id="L46">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L47">                        .build(),</span>
+<span class="fc" id="L48">                ParameterDefinition.builder()</span>
+<span class="fc" id="L49">                        .name(PARAM_BASIC_AUTH_PASSWORD)</span>
+<span class="fc" id="L50">                        .displayName(&quot;Password - basic auth&quot;)</span>
+<span class="fc" id="L51">                        .description(&quot;Password for basic auth&quot;)</span>
+<span class="fc" id="L52">                        .type(ParameterType.PASSWORD)</span>
+<span class="fc" id="L53">                        .build());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MillisecondScheduleProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.schedule.provider</a> &gt; <span class="el_source">MillisecondScheduleProvider.java</span></div><h1>MillisecondScheduleProvider.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.schedule.provider;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.quartz.SimpleScheduleBuilder;
+
+/**
+ * @author Florian Drees
+ * @since 30.01.2024
+ */
+@RequiredArgsConstructor
+<span class="fc" id="L12">@Slf4j</span>
+public class MillisecondScheduleProvider implements ScheduleProvider&lt;SimpleScheduleBuilder&gt; {
+    private final Long milliseconds;
+    private final MisfireInstruction misfireInstruction;
+
+    public static MillisecondScheduleProvider create(Long milliseconds) {
+<span class="fc" id="L18">        return create(milliseconds, MisfireInstruction.NEXT_SCHEDULE);</span>
+    }
+
+    public static MillisecondScheduleProvider create(Long milliseconds, MisfireInstruction misfireInstruction) {
+<span class="fc bfc" id="L22" title="All 4 branches covered.">        if (milliseconds != null &amp;&amp; milliseconds &gt; 0) {</span>
+<span class="fc" id="L23">            return new MillisecondScheduleProvider(milliseconds, misfireInstruction);</span>
+        } else {
+<span class="fc" id="L25">            throw new IllegalArgumentException(&quot;scheduling with &quot; + milliseconds + &quot; milliseconds is not valid&quot;);</span>
+        }
+    }
+
+    @Override
+    public SimpleScheduleBuilder getScheduleBuilder() {
+<span class="fc" id="L31">        SimpleScheduleBuilder simpleScheduleBuilder = SimpleScheduleBuilder.simpleSchedule()</span>
+<span class="fc" id="L32">                .withIntervalInMilliseconds(milliseconds)</span>
+<span class="fc" id="L33">                .repeatForever();</span>
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        return switch (misfireInstruction) {</span>
+<span class="nc" id="L35">            case FIRE_ONCE -&gt; simpleScheduleBuilder.withMisfireHandlingInstructionFireNow();</span>
+<span class="fc" id="L36">            case NEXT_SCHEDULE -&gt; simpleScheduleBuilder.withMisfireHandlingInstructionNextWithExistingCount();</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

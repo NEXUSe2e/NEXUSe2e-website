@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestHttpClientFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.http.client.rest</a> &gt; <span class="el_source">RestHttpClientFactory.java</span></div><h1>RestHttpClientFactory.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.http.client.rest;
+
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.service.http.WebClientContext;
+import java.io.IOException;
+import java.security.KeyManagementException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.UnrecoverableKeyException;
+import java.security.cert.CertificateException;
+import java.time.Duration;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.hc.client5.http.config.RequestConfig;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
+import org.apache.hc.core5.util.Timeout;
+
+/**
+ * @author SvenBarden
+ * @since 23.07.2024
+ */
+@UtilityClass
+class RestHttpClientFactory {
+
+<span class="fc" id="L27">    private static final Duration DEFAULT_RESPONSE_TIMEOUT = Duration.ofSeconds(60);</span>
+
+    public static CloseableHttpClient createHttpClient(WebClientContext context)
+            throws NoSuchAlgorithmException, KeyStoreException, KeyManagementException, UnrecoverableKeyException,
+                    CertificateException, IOException, NexusException {
+<span class="fc" id="L32">        HttpClientBuilder httpClientBuilder = HttpClients.custom()</span>
+<span class="fc" id="L33">                .setDefaultRequestConfig(RequestConfig.custom()</span>
+<span class="fc" id="L34">                        .setResponseTimeout(Timeout.of(</span>
+<span class="fc" id="L35">                                ObjectUtils.defaultIfNull(context.getResponseTimeout(), DEFAULT_RESPONSE_TIMEOUT)))</span>
+<span class="fc" id="L36">                        .build());</span>
+
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if (context.isSsl()) {</span>
+<span class="fc" id="L39">            httpClientBuilder.setConnectionManager(RestSslConnectionFactory.createSslConnection(context));</span>
+        }
+
+<span class="fc" id="L42">        return httpClientBuilder.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpIpAddressRulePipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.rule</a> &gt; <span class="el_source">HttpIpAddressRulePipelet.java</span></div><h1>HttpIpAddressRulePipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.rule;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.utils.validation.IpUtils;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * @author SvenBarden
+ * @since 02.07.2024
+ */
+<span class="fc" id="L20">@Slf4j</span>
+<span class="fc" id="L21">public class HttpIpAddressRulePipelet extends Pipelet {</span>
+    private static final String PARAM_VALID_IPV4_ADDRESSES = &quot;valid_ipv4_addresses&quot;;
+    private static final String PARAM_VALID_IPV6_ADDRESSES = &quot;valid_ipv6_addresses&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L27">        return List.of(</span>
+<span class="fc" id="L28">                ParameterDefinition.builder()</span>
+<span class="fc" id="L29">                        .name(PARAM_VALID_IPV4_ADDRESSES)</span>
+<span class="fc" id="L30">                        .displayName(&quot;Valid IPv4 Addresses&quot;)</span>
+<span class="fc" id="L31">                        .description(&quot;List of valid IPv4 Addresses for the inbound message.&quot;)</span>
+<span class="fc" id="L32">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L33">                        .build(),</span>
+<span class="fc" id="L34">                ParameterDefinition.builder()</span>
+<span class="fc" id="L35">                        .name(PARAM_VALID_IPV6_ADDRESSES)</span>
+<span class="fc" id="L36">                        .displayName(&quot;Valid IPv6 Addresses&quot;)</span>
+<span class="fc" id="L37">                        .description(&quot;List of valid IPv6 Addresses for the inbound message.&quot;)</span>
+<span class="fc" id="L38">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L39">                        .build());</span>
+    }
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L44">        String clientIpAddress = executionContext.getMetaData().getFirstOrNull(HttpConstants.CLIENT_IP);</span>
+<span class="fc" id="L45">        String clientForwardedIpAddress =</span>
+<span class="fc" id="L46">                executionContext.getMetaData().getFirstOrNull(HttpConstants.CLIENT_FORWARDED_IP);</span>
+
+<span class="fc" id="L48">        List&lt;String&gt; ipAddresses = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(clientIpAddress)) {</span>
+<span class="fc" id="L50">            ipAddresses.add(clientIpAddress);</span>
+        }
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(clientForwardedIpAddress)) {</span>
+<span class="fc" id="L53">            ipAddresses.add(clientForwardedIpAddress);</span>
+        }
+
+<span class="fc" id="L56">        List&lt;String&gt; validIpv4AddressRanges = parameters.value(PARAM_VALID_IPV4_ADDRESSES);</span>
+<span class="fc" id="L57">        List&lt;String&gt; validIpv6AddressRanges = parameters.value(PARAM_VALID_IPV6_ADDRESSES);</span>
+
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (String ipAddress : ipAddresses) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            if (IpUtils.isValid(ipAddress, validIpv4AddressRanges, validIpv6AddressRanges)) {</span>
+<span class="fc" id="L61">                LOGGER.trace(</span>
+                        &quot;IP Address {} is valid for IPv4 {} and IPv6 {}&quot;,
+                        ipAddress,
+                        validIpv4AddressRanges,
+                        validIpv6AddressRanges);
+            } else {
+<span class="fc" id="L67">                throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L68">                        .message(&quot;Inbound IP Address is not valid&quot;)</span>
+<span class="fc" id="L69">                        .extension(&quot;ipAddress&quot;, ipAddress)</span>
+<span class="fc" id="L70">                        .extension(&quot;validIpV4Addresses&quot;, validIpv4AddressRanges)</span>
+<span class="fc" id="L71">                        .extension(&quot;validIpV6Addresses&quot;, validIpv6AddressRanges)</span>
+<span class="fc" id="L72">                        .extension(&quot;choreographyId&quot;, executionContext.getChoreographyId())</span>
+<span class="fc" id="L73">                        .extension(&quot;actionId&quot;, executionContext.getActionId())</span>
+<span class="fc" id="L74">                        .extension(&quot;sourcePartnerId&quot;, executionContext.getSourcePartnerId())</span>
+<span class="fc" id="L75">                        .extension(&quot;targetPartnerId&quot;, executionContext.getTargetPartnerId())</span>
+<span class="fc" id="L76">                        .extension(&quot;messageId&quot;, executionContext.getMessage().getId())</span>
+<span class="fc" id="L77">                        .build());</span>
+            }
+<span class="fc" id="L79">        }</span>
+
+<span class="fc" id="L81">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

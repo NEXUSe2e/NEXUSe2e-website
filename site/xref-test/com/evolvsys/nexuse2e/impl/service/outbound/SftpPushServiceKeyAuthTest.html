@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>SftpPushServiceKeyAuthTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../testapidocs/com/evolvsys/nexuse2e/impl/service/outbound/SftpPushServiceKeyAuthTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.impl.service.outbound;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.assertj.core.api.Assertions.assertThat;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.exception.NexusException;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.context.TestMessageContext;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.ContextPayload;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.Message;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.MessageType;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.test.ComponentTestUtils;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> java.net.URL;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Files;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> java.nio.file.Path;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> java.security.KeyFactory;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> java.security.NoSuchAlgorithmException;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> java.security.PublicKey;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> java.security.Security;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.security.spec.InvalidKeySpecException;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> java.util.Base64;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> java.util.HashMap;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> lombok.extern.slf4j.Slf4j;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.common.file.virtualfs.VirtualFileSystemFactory;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.scp.server.ScpCommandFactory;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.server.SshServer;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.server.auth.pubkey.KeySetPublickeyAuthenticator;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.server.keyprovider.SimpleGeneratorHostKeyProvider;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <strong class="jxr_keyword">import</strong> org.apache.sshd.sftp.server.SftpSubsystemFactory;
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> org.apache.tika.Tika;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  <strong class="jxr_keyword">import</strong> org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <strong class="jxr_keyword">import</strong> org.bouncycastle.crypto.util.OpenSSHPublicKeyUtil;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <strong class="jxr_keyword">import</strong> org.bouncycastle.jcajce.spec.OpenSSHPublicKeySpec;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <strong class="jxr_keyword">import</strong> org.bouncycastle.jce.provider.BouncyCastleProvider;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.AfterEach;
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.BeforeEach;
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.DisplayName;
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.Test;
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.extension.ExtendWith;
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.io.TempDir;
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  <strong class="jxr_keyword">import</strong> org.mockito.junit.jupiter.MockitoExtension;
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <strong class="jxr_keyword">import</strong> org.mockito.junit.jupiter.MockitoSettings;
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <strong class="jxr_keyword">import</strong> org.mockito.quality.Strictness;
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>  
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  @Slf4j
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  @ExtendWith(MockitoExtension.<strong class="jxr_keyword">class</strong>)
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  @MockitoSettings(strictness = Strictness.LENIENT)
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  <strong class="jxr_keyword">class</strong> <a name="SftpPushServiceKeyAuthTest" href="../../../../../../com/evolvsys/nexuse2e/impl/service/outbound/SftpPushServiceKeyAuthTest.html#SftpPushServiceKeyAuthTest">SftpPushServiceKeyAuthTest</a> {
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String RSA = <span class="jxr_string">"RSA"</span>;
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String USERNAME = <span class="jxr_string">"username"</span>;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Long PORT = 8888L;
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>      <em class="jxr_comment">//   random generated 2048 bit rsa key pair with encrypted private key, old ssh file format, private key is</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>      <em class="jxr_comment">// protected with password "test"</em>
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String KEY_PUBLIC_KEY =
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>              <span class="jxr_string">"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDtSP+/7HiXZF2x04EK6tUHV6v09SjenhKyBdIf9CFEGrMJ7GUhmwhP2PTExgyiwoJPT0NMWe5kH+3rE8HpnJrhgOeS80QKmMtTmNEitqC8DBIUvtiL+JWs/Eel3q3YimmLSD/zRiJcFQ1B9xcb07ZNK3q/6VwUIUO+Y7quyhOTn8MVr4MeJ5xBgkTwkutLkEjnY4H35sVuKRGxztC3oiK0voSQT/3VvcmYHorGCHyJ3Rw01AhdCTYvM1+EsvNQbgDag7KXsU15EIgxe1CoxndzrnK6nvfMW+9SYQPMitgNSeouplO71p1prZHybB2Ql1DwISzGkroVa79ASzGs3Jyb"</span>;
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> String KEY_PRIVATE_KEY =
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>              <span class="jxr_string">""</span><span class="jxr_string">"
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>                      -----BEGIN RSA PRIVATE KEY-----
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>                      Proc-Type: 4,ENCRYPTED
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                      DEK-Info: DES-EDE3-CBC,197D92B1B77A0568
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>  
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                      2YURfGCvHR/OpOmih6Z7zsEZfVf80kTUfzftXu6Dm4H9C/hVe4rWAwhscSyEnF85
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>                      Gb7AkvPYo7fSt6elrbOhlNb0FTbEmHR9IWjZUzk5yafrijEX/BoBySR+7Lp9wOU0
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                      kponps5nK4bfAZ522v3l1Fk38A3iQ84pMw9jAKY3eEIC8r5dBcwsJX3S32HWTcd+
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>                      +U7hl1naqIYTp8HQ5QKu9soQqlE2sis06qbTI7wVImW9kWTJNqHivFzrIiQo97oz
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>                      yXpysXyow8kvuxeHzDg3Cm7PMUbRqNTXJ7z5Un4KEdHvLfP+U3rnidKf7CJdQsqh
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>                      j0WJgAq0zb5kVDYQ/c8ZSUbRiCd6QrIgtDJD/27yQ44gE2NcpDzKdSqtpM2YbbZz
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                      w3nm6JSo3R5+XG2Wg2gWn2ivXCUJg2hkr3K/DfuBXA3Y2E4nQceG21wlXOzbX/5+
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                      oa31Kt8t3SF26yGbkZEFxBoWW3n3ffR+WbM8ozgxf9BXlGDGo27fCtSxCEM1GKcO
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>                      C4075dKJG4su+GYY/0yixKUsWnOSRfeohmvF2LnfIrohJHjdgbPK2CDVliYbCtUZ
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>                      zjcRfTeh6bPzYCeKvMhUpFZ9tHKs969gf/X0t2WOVmsLgtXxEI7b4yElwUX0lTTG
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>                      Rst102A1jl9LuGMtMNPuvqll6+0IcQXfhtpWFLcouGEcofYH0oR05qkTwdaO5sAL
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>                      12Cw5y0hhmc/mBqzhV+eoHT5bNfvlY6iEJ1geiegVSnquKUMiBKPjl9WneXGVeqy
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>                      WijlHYrBQdNu4sADfZqv4uV6LonQdg4pagMTgGMVVwXBtHA3UJlH278qikVTCDl+
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>                      QOKsWuJeJDD+829wWQrzlf4JbiOqcyU++b3OZgcT9i3ZlYxzs8E0AcDhxGgEAtqm
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>                      OyOQNlMtoADOeNZxvRfEYsYgciBRNkywVUt9mHK6I3EWIfBsqsweVfDsKqS2uYZw
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>                      cMMfPuNq4yBfKAER5Z4uydZt3dacdx9WKxkgYF7k4nI2d3/+BZCmmyamcO1i01ze
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>                      yLiL+NKnVEtpaPja9XxHtO9OWdt0KHzIoK78tzVWFNXqFpdHtdZ293mAP1bEczGl
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>                      M67WTliJeehRA30s5rkpKC5sMoNsPCYOpZQMHalvTRSmKe9T/Y4xYkusTiCNjSZb
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>                      TdlpRnI9SA0/Opdxs4sDlZChqRrlnD31cpV9BAUzKKZKYDIO81jNt27bnhlHO78d
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>                      mEdi5P49EJF1I9LZVjSv+hWIcYu5/xqAha9pUOoa1MWzMl4reYxrXPG97hUIqzPB
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>                      rcDwrIewWm/MDgARmovdWomdjo6MVp1+nKAAsvtoTNxsGtEt4sNi2PUyuN44o+ZD
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>                      qSRSvP0+WmYHDURCmuchC9hNdCqreK8WovFEPhf8Mp6/pL2WohAzfm94D18clEBA
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>                      ZJV1ZqkK3nX/O/IXV2dtcrzhZTrqyFHPTIk32ZJTim28YiM/47taffWtsfseHaZv
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>                      Vux0VlbSuAIZQdpEHOAe6NA6HoI8QrRRq6br+VBfRDOwwuZx0euL9Vy+1utZnfFz
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>                      3/9H9IFlyUfbwWRavwTAmTQOrNiTkJMN0ycFZ1I1QoPykrIAC7nyxA==
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>                      -----END RSA PRIVATE KEY-----
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>                      <span class="jxr_string">""</span><span class="jxr_string">";
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>      <strong class="jxr_keyword">private</strong> SftpPushService sftpPushService;
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>      <strong class="jxr_keyword">private</strong> SshServer sshd;
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> 
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>     @TempDir
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>     <strong class="jxr_keyword">private</strong> Path testFolder;
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>     @BeforeEach
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>     <strong class="jxr_keyword">void</strong> newPollingService() <strong class="jxr_keyword">throws</strong> IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> 
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>         sftpPushService = <strong class="jxr_keyword">new</strong> SftpPushService();
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>         startSftpServerWithKeyAuth();
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>     }
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>     @AfterEach
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>     <strong class="jxr_keyword">void</strong> stopSftp() <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>         <strong class="jxr_keyword">if</strong> (sshd != <strong class="jxr_keyword">null</strong>) {
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>             sshd.stop();
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>         }
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>     }
+<a class="jxr_linenumber" name="L117" href="#L117">117</a> 
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>     @Test
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>     @DisplayName(<span class="jxr_string">"ssh key auth"</span>)
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>     <strong class="jxr_keyword">void</strong> authWithSshKey() <strong class="jxr_keyword">throws</strong> NexusException, IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+<a class="jxr_linenumber" name="L121" href="#L121">121</a> 
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>         Path expectedFile = testFolder.resolve(<span class="jxr_string">"some_id_1234_0.png"</span>);
+<a class="jxr_linenumber" name="L123" href="#L123">123</a> 
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>         ComponentTestUtils.applyParameters(sftpPushService, getDefaultParameters());
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>         ExecutionContext executionContext = getExecutionContext();
+<a class="jxr_linenumber" name="L126" href="#L126">126</a> 
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>         assertThat(expectedFile).doesNotExist();
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>         sftpPushService.executeInternal(executionContext);
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>         assertThat(expectedFile).exists();
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>     }
+<a class="jxr_linenumber" name="L131" href="#L131">131</a> 
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>     <strong class="jxr_keyword">private</strong> Map&lt;String, Object&gt; getDefaultParameters() {
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>         Map&lt;String, Object&gt; parameterMap = <strong class="jxr_keyword">new</strong> HashMap&lt;&gt;();
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>         parameterMap.put(<span class="jxr_string">"login_username"</span>, USERNAME);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>         parameterMap.put(<span class="jxr_string">"ssh_key_data"</span>, KEY_PRIVATE_KEY);
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>         parameterMap.put(<span class="jxr_string">"ssh_key_password"</span>, <span class="jxr_string">"test"</span>);
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>         parameterMap.put(<span class="jxr_string">"host"</span>, <span class="jxr_string">"localhost"</span>);
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>         parameterMap.put(<span class="jxr_string">"port"</span>, PORT);
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         parameterMap.put(<span class="jxr_string">"server_path"</span>, <span class="jxr_string">"/"</span>);
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>         <strong class="jxr_keyword">return</strong> parameterMap;
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>     }
+<a class="jxr_linenumber" name="L142" href="#L142">142</a> 
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> startSftpServerWithKeyAuth() <strong class="jxr_keyword">throws</strong> IOException, NoSuchAlgorithmException, InvalidKeySpecException {
+<a class="jxr_linenumber" name="L144" href="#L144">144</a> 
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         LOGGER.info(<span class="jxr_string">"Starting SFTP server with key authentication"</span>);
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>         sshd = SshServer.setUpDefaultServer();
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>         VirtualFileSystemFactory virtualFileSystemFactory = <strong class="jxr_keyword">new</strong> VirtualFileSystemFactory(testFolder);
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>         sshd.setFileSystemFactory(virtualFileSystemFactory);
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         sshd.setPort(PORT.intValue());
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>         sshd.setSubsystemFactories(List.of(<strong class="jxr_keyword">new</strong> SftpSubsystemFactory()));
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>         sshd.setCommandFactory(<strong class="jxr_keyword">new</strong> ScpCommandFactory());
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>         sshd.setKeyPairProvider(
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>                 <strong class="jxr_keyword">new</strong> SimpleGeneratorHostKeyProvider(Files.createFile(testFolder.resolve(<span class="jxr_string">"hostkey.ser"</span>))));
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>         Security.addProvider(<strong class="jxr_keyword">new</strong> BouncyCastleProvider());
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> 
+<a class="jxr_linenumber" name="L157" href="#L157">157</a>         AsymmetricKeyParameter asymmetricKeyParameter = OpenSSHPublicKeyUtil.parsePublicKey(
+<a class="jxr_linenumber" name="L158" href="#L158">158</a>                 Base64.getDecoder().decode(KEY_PUBLIC_KEY.split(<span class="jxr_string">" "</span>)[1]));
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>         OpenSSHPublicKeySpec openSSHPublicKeySpec =
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>                 <strong class="jxr_keyword">new</strong> OpenSSHPublicKeySpec(OpenSSHPublicKeyUtil.encodePublicKey(asymmetricKeyParameter));
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>         PublicKey publicKey = KeyFactory.getInstance(RSA).generatePublic(openSSHPublicKeySpec);
+<a class="jxr_linenumber" name="L162" href="#L162">162</a> 
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>         List&lt;PublicKey&gt; keys = List.of(publicKey);
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>         sshd.setPublickeyAuthenticator(<strong class="jxr_keyword">new</strong> KeySetPublickeyAuthenticator(<span class="jxr_string">"dummy"</span>, keys));
+<a class="jxr_linenumber" name="L165" href="#L165">165</a> 
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>         sshd.start();
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>         LOGGER.info(<span class="jxr_string">"In-memory SFTP server started"</span>);
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>     }
+<a class="jxr_linenumber" name="L169" href="#L169">169</a> 
+<a class="jxr_linenumber" name="L170" href="#L170">170</a>     <strong class="jxr_keyword">private</strong> ExecutionContext getExecutionContext() <strong class="jxr_keyword">throws</strong> IOException {
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         ExecutionContext executionContext = <strong class="jxr_keyword">new</strong> <a name="TestMessageContext" href="../../../../../../com/evolvsys/nexuse2e/core/message/context/TestMessageContext.html#TestMessageContext">TestMessageContext</a>().createExecutionContext(MessageType.NORMAL);
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>         executionContext.setSourceMessage(<strong class="jxr_keyword">new</strong> Message());
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>         executionContext.getMessage().setId(<span class="jxr_string">"some_id_1234"</span>);
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>         executionContext.setSourcePartnerId(<span class="jxr_string">"source_partner_id"</span>);
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>         URL resource = getClass().getResource(<span class="jxr_string">"/payload/png_payload.PNG"</span>);
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>         String contentType = <strong class="jxr_keyword">new</strong> Tika().detect(resource);
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>         byte[] bytes = resource.openStream().readAllBytes();
+<a class="jxr_linenumber" name="L178" href="#L178">178</a>         PayloadContent payloadContent = PayloadContent.of(bytes);
+<a class="jxr_linenumber" name="L179" href="#L179">179</a> 
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>         ContextPayload contextPayload = ContextPayload.builder()
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>                 .contentType(contentType)
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>                 .content(payloadContent)
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>                 .size(payloadContent.getSize())
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>                 .build();
+<a class="jxr_linenumber" name="L185" href="#L185">185</a> 
+<a class="jxr_linenumber" name="L186" href="#L186">186</a>         executionContext.getMessage().setPayloads(List.of(contextPayload));
+<a class="jxr_linenumber" name="L187" href="#L187">187</a> 
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>         <strong class="jxr_keyword">return</strong> executionContext;
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>     }
+<a class="jxr_linenumber" name="L190" href="#L190">190</a> }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

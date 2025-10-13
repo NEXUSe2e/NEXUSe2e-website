@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PipelineGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.pipeline.service</a> &gt; <span class="el_source">PipelineGraphQLService.java</span></div><h1>PipelineGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.pipeline.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.nexuse2e.core.config.service.ConfigGraphQLService;
+import com.evolvsys.nexuse2e.core.pipelet.model.PipeletDto;
+import com.evolvsys.nexuse2e.core.pipelet.service.PipeletBatchLoader;
+import com.evolvsys.nexuse2e.core.pipeline.PipelineFilter;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineDto;
+import io.leangen.graphql.annotations.*;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @author Florian Drees
+ * @since 20.11.2023
+ */
+@GraphQLService
+@RequiredArgsConstructor
+<span class="fc" id="L26">@Slf4j</span>
+public class PipelineGraphQLService {
+    private final PipelineService pipelineService;
+    private final DataLoaderService dataLoaderService;
+
+    @GraphQLQuery(name = &quot;pipeline_list&quot;, description = &quot;List all pipelines&quot;)
+    @GraphQLNonNull
+    public List&lt;@GraphQLNonNull PipelineDto&gt; list(PipelineFilter pipelineFilter) {
+<span class="nc" id="L34">        return pipelineService.list(pipelineFilter);</span>
+    }
+
+    @GraphQLQuery(name = &quot;pipeline_getById&quot;, description = &quot;Gets a pipeline&quot;)
+    public Optional&lt;PipelineDto&gt; getById(long pipelineId) {
+<span class="nc" id="L39">        return pipelineService.getById(pipelineId);</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_update&quot;, description = &quot;Updates an existing or creates a new pipeline&quot;)
+    @GraphQLNonNull
+    public PipelineDto update(@GraphQLNonNull @Valid PipelineDto pipelineDto) {
+<span class="nc" id="L45">        return ConfigGraphQLService.notifySubscribers(pipelineService.save(pipelineDto));</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_updateWithPipelets&quot;)
+    @GraphQLNonNull
+    public PipelineDto update(@GraphQLNonNull @Valid PipelineDto pipeline, @Valid List&lt;PipeletDto&gt; pipelets) {
+<span class="nc" id="L51">        return ConfigGraphQLService.notifySubscribers(pipelineService.save(pipeline, pipelets));</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_delete&quot;, description = &quot;Delete a pipeline&quot;)
+    public boolean delete(long pipelineId) {
+<span class="nc" id="L56">        pipelineService.delete(pipelineId);</span>
+<span class="nc" id="L57">        ConfigGraphQLService.notifySubscribers();</span>
+<span class="nc" id="L58">        return true;</span>
+    }
+
+    @GraphQLQuery(description = &quot;list of pipelets of the provided pipeline&quot;)
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull PipeletDto&gt;&gt; pipelets(
+            @GraphQLContext PipelineDto pipelineDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="nc" id="L64">        LOGGER.trace(&quot;getting pipelets for pipeline {}&quot;, pipelineDto);</span>
+
+<span class="nc" id="L66">        return dataLoaderService.loadRelation(resolutionEnvironment, PipeletBatchLoader.class, pipelineDto);</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_addPipelet&quot;, description = &quot;Adds a pipelet to an existing pipeline&quot;)
+    @GraphQLNonNull
+    public PipelineDto addPipelet(long pipelineId, @Valid @GraphQLNonNull PipeletDto pipeletDto) {
+<span class="nc" id="L72">        return ConfigGraphQLService.notifySubscribers(pipelineService.addPipelet(pipelineId, pipeletDto));</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_removePipelet&quot;, description = &quot;Removes a pipelet from an existing pipeline&quot;)
+    @GraphQLNonNull
+    public PipelineDto removePipelet(long pipelineId, long pipeletId) {
+<span class="nc" id="L78">        return ConfigGraphQLService.notifySubscribers(pipelineService.removePipelet(pipelineId, pipeletId));</span>
+    }
+
+    @GraphQLMutation(name = &quot;pipeline_rearrange&quot;, description = &quot;rearrange the order of pipelets&quot;)
+    public PipelineDto rearrangePipeline(long pipelineId, List&lt;@GraphQLNonNull Long&gt; pipeletIdsInOrder) {
+<span class="nc" id="L83">        return ConfigGraphQLService.notifySubscribers(pipelineService.rearrange(pipelineId, pipeletIdsInOrder));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

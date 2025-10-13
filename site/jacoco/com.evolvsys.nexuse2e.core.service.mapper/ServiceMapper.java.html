@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.mapper</a> &gt; <span class="el_source">ServiceMapper.java</span></div><h1>ServiceMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.mapper;
+
+import com.evolvsys.app.core.mapper.BaseDtoEntityMapper;
+import com.evolvsys.app.core.mapper.DefaultMapperConfiguration;
+import com.evolvsys.app.core.mapper.interceptor.InterceptingMappingContext;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.parameter.mapper.ParameterMapper;
+import com.evolvsys.nexuse2e.core.pipeline.mapper.PipelineMapper;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingService;
+import com.evolvsys.nexuse2e.core.schedule.model.SchedulingDataDto;
+import com.evolvsys.nexuse2e.core.service.model.ServiceDto;
+import com.evolvsys.nexuse2e.core.service.repository.ServiceRepository;
+import org.apache.commons.lang3.StringUtils;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * @author Florian Drees
+ * @since 13.12.2023
+ */
+@Mapper(
+        config = DefaultMapperConfiguration.class,
+        uses = {PipelineMapper.class, ParameterMapper.class})
+<span class="fc" id="L24">public abstract class ServiceMapper extends BaseDtoEntityMapper&lt;ServiceDto, ServiceEntity&gt; {</span>
+    private ServiceRepository serviceRepository;
+    private SchedulingService schedulingService;
+
+    @Autowired
+    protected void config(ServiceRepository serviceRepository, SchedulingService schedulingService) {
+<span class="fc" id="L30">        this.serviceRepository = serviceRepository;</span>
+<span class="fc" id="L31">        this.schedulingService = schedulingService;</span>
+<span class="fc" id="L32">    }</span>
+
+    @Override
+    public ServiceEntity idToEntity(Long id, @Context InterceptingMappingContext interceptingMappingContext) {
+<span class="fc" id="L36">        return idToEntity(id, interceptingMappingContext, serviceRepository::findById);</span>
+    }
+
+    @Mapping(target = &quot;resolverPipelineId&quot;, source = &quot;resolverPipeline.id&quot;)
+    @Mapping(target = &quot;returnPipelineId&quot;, source = &quot;returnPipeline.id&quot;)
+    @Mapping(target = &quot;errorPipelineId&quot;, source = &quot;errorPipeline.id&quot;)
+    @Mapping(target = &quot;parameters&quot;, ignore = true)
+    @Mapping(target = &quot;schedulingData&quot;, source = &quot;entity&quot;)
+    @InheritConfiguration
+    @Override
+    protected abstract ServiceDto entityToDto(
+            ServiceEntity entity, @Context InterceptingMappingContext interceptingMappingContext);
+
+    protected SchedulingDataDto toSchedulingData(ServiceEntity entity) {
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        return StringUtils.isNoneBlank(entity.getServiceId(), entity.getComponentId())</span>
+<span class="fc" id="L51">                ? schedulingService.toSchedulingData(entity.getServiceId(), entity.getComponentId())</span>
+<span class="fc" id="L52">                : null;</span>
+    }
+
+    @Mapping(target = &quot;resolverPipeline&quot;, source = &quot;resolverPipelineId&quot;)
+    @Mapping(target = &quot;returnPipeline&quot;, source = &quot;returnPipelineId&quot;)
+    @Mapping(target = &quot;errorPipeline&quot;, source = &quot;errorPipelineId&quot;)
+    @InheritConfiguration
+    @Override
+    protected abstract void updateEntity(
+            ServiceDto dto,
+            @MappingTarget ServiceEntity entity,
+            @Context InterceptingMappingContext interceptingMappingContext);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

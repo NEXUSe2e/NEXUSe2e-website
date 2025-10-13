@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonToCsvReader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">JsonToCsvReader.java</span></div><h1>JsonToCsvReader.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import one.util.streamex.StreamEx;
+import org.apache.commons.collections4.KeyValue;
+import org.jspecify.annotations.NonNull;
+
+/**
+ * Reader for the {@link JsonToCsvTransformerService}. Reads the context payload's json and procudes
+ * multiple {@link Map}, consisting of the key (json field name) and the optional value as a generic {@link Object}.
+ *
+ * @author Julian Drees
+ * @since 09.09.2025
+ */
+@RequiredArgsConstructor
+public class JsonToCsvReader {
+    private final ObjectMapper objectMapper;
+    private final List&lt;KeyValue&lt;String, String&gt;&gt; fieldColumnMappings;
+
+    @NonNull
+    public Iterator&lt;Map&lt;String, Optional&lt;Object&gt;&gt;&gt; iterator(ContextPayload originalPayload) throws NexusException {
+        try {
+<span class="fc" id="L35">            JsonNode root = objectMapper.readTree(originalPayload.getContent().getInputStream());</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            if (!root.isArray()) {</span>
+<span class="fc" id="L37">                throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L38">                        .message(&quot;Payload '%s' does not start with a root array.&quot;</span>
+<span class="fc" id="L39">                                .formatted(originalPayload.getContentId()))</span>
+<span class="fc" id="L40">                        .build());</span>
+            }
+
+<span class="fc" id="L43">            return StreamEx.of(root.elements())</span>
+<span class="fc" id="L44">                    .map(jsonNode -&gt; StreamEx.of(fieldColumnMappings)</span>
+<span class="fc" id="L45">                            .map(KeyValue::getKey)</span>
+<span class="fc" id="L46">                            .toMap(Function.identity(), key -&gt; getTypedValue(jsonNode.get(key))))</span>
+<span class="fc" id="L47">                    .iterator();</span>
+<span class="fc" id="L48">        } catch (IOException ex) {</span>
+<span class="fc" id="L49">            throw new NexusException(</span>
+<span class="fc" id="L50">                    NexusError.builder()</span>
+<span class="fc" id="L51">                            .message(&quot;Failed to parse json content for payload '%s'.&quot;</span>
+<span class="fc" id="L52">                                    .formatted(originalPayload.getContentId()))</span>
+<span class="fc" id="L53">                            .build(),</span>
+                    ex);
+        }
+    }
+
+    @NonNull
+    private Optional&lt;Object&gt; getTypedValue(JsonNode jsonNode) {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (jsonNode == null) {</span>
+<span class="fc" id="L61">            return Optional.empty();</span>
+        }
+<span class="fc" id="L63">        Object result =</span>
+<span class="fc bfc" id="L64" title="All 5 branches covered.">                switch (jsonNode.getNodeType()) {</span>
+<span class="fc" id="L65">                    case STRING -&gt; jsonNode.asText();</span>
+                    case NUMBER -&gt; {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">                        if (jsonNode.isDouble()) {</span>
+<span class="fc" id="L68">                            yield BigDecimal.valueOf(jsonNode.asDouble());</span>
+                        }
+<span class="fc" id="L70">                        yield jsonNode.asLong();</span>
+                    }
+<span class="fc" id="L72">                    case BOOLEAN -&gt; jsonNode.asBoolean();</span>
+<span class="fc" id="L73">                    case NULL -&gt; null;</span>
+                    default -&gt;
+<span class="fc" id="L75">                        throw new UnsupportedOperationException(&quot;Unsupported node type: &quot; + jsonNode.getNodeType());</span>
+                };
+<span class="fc" id="L77">        return Optional.ofNullable(result);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

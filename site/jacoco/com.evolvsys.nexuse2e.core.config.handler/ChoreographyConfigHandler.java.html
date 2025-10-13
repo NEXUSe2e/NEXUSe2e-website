@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChoreographyConfigHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.handler</a> &gt; <span class="el_source">ChoreographyConfigHandler.java</span></div><h1>ChoreographyConfigHandler.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.handler;
+
+import com.evolvsys.nexuse2e.core.action.model.ActionEntity;
+import com.evolvsys.nexuse2e.core.choreography.repository.ChoreographyRepository;
+import com.evolvsys.nexuse2e.core.config.handler.mapper.ChoreographyConfigMapper;
+import com.evolvsys.nexuse2e.core.config.model.*;
+import com.evolvsys.nexuse2e.core.model.entity.ChoreographyEntity;
+import com.evolvsys.nexuse2e.core.pipeline.repository.PipelineRepository;
+import com.evolvsys.nexuse2e.core.route.repository.RouteRepository;
+import java.util.*;
+import java.util.stream.Collectors;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 26.10.2023
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L26">@Slf4j</span>
+@Order(1)
+public class ChoreographyConfigHandler implements ConfigHandler&lt;ChoreographyConfig&gt; {
+    private final ChoreographyRepository choreographyRepository;
+    private final ChoreographyConfigMapper choreographyConfigMapper;
+    private final PipelineRepository pipelineRepository;
+    private final RouteRepository routeRepository;
+
+    private ChoreographyEntity create() {
+<span class="fc" id="L35">        return new ChoreographyEntity();</span>
+    }
+
+    protected void updateAction(ActionConfig config, ActionEntity actionEntity) {
+<span class="fc" id="L39">        actionEntity.setActionId(config.getActionId());</span>
+<span class="fc" id="L40">        actionEntity.setValidStartAction(ObjectUtils.defaultIfNull(config.getValidStartAction(), Boolean.FALSE));</span>
+<span class="fc" id="L41">        actionEntity.setValidTerminationAction(</span>
+<span class="fc" id="L42">                ObjectUtils.defaultIfNull(config.getValidTerminationAction(), Boolean.FALSE));</span>
+
+<span class="fc" id="L44">        actionEntity.setReturnPipeline(</span>
+<span class="fc" id="L45">                pipelineRepository.findByPipelineId(config.getReturnPipeline()).orElse(null));</span>
+<span class="fc" id="L46">        actionEntity.setForwardPipeline(</span>
+<span class="fc" id="L47">                pipelineRepository.findByPipelineId(config.getForwardPipeline()).orElse(null));</span>
+<span class="fc" id="L48">        actionEntity.setAcknowledgmentPipeline(pipelineRepository</span>
+<span class="fc" id="L49">                .findByPipelineId(config.getAcknowledgmentPipeline())</span>
+<span class="fc" id="L50">                .orElse(null));</span>
+
+<span class="fc" id="L52">        actionEntity.getRoutes().clear();</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (CollectionUtils.isNotEmpty(config.getRoutes())) {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            for (RouteLinkConfig route : config.getRoutes()) {</span>
+<span class="nc" id="L55">                LOGGER.trace(&quot;adding route to action {}&quot;, route.getRouteId());</span>
+<span class="nc" id="L56">                routeRepository</span>
+<span class="nc" id="L57">                        .findByRouteId(route.getRouteId())</span>
+<span class="nc" id="L58">                        .ifPresent(routeEntity -&gt; actionEntity.getRoutes().add(routeEntity));</span>
+<span class="nc" id="L59">            }</span>
+        }
+<span class="fc" id="L61">    }</span>
+
+    @Override
+    public void clear() {
+<span class="fc" id="L65">        choreographyRepository.deleteAll();</span>
+<span class="fc" id="L66">    }</span>
+
+    @Override
+    @Transactional
+    public void importConfig(ConfigContext configContext, ChoreographyConfig config) {
+<span class="fc" id="L71">        LOGGER.trace(&quot;handling choreography with name {}&quot;, config.getChoreographyId());</span>
+<span class="fc" id="L72">        ChoreographyEntity choreographyEntity =</span>
+<span class="fc" id="L73">                choreographyRepository.findByChoreographyId(config.getChoreographyId()).stream()</span>
+<span class="pc" id="L74">                        .filter(entity -&gt; entity.getChoreographyId().equals(config.getChoreographyId()))</span>
+<span class="fc" id="L75">                        .findFirst()</span>
+<span class="fc" id="L76">                        .orElseGet(this::create);</span>
+
+<span class="fc" id="L78">        choreographyConfigMapper.updateEntity(config, choreographyEntity);</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        if (CollectionUtils.isNotEmpty(config.getActions())) {</span>
+<span class="fc" id="L81">            Map&lt;String, ActionEntity&gt; actionEntities =</span>
+<span class="fc" id="L82">                    HashMap.newHashMap(config.getActions().size());</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            for (ActionConfig action : config.getActions()) {</span>
+<span class="fc" id="L84">                LOGGER.trace(&quot;adding action {}&quot;, action);</span>
+<span class="fc" id="L85">                ActionEntity actionEntity = choreographyEntity.getActions().stream()</span>
+<span class="fc" id="L86">                        .filter(a -&gt; a.getActionId().equals(action.getActionId()))</span>
+<span class="fc" id="L87">                        .findFirst()</span>
+<span class="fc" id="L88">                        .orElseGet(ActionEntity::new);</span>
+
+<span class="fc" id="L90">                actionEntity.setChoreography(choreographyEntity);</span>
+
+<span class="fc" id="L92">                updateAction(action, actionEntity);</span>
+
+<span class="fc" id="L94">                choreographyEntity.getActions().add(actionEntity);</span>
+<span class="fc" id="L95">                actionEntities.put(action.getActionId(), actionEntity);</span>
+<span class="fc" id="L96">            }</span>
+
+<span class="fc bfc" id="L98" title="All 2 branches covered.">            for (ActionConfig action : config.getActions()) {</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">                if (CollectionUtils.isNotEmpty(action.getValidNextActions())) {</span>
+<span class="fc" id="L100">                    ActionEntity actionEntity = actionEntities.get(action.getActionId());</span>
+<span class="fc" id="L101">                    action.getValidNextActions().stream()</span>
+<span class="fc" id="L102">                            .map(actionEntities::get)</span>
+<span class="fc" id="L103">                            .filter(Objects::nonNull)</span>
+<span class="fc" id="L104">                            .forEach((nextEntity) -&gt;</span>
+<span class="fc" id="L105">                                    actionEntity.getValidNextActions().add(nextEntity));</span>
+                }
+<span class="fc" id="L107">            }</span>
+        }
+
+<span class="fc" id="L110">        choreographyEntity.getRoutes().clear();</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (CollectionUtils.isNotEmpty(config.getRoutes())) {</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">            for (RouteLinkConfig route : config.getRoutes()) {</span>
+<span class="fc" id="L113">                LOGGER.trace(&quot;adding route to choreography {}&quot;, route.getRouteId());</span>
+<span class="fc" id="L114">                routeRepository</span>
+<span class="fc" id="L115">                        .findByRouteId(route.getRouteId())</span>
+<span class="fc" id="L116">                        .ifPresent(routeEntity -&gt; choreographyEntity.getRoutes().add(routeEntity));</span>
+<span class="fc" id="L117">            }</span>
+        }
+
+<span class="fc" id="L120">        choreographyRepository.save(choreographyEntity);</span>
+<span class="fc" id="L121">    }</span>
+
+    @Override
+    public void exportConfig(ConfigExportContext configExportContext) {
+<span class="fc" id="L125">        choreographyRepository.findAll().stream()</span>
+<span class="fc" id="L126">                .map(choreographyConfigMapper::toConfig)</span>
+<span class="fc" id="L127">                .forEach(config -&gt;</span>
+<span class="fc" id="L128">                        configExportContext.getConfig().getChoreographies().add(config));</span>
+<span class="fc" id="L129">    }</span>
+
+    @Override
+    public List&lt;ChoreographyConfig&gt; merge(
+            Collection&lt;ChoreographyConfig&gt; oldConfigs, Collection&lt;ChoreographyConfig&gt; newConfigs) {
+<span class="fc" id="L134">        return defaultMerge(</span>
+<span class="fc" id="L135">                oldConfigs, newConfigs, ChoreographyConfig::getChoreographyId, choreographyConfigMapper::merge);</span>
+    }
+
+    @Override
+    public void sort(NexusConfig nexusConfig) {
+<span class="fc" id="L140">        nexusConfig.getChoreographies().sort(Comparator.comparing(ChoreographyConfig::getChoreographyId));</span>
+<span class="fc" id="L141">        nexusConfig.getChoreographies().forEach(this::sort);</span>
+<span class="fc" id="L142">    }</span>
+
+    @Override
+    public void sort(ChoreographyConfig config) {
+<span class="fc" id="L146">        config.getActions().sort(Comparator.comparing(ActionConfig::getActionId));</span>
+<span class="fc" id="L147">        config.getRoutes().sort(Comparator.comparing(RouteLinkConfig::getRouteId));</span>
+<span class="fc bfc" id="L148" title="All 2 branches covered.">        for (ActionConfig actionConfig : config.getActions()) {</span>
+<span class="fc" id="L149">            actionConfig.getRoutes().sort(Comparator.comparing(RouteLinkConfig::getRouteId));</span>
+<span class="fc" id="L150">            Set&lt;String&gt; sortedValidNextActions = actionConfig.getValidNextActions().stream()</span>
+<span class="fc" id="L151">                    .sorted()</span>
+<span class="fc" id="L152">                    .collect(Collectors.toCollection(LinkedHashSet::new));</span>
+<span class="fc" id="L153">            actionConfig.setValidNextActions(sortedValidNextActions);</span>
+<span class="fc" id="L154">        }</span>
+<span class="fc" id="L155">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

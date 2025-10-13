@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XPathParameters.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.parameter</a> &gt; <span class="el_source">XPathParameters.java</span></div><h1>XPathParameters.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.parameter;
+
+import com.evolvsys.nexuse2e.core.component.Configurable;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.function.Supplier;
+
+/**
+ * @author SvenBarden
+ * @since 16.09.2024
+ */
+public interface XPathParameters {
+    String PARAM_TRIM_RESULT = &quot;trim_result&quot;;
+    String PARAM_STOP_ON_FAIL = &quot;stop_on_error&quot;;
+    String PARAM_STOP_ON_NOT_FOUND = &quot;stop_on_not_found&quot;;
+
+<span class="fc" id="L17">    Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; TRIM_RESULT = () -&gt; ParameterDefinition.builder()</span>
+<span class="fc" id="L18">            .name(PARAM_TRIM_RESULT)</span>
+<span class="fc" id="L19">            .displayName(&quot;Strip whitespace from result&quot;)</span>
+<span class="fc" id="L20">            .description(&quot;Whether to remove all leading or trailing whitespace characters from the result.&quot;)</span>
+<span class="fc" id="L21">            .required(true)</span>
+<span class="fc" id="L22">            .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L23">            .defaultValue(Boolean.TRUE);</span>
+<span class="fc" id="L24">    Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; STOP_ON_FAIL = () -&gt; ParameterDefinition.builder()</span>
+<span class="fc" id="L25">            .name(PARAM_STOP_ON_FAIL)</span>
+<span class="fc" id="L26">            .displayName(&quot;Stop on Fail&quot;)</span>
+<span class="fc" id="L27">            .description(&quot;Whether to cancel processing on failure.&quot;)</span>
+<span class="fc" id="L28">            .required(true)</span>
+<span class="fc" id="L29">            .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L30">            .defaultValue(Boolean.TRUE);</span>
+<span class="fc" id="L31">    Supplier&lt;ParameterDefinition.ParameterDefinitionBuilder&gt; STOP_ON_NOT_FOUND = () -&gt; ParameterDefinition.builder()</span>
+<span class="fc" id="L32">            .name(PARAM_STOP_ON_NOT_FOUND)</span>
+<span class="fc" id="L33">            .displayName(&quot;Stop on empty or not found value&quot;)</span>
+<span class="fc" id="L34">            .description(&quot;Whether to cancel further processing when the result value for the xpath statement is empty.&quot;)</span>
+<span class="fc" id="L35">            .required(true)</span>
+<span class="fc" id="L36">            .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L37">            .defaultValue(Boolean.TRUE);</span>
+
+    default String trimResult(String s, Configurable configurable) {
+<span class="fc" id="L40">        Boolean trimResult = configurable.getParameters().value(PARAM_TRIM_RESULT);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if (trimResult) {</span>
+<span class="fc" id="L42">            s = s.trim();</span>
+        }
+<span class="fc" id="L44">        return s;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

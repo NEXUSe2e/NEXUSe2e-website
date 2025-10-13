@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DashboardGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.dashboard.service</a> &gt; <span class="el_source">DashboardGraphQLService.java</span></div><h1>DashboardGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.dashboard.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.nexuse2e.core.dashboard.DashboardFilter;
+import com.evolvsys.nexuse2e.core.dashboard.model.ConversationStatusCountResultDto;
+import com.evolvsys.nexuse2e.core.dashboard.model.LatestMessagesOfChoreographyDto;
+import com.evolvsys.nexuse2e.core.dashboard.model.LatestMessagesOfPartnerDto;
+import com.evolvsys.nexuse2e.core.dashboard.model.MessageStatusCountResultDto;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.lang.Nullable;
+
+/**
+ * @author Florian Drees
+ * @since 21.03.2024
+ */
+@GraphQLService
+@RequiredArgsConstructor
+public class DashboardGraphQLService {
+    private final DashboardService dashboardService;
+
+    @GraphQLQuery(name = &quot;dashboard_getMessageCountByStatus&quot;, description = &quot;Get count of messages by status&quot;)
+    public List&lt;@GraphQLNonNull MessageStatusCountResultDto&gt; getMessageCountByStatus(
+            @Nullable DashboardFilter dashboardFilter) {
+<span class="nc" id="L27">        return dashboardService.getMessageCountByStatus(dashboardFilter);</span>
+    }
+
+    @GraphQLQuery(name = &quot;dashboard_getConversationCountByStatus&quot;, description = &quot;Get count of conversations by status&quot;)
+    public List&lt;@GraphQLNonNull ConversationStatusCountResultDto&gt; getConversationCountByStatus(
+            @Nullable DashboardFilter dashboardFilter) {
+<span class="nc" id="L33">        return dashboardService.getConversationCountByStatus(dashboardFilter);</span>
+    }
+
+    @GraphQLQuery(
+            name = &quot;dashboard_getLatestMessagesOfChoreographies&quot;,
+            description = &quot;Get the time of the latest inbound and outbound message per choreography&quot;)
+    public List&lt;@GraphQLNonNull LatestMessagesOfChoreographyDto&gt; getLatestMessagesOfChoreographies(
+            @Nullable DashboardFilter dashboardFilter) {
+<span class="nc" id="L41">        return dashboardService.getLatestMessagesOfChoreographies(dashboardFilter);</span>
+    }
+
+    @GraphQLQuery(
+            name = &quot;dashboard_getLatestMessagesOfPartners&quot;,
+            description = &quot;Get the time of the latest inbound and outbound message per partner&quot;)
+    public List&lt;@GraphQLNonNull LatestMessagesOfPartnerDto&gt; getLatestMessagesOfPartners(
+            @Nullable DashboardFilter dashboardFilter) {
+<span class="nc" id="L49">        return dashboardService.getLatestMessagesOfPartners(dashboardFilter);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

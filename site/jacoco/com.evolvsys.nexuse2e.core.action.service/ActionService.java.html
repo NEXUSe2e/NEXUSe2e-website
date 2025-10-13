@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ActionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.action.service</a> &gt; <span class="el_source">ActionService.java</span></div><h1>ActionService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.action.service;
+
+import com.evolvsys.app.core.auth.service.CurrentUserService;
+import com.evolvsys.app.core.process.ProcessExecutionContext;
+import com.evolvsys.app.core.process.ProcessService;
+import com.evolvsys.app.core.service.BaseService;
+import com.evolvsys.nexuse2e.core.action.action.ActionActionType;
+import com.evolvsys.nexuse2e.core.action.action.ActionAddRouteAction;
+import com.evolvsys.nexuse2e.core.action.action.ActionLinkRouteAction;
+import com.evolvsys.nexuse2e.core.action.action.ActionRemoveRouteAction;
+import com.evolvsys.nexuse2e.core.action.mapper.ActionMapper;
+import com.evolvsys.nexuse2e.core.action.model.ActionDto;
+import com.evolvsys.nexuse2e.core.action.model.ActionEntity;
+import com.evolvsys.nexuse2e.core.action.repository.ActionRepository;
+import com.evolvsys.nexuse2e.core.route.model.RouteDto;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author Florian Drees
+ * @since 20.12.2023
+ */
+@Service
+public class ActionService extends BaseService&lt;ActionDto, ActionEntity, ActionRepository&gt; {
+    private final ProcessService processService;
+    private final ActionMapper actionMapper;
+
+    public ActionService(
+            ActionMapper mapper,
+            ActionRepository repository,
+            CurrentUserService currentUserService,
+            ProcessService processService) {
+<span class="fc" id="L37">        super(mapper, repository, currentUserService);</span>
+<span class="fc" id="L38">        this.processService = processService;</span>
+<span class="fc" id="L39">        this.actionMapper = mapper;</span>
+<span class="fc" id="L40">    }</span>
+
+    @Override
+    protected ActionEntity createEntity() {
+<span class="nc" id="L44">        return new ActionEntity();</span>
+    }
+
+    public ActionDto addRoute(long actionId, RouteDto routeDto) {
+<span class="fc" id="L48">        ActionEntity actionEntity = findWithActionCheck(actionId, ActionActionType.ADD_ROUTE.name());</span>
+
+<span class="fc" id="L50">        actionEntity = processService.execute(ProcessExecutionContext.&lt;ActionEntity, ActionDto&gt;builder()</span>
+<span class="fc" id="L51">                .target(actionEntity)</span>
+<span class="fc" id="L52">                .actionType(ActionActionType.ADD_ROUTE)</span>
+<span class="fc" id="L53">                .parameterValue(ActionAddRouteAction.ROUTE_PARAMETER.of(routeDto))</span>
+<span class="fc" id="L54">                .build());</span>
+
+<span class="fc" id="L56">        return mapEntityToDto(actionEntity);</span>
+    }
+
+    @Transactional
+    public ActionDto save(ActionDto actionDto, Collection&lt;ActionDto&gt; validNextActions) {
+<span class="nc" id="L61">        ActionEntity entity = getEntity(actionDto);</span>
+
+<span class="nc" id="L63">        actionMapper.updateEntity(actionDto, entity, currentUserService.getCurrentUserData());</span>
+
+<span class="nc" id="L65">        Set&lt;ActionEntity&gt; choreographyActions =</span>
+<span class="nc" id="L66">                new HashSet&lt;&gt;(entity.getChoreography().getActions());</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">        if (actionDto.getId() == null) {</span>
+<span class="nc" id="L68">            choreographyActions.add(entity);</span>
+        }
+
+<span class="nc" id="L71">        actionMapper.updateValidNextActions(validNextActions, entity, choreographyActions);</span>
+
+<span class="nc" id="L73">        entity = save(entity);</span>
+
+<span class="nc" id="L75">        return mapEntityToDto(entity);</span>
+    }
+
+    public ActionDto removeRoute(long actionId, long routeId) {
+<span class="fc" id="L79">        ActionEntity actionEntity = findWithActionCheck(actionId, ActionActionType.REMOVE_ROUTE.name());</span>
+
+<span class="fc" id="L81">        actionEntity = processService.execute(ProcessExecutionContext.&lt;ActionEntity, ActionDto&gt;builder()</span>
+<span class="fc" id="L82">                .target(actionEntity)</span>
+<span class="fc" id="L83">                .actionType(ActionActionType.REMOVE_ROUTE)</span>
+<span class="fc" id="L84">                .parameterValue(ActionRemoveRouteAction.ROUTE_ID_PARAMETER.of(routeId))</span>
+<span class="fc" id="L85">                .build());</span>
+
+<span class="fc" id="L87">        return mapEntityToDto(actionEntity);</span>
+    }
+
+    public ActionDto linkRoutes(long actionId, List&lt;Long&gt; routeIds) {
+<span class="fc" id="L91">        ActionEntity actionEntity = findWithActionCheck(actionId, ActionActionType.LINK_ROUTE.name());</span>
+
+<span class="fc" id="L93">        actionEntity = processService.execute(ProcessExecutionContext.&lt;ActionEntity, ActionDto&gt;builder()</span>
+<span class="fc" id="L94">                .target(actionEntity)</span>
+<span class="fc" id="L95">                .actionType(ActionActionType.LINK_ROUTE)</span>
+<span class="fc" id="L96">                .parameterValue(ActionLinkRouteAction.ROUTE_ID_PARAMETER.of(routeIds))</span>
+<span class="fc" id="L97">                .build());</span>
+
+<span class="fc" id="L99">        return mapEntityToDto(actionEntity);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

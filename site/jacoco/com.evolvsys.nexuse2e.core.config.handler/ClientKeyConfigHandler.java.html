@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClientKeyConfigHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.handler</a> &gt; <span class="el_source">ClientKeyConfigHandler.java</span></div><h1>ClientKeyConfigHandler.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.handler;
+
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerType;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateType;
+import com.evolvsys.nexuse2e.core.certificate.repository.CertificateContainerRepository;
+import com.evolvsys.nexuse2e.core.certificate.repository.CertificateRepository;
+import com.evolvsys.nexuse2e.core.config.handler.mapper.CertificateConfigMapper;
+import com.evolvsys.nexuse2e.core.config.handler.mapper.CertificateContainerConfigMapper;
+import com.evolvsys.nexuse2e.core.config.model.*;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 13.02.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L28">@Slf4j</span>
+public class ClientKeyConfigHandler implements ConfigHandler&lt;ClientKeyContainerConfig&gt; {
+    private final CertificateRepository certificateRepository;
+    private final CertificateConfigMapper certificateConfigMapper;
+    private final CertificateContainerRepository certificateContainerRepository;
+    private final CertificateContainerConfigMapper certificateContainerConfigMapper;
+
+    private CertificateContainerEntity create() {
+<span class="nc" id="L36">        return new CertificateContainerEntity();</span>
+    }
+
+    @Override
+    public void clear() {
+<span class="fc" id="L41">        certificateContainerRepository.deleteAll();</span>
+<span class="fc" id="L42">    }</span>
+
+    @Override
+    @Transactional
+    public void importConfig(ConfigContext configContext, ClientKeyContainerConfig config) {
+<span class="nc" id="L47">        CertificateContainerEntity certificateContainerEntity = certificateContainerRepository</span>
+<span class="nc" id="L48">                .findByNameAndType(config.getName(), CertificateContainerType.PRIVATE_KEY)</span>
+<span class="nc" id="L49">                .orElseGet(this::create);</span>
+
+<span class="nc" id="L51">        certificateContainerEntity.setName(config.getName());</span>
+<span class="nc" id="L52">        certificateContainerEntity.setDescription(config.getDescription());</span>
+<span class="nc" id="L53">        certificateContainerEntity.setType(CertificateContainerType.PRIVATE_KEY);</span>
+
+<span class="nc" id="L55">        certificateContainerEntity = certificateContainerRepository.save(certificateContainerEntity);</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        if (CollectionUtils.isNotEmpty(config.getClientKeys())) {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            for (ClientKeyConfig clientKey : config.getClientKeys()) {</span>
+<span class="nc" id="L59">                CertificateEntity certificateEntity = certificateRepository</span>
+<span class="nc" id="L60">                        .findByCertificateContainerAndName(certificateContainerEntity, clientKey.getName())</span>
+<span class="nc" id="L61">                        .orElseGet(CertificateEntity::new);</span>
+
+<span class="nc" id="L63">                certificateEntity.setCertificateContainer(certificateContainerEntity);</span>
+<span class="nc" id="L64">                certificateEntity.setType(CertificateType.LOCAL);</span>
+
+<span class="nc" id="L66">                boolean wasDisabled =</span>
+<span class="nc bnc" id="L67" title="All 4 branches missed.">                        certificateEntity.isActive() &amp;&amp; (Boolean.TRUE.equals(clientKey.getActive()) == false);</span>
+
+<span class="nc" id="L69">                certificateConfigMapper.updateEntity(clientKey, certificateEntity);</span>
+
+<span class="nc bnc" id="L71" title="All 4 branches missed.">                if (certificateEntity.isActive() &amp;&amp; certificateEntity.getEnabled() == null) {</span>
+<span class="nc" id="L72">                    certificateEntity.setEnabled(ZonedDateTime.now());</span>
+                }
+<span class="nc bnc" id="L74" title="All 2 branches missed.">                if (wasDisabled) {</span>
+<span class="nc" id="L75">                    certificateEntity.setDisabled(ZonedDateTime.now());</span>
+                }
+
+<span class="nc" id="L78">                certificateRepository.save(certificateEntity);</span>
+<span class="nc" id="L79">            }</span>
+        }
+<span class="nc" id="L81">    }</span>
+
+    @Override
+    public void exportConfig(ConfigExportContext configExportContext) {
+<span class="fc" id="L85">        certificateContainerRepository.findByType(CertificateContainerType.PRIVATE_KEY).stream()</span>
+<span class="fc" id="L86">                .map(certificateContainerConfigMapper::toClientKeyConfig)</span>
+<span class="fc" id="L87">                .forEach(certificateContainerConfig -&gt;</span>
+<span class="nc" id="L88">                        configExportContext.getConfig().getClientKeyContainers().add(certificateContainerConfig));</span>
+<span class="fc" id="L89">    }</span>
+
+    @Override
+    public List&lt;ClientKeyContainerConfig&gt; merge(
+            Collection&lt;ClientKeyContainerConfig&gt; oldConfigs, Collection&lt;ClientKeyContainerConfig&gt; newConfigs) {
+<span class="fc" id="L94">        return defaultMerge(</span>
+<span class="fc" id="L95">                oldConfigs, newConfigs, ClientKeyContainerConfig::getName, certificateContainerConfigMapper::merge);</span>
+    }
+
+    @Override
+    public void sort(NexusConfig nexusConfig) {
+<span class="fc" id="L100">        nexusConfig.getClientKeyContainers().sort(Comparator.comparing(ClientKeyContainerConfig::getName));</span>
+<span class="fc" id="L101">        nexusConfig.getClientKeyContainers().forEach(this::sort);</span>
+<span class="fc" id="L102">    }</span>
+
+    @Override
+    public void sort(ClientKeyContainerConfig config) {
+<span class="nc" id="L106">        config.getClientKeys().sort(Comparator.comparing(ClientKeyConfig::getName));</span>
+<span class="nc" id="L107">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

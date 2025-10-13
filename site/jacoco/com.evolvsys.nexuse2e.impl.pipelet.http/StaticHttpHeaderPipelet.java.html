@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StaticHttpHeaderPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http</a> &gt; <span class="el_source">StaticHttpHeaderPipelet.java</span></div><h1>StaticHttpHeaderPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.keyvalue.KeyValueLookup;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.KeyValue;
+import org.springframework.http.HttpHeaders;
+
+/**
+ * Adds manual http headers to the processing metadata to be used by Http-Outflow-Services
+ *
+ * @author SvenBarden
+ * @since 10.04.2025
+ */
+<span class="fc" id="L22">@Slf4j</span>
+<span class="fc" id="L23">public class StaticHttpHeaderPipelet extends Pipelet {</span>
+    private static final String PARAM_HEADERS = &quot;headers&quot;;
+    private static final String PARAM_OVERWRITE = &quot;overwrite&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L29">        return List.of(</span>
+<span class="fc" id="L30">                ParameterDefinition.builder()</span>
+<span class="fc" id="L31">                        .name(PARAM_HEADERS)</span>
+<span class="fc" id="L32">                        .displayName(&quot;Header values&quot;)</span>
+<span class="fc" id="L33">                        .description(</span>
+                                &quot;Header key value pair to add as http headers. The value can also contain placeholders for key-value services.&quot;)
+<span class="fc" id="L35">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L36">                        .required(true)</span>
+<span class="fc" id="L37">                        .build(),</span>
+<span class="fc" id="L38">                ParameterDefinition.builder()</span>
+<span class="fc" id="L39">                        .name(PARAM_OVERWRITE)</span>
+<span class="fc" id="L40">                        .displayName(&quot;Overwrite&quot;)</span>
+<span class="fc" id="L41">                        .description(</span>
+                                &quot;If true, any existing header value for the same key will be overwritten, otherwise the new value will just be added to the list.&quot;)
+<span class="fc" id="L43">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L44">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L45">                        .build());</span>
+    }
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+
+<span class="fc" id="L51">        List&lt;KeyValue&lt;String, String&gt;&gt; headers = parameters.value(PARAM_HEADERS);</span>
+
+<span class="fc bfc" id="L53" title="All 2 branches covered.">        if (headers != null) {</span>
+<span class="fc" id="L54">            MetaData metaData = executionContext.getMessage().getMetaData();</span>
+<span class="fc" id="L55">            HttpHeaders httpHeaders = metaData.getFirstOrNull(HttpConstants.ADDITIONAL_HEADERS);</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">            if (httpHeaders == null) {</span>
+<span class="fc" id="L57">                metaData.set(HttpConstants.ADDITIONAL_HEADERS, httpHeaders = new HttpHeaders());</span>
+            }
+
+<span class="fc" id="L60">            boolean overwrite = parameters.value(PARAM_OVERWRITE);</span>
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            for (KeyValue&lt;String, String&gt; header : headers) {</span>
+<span class="fc" id="L63">                String key = header.getKey();</span>
+<span class="fc" id="L64">                String value = KeyValueLookup.lookup(header.getValue());</span>
+
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                if (overwrite) {</span>
+<span class="fc" id="L67">                    LOGGER.trace(&quot;Setting header {} with value {}&quot;, key, value);</span>
+<span class="fc" id="L68">                    httpHeaders.set(key, value);</span>
+                } else {
+<span class="fc" id="L70">                    LOGGER.trace(&quot;Adding header {} with value {}&quot;, key, value);</span>
+<span class="fc" id="L71">                    httpHeaders.add(key, value);</span>
+                }
+<span class="fc" id="L73">            }</span>
+        }
+
+<span class="fc" id="L76">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

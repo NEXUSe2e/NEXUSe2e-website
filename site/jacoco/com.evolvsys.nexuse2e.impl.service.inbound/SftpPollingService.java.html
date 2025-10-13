@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SftpPollingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.inbound</a> &gt; <span class="el_source">SftpPollingService.java</span></div><h1>SftpPollingService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.inbound;
+
+import com.evolvsys.nexuse2e.core.constants.FileConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.parameter.model.ActionInfo;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingService;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingServiceAware;
+import com.evolvsys.nexuse2e.core.schedule.provider.ScheduleProvider;
+import com.evolvsys.nexuse2e.core.service.StandardNexusInflowService;
+import com.evolvsys.nexuse2e.impl.service.support.transformator.TransformatorSupportService;
+import com.evolvsys.nexuse2e.impl.util.SftpParameterAware;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.attribute.FileTime;
+import java.security.GeneralSecurityException;
+import java.time.Duration;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.sshd.client.SshClient;
+import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.NamedFactory;
+import org.apache.sshd.common.signature.BuiltinSignatures;
+import org.apache.sshd.common.signature.Signature;
+import org.apache.sshd.sftp.client.SftpClient;
+import org.apache.sshd.sftp.client.SftpClientFactory;
+import org.apache.tika.Tika;
+
+/**
+ *
+ */
+<span class="fc" id="L47">@Slf4j</span>
+@Setter
+@SuppressWarnings(&quot;PMD.GodClass&quot;)
+<span class="fc" id="L50">public class SftpPollingService extends StandardNexusInflowService</span>
+        implements SchedulingServiceAware, SftpParameterAware {
+
+    private static final String PARAM_CHOREOGRAPHY_ACTION = &quot;target_action_choreography_id&quot;;
+    private static final String PARAM_TARGET_PARTNER_ID = &quot;target_partner_id&quot;;
+    private static final String PARAM_SOURCE_PARTNER_ID = &quot;source_partner_id&quot;;
+    private static final String PARAM_FILENAME_FILTER_PATTERN = &quot;filename_filter_pattern&quot;;
+    private static final String PARAM_FILENAME_SORTING_FIELD = &quot;filename_sorting_field&quot;;
+    private static final String PARAM_FILENAME_SORTING_DIRECTION = &quot;filename_sorting_direction&quot;;
+    private static final String PARAM_POST_PROCESSING_TASK = &quot;post_processing_task&quot;;
+    private static final String PARAM_POST_PROCESSING_RENAMING_PREFIX = &quot;post_processing_renaming_prefix&quot;;
+    private static final String PARAM_TRANSFORMATOR_SERVICE = &quot;transformator_service&quot;;
+    private static final String PARAM_COMBINE_PAYLOADS = &quot;combine_payloads&quot;;
+    public static final String SOURCE_FILENAME = &quot;Source&quot;;
+    public static final String TARGET_FILENAME = &quot;Target&quot;;
+
+    private SchedulingService schedulingService;
+    private SFTPTransactionContext sftpTransactionContext;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+
+<span class="fc" id="L72">        List&lt;ParameterDefinition&gt; parameterDefinitions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L73">        addSftpParameters(parameterDefinitions);</span>
+
+<span class="fc" id="L75">        parameterDefinitions.addAll(List.of(</span>
+<span class="fc" id="L76">                ParameterDefinition.builder()</span>
+<span class="fc" id="L77">                        .name(PARAM_CHOREOGRAPHY_ACTION)</span>
+<span class="fc" id="L78">                        .displayName(&quot;Choreography/Action ID&quot;)</span>
+<span class="fc" id="L79">                        .description(&quot;The target choreography and action used to process the incoming file&quot;)</span>
+<span class="fc" id="L80">                        .type(ParameterType.ACTION_NAME)</span>
+<span class="fc" id="L81">                        .required(true)</span>
+<span class="fc" id="L82">                        .build(),</span>
+<span class="fc" id="L83">                ParameterDefinition.builder()</span>
+<span class="fc" id="L84">                        .name(PARAM_SOURCE_PARTNER_ID)</span>
+<span class="fc" id="L85">                        .displayName(&quot;Source Partner ID&quot;)</span>
+<span class="fc" id="L86">                        .description(&quot;The source partner used to process the incoming file&quot;)</span>
+<span class="fc" id="L87">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L88">                        .required(true)</span>
+<span class="fc" id="L89">                        .build(),</span>
+<span class="fc" id="L90">                ParameterDefinition.builder()</span>
+<span class="fc" id="L91">                        .name(PARAM_TARGET_PARTNER_ID)</span>
+<span class="fc" id="L92">                        .displayName(&quot;Target Partner ID&quot;)</span>
+<span class="fc" id="L93">                        .description(&quot;The target partner used to process the incoming file&quot;)</span>
+<span class="fc" id="L94">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L95">                        .required(true)</span>
+<span class="fc" id="L96">                        .build(),</span>
+<span class="fc" id="L97">                ParameterDefinition.builder()</span>
+<span class="fc" id="L98">                        .name(PARAM_FILENAME_FILTER_PATTERN)</span>
+<span class="fc" id="L99">                        .displayName(&quot;Filename Pattern&quot;)</span>
+<span class="fc" id="L100">                        .description(&quot;Optional filename pattern used to filter the files on the remote server.&quot;)</span>
+<span class="fc" id="L101">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L102">                        .required(false)</span>
+<span class="fc" id="L103">                        .build(),</span>
+<span class="fc" id="L104">                ParameterDefinition.builder()</span>
+<span class="fc" id="L105">                        .name(PARAM_FILENAME_SORTING_FIELD)</span>
+<span class="fc" id="L106">                        .displayName(&quot;Sorting Attribute&quot;)</span>
+<span class="fc" id="L107">                        .description(&quot;Select the attribute used to sort the files before processing.&quot;)</span>
+<span class="fc" id="L108">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L109">                        .option(SftpSortingAttribute.FILENAME.name())</span>
+<span class="fc" id="L110">                        .option(SftpSortingAttribute.CREATED_DATE.name())</span>
+<span class="fc" id="L111">                        .option(SftpSortingAttribute.MODIFIED_DATE.name())</span>
+<span class="fc" id="L112">                        .defaultValue(SftpSortingAttribute.FILENAME.name())</span>
+<span class="fc" id="L113">                        .required(true)</span>
+<span class="fc" id="L114">                        .build(),</span>
+<span class="fc" id="L115">                ParameterDefinition.builder()</span>
+<span class="fc" id="L116">                        .name(PARAM_FILENAME_SORTING_DIRECTION)</span>
+<span class="fc" id="L117">                        .displayName(&quot;Sorting direction&quot;)</span>
+<span class="fc" id="L118">                        .description(&quot;The sorting direction in case file sorting is applied.&quot;)</span>
+<span class="fc" id="L119">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L120">                        .option(SortingDirection.ASCENDING.name())</span>
+<span class="fc" id="L121">                        .option(SortingDirection.DESCENDING.name())</span>
+<span class="fc" id="L122">                        .required(true)</span>
+<span class="fc" id="L123">                        .defaultValue(SortingDirection.ASCENDING.name())</span>
+<span class="fc" id="L124">                        .build(),</span>
+<span class="fc" id="L125">                ParameterDefinition.builder()</span>
+<span class="fc" id="L126">                        .name(PARAM_POST_PROCESSING_TASK)</span>
+<span class="fc" id="L127">                        .displayName(&quot;Post Processing&quot;)</span>
+<span class="fc" id="L128">                        .description(&quot;What should happen to the file after the file is successfully processed.&quot;)</span>
+<span class="fc" id="L129">                        .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L130">                        .option(PostProcessingTask.NOTHING.name())</span>
+<span class="fc" id="L131">                        .option(PostProcessingTask.DELETE.name())</span>
+<span class="fc" id="L132">                        .option(PostProcessingTask.RENAME.name())</span>
+<span class="fc" id="L133">                        .required(true)</span>
+<span class="fc" id="L134">                        .build(),</span>
+<span class="fc" id="L135">                ParameterDefinition.builder()</span>
+<span class="fc" id="L136">                        .name(PARAM_POST_PROCESSING_RENAMING_PREFIX)</span>
+<span class="fc" id="L137">                        .displayName(&quot;Renaming Prefix&quot;)</span>
+<span class="fc" id="L138">                        .description(</span>
+                                &quot;In case of renaming after processing, the filename is prefixed with the configured text. Empty value will default to 'processed_'.&quot;)
+<span class="fc" id="L140">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L141">                        .defaultValue(&quot;processed_&quot;)</span>
+<span class="fc" id="L142">                        .required(false)</span>
+<span class="fc" id="L143">                        .build(),</span>
+<span class="fc" id="L144">                createCronPatternScheduleParameter(),</span>
+<span class="fc" id="L145">                createHourMinuteScheduleParameter(),</span>
+<span class="fc" id="L146">                createDurationScheduleParameter(),</span>
+<span class="fc" id="L147">                createMisfireScheduleParameter(),</span>
+<span class="fc" id="L148">                ParameterDefinition.builder()</span>
+<span class="fc" id="L149">                        .name(PARAM_TRANSFORMATOR_SERVICE)</span>
+<span class="fc" id="L150">                        .displayName(&quot;Transformator service&quot;)</span>
+<span class="fc" id="L151">                        .description(&quot;Optional service to transform the payloads before building message contexts.&quot;)</span>
+<span class="fc" id="L152">                        .type(ParameterType.SUPPORT_SERVICE)</span>
+<span class="fc" id="L153">                        .build(),</span>
+<span class="fc" id="L154">                ParameterDefinition.builder()</span>
+<span class="fc" id="L155">                        .name(PARAM_COMBINE_PAYLOADS)</span>
+<span class="fc" id="L156">                        .displayName(&quot;Combine payloads&quot;)</span>
+<span class="fc" id="L157">                        .description(</span>
+                                &quot;Optionally combine all payloads for one run into one message instead of generating one message per payload.&quot;)
+<span class="fc" id="L159">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L160">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L161">                        .build()));</span>
+<span class="fc" id="L162">        return parameterDefinitions;</span>
+    }
+
+    @Override
+    protected List&lt;MessageContext&gt; buildMessageContexts() throws NexusException {
+<span class="fc" id="L167">        Tika tika = new Tika();</span>
+<span class="fc" id="L168">        String serverPath = parameters.value(PARAM_SERVER_PATH);</span>
+
+<span class="fc" id="L170">        boolean combinePayloads = parameters.value(PARAM_COMBINE_PAYLOADS);</span>
+<span class="fc" id="L171">        PostProcessingTask postProcessing = PostProcessingTask.valueOf(parameters.value(PARAM_POST_PROCESSING_TASK));</span>
+
+<span class="pc bpc" id="L173" title="2 of 4 branches missed.">        if (StringUtils.isBlank(serverPath) || !serverPath.endsWith(&quot;/&quot;)) {</span>
+<span class="fc" id="L174">            serverPath = serverPath + &quot;/&quot;;</span>
+        }
+
+<span class="fc" id="L177">        List&lt;MessageContext&gt; messageContexts = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L178">        LOGGER.debug(&quot;fetching message from sftp server&quot;);</span>
+
+        try {
+
+<span class="fc" id="L182">            LOGGER.info(&quot;fetching files&quot;);</span>
+<span class="fc" id="L183">            List&lt;SftpDirEntryWrapper&gt; fileList = new ArrayList&lt;&gt;();</span>
+            for (SftpClient.DirEntry entry :
+<span class="fc bfc" id="L185" title="All 2 branches covered.">                    sftpTransactionContext.getSftpClient().readDir(serverPath)) {</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">                if (entry.getAttributes().isRegularFile()) {</span>
+
+<span class="fc" id="L188">                    SftpDirEntryWrapper sftpDirEntryWrapper = SftpDirEntryWrapper.of(entry, serverPath);</span>
+<span class="fc" id="L189">                    fileList.add(sftpDirEntryWrapper);</span>
+                }
+<span class="fc" id="L191">            }</span>
+
+<span class="fc" id="L193">            List&lt;SftpDirEntryWrapper&gt; filteredFileList = filterFileList(fileList);</span>
+
+<span class="fc" id="L195">            List&lt;SftpDirEntryWrapper&gt; sortedFileList = sortFileList(filteredFileList);</span>
+
+<span class="fc" id="L197">            sftpTransactionContext.getSftpDirEntries().addAll(extendedProcessingFileList(sortedFileList));</span>
+
+<span class="fc" id="L199">            List&lt;ContextPayload&gt; contextPayloads = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L201" title="All 2 branches covered.">            for (SftpDirEntryWrapper sftpDirEntryWrapper : sftpTransactionContext.getSftpDirEntries()) {</span>
+
+<span class="fc" id="L203">                applyProcessingConfig(sftpDirEntryWrapper, postProcessing, serverPath);</span>
+
+<span class="fc" id="L205">                FileTime fileTime = sftpDirEntryWrapper.getAttributes().getModifyTime();</span>
+<span class="fc" id="L206">                long lastModifiedMillis = fileTime.toMillis();</span>
+<span class="fc" id="L207">                ZonedDateTime lastModifiedZoned = fileTime.toInstant().atZone(ZoneId.of(&quot;UTC&quot;));</span>
+
+<span class="fc" id="L209">                long fileLength = sftpDirEntryWrapper.getAttributes().getSize();</span>
+
+<span class="fc" id="L211">                try (InputStream inputStream =</span>
+<span class="fc" id="L212">                        sftpTransactionContext.getSftpClient().read(sftpDirEntryWrapper.getSource())) {</span>
+
+<span class="fc" id="L214">                    ContextPayload contextPayload = ContextPayload.builder()</span>
+<span class="fc" id="L215">                            .content(PayloadContent.of(inputStream, fileLength))</span>
+<span class="fc" id="L216">                            .size(fileLength)</span>
+<span class="fc" id="L217">                            .encoding(&quot;utf-8&quot;)</span>
+<span class="fc" id="L218">                            .contentType(tika.detect(sftpDirEntryWrapper.getFilename()))</span>
+<span class="fc" id="L219">                            .metaData(new MetaData()</span>
+<span class="fc" id="L220">                                    .set(FileConstants.FILE_NAME, sftpDirEntryWrapper.getFilename())</span>
+<span class="fc" id="L221">                                    .set(FileConstants.FILE_SIZE, fileLength)</span>
+<span class="fc" id="L222">                                    .set(FileConstants.FILE_PATH, sftpDirEntryWrapper.getSource())</span>
+<span class="fc" id="L223">                                    .set(&quot;LAST_MODIFIED_READABLE&quot;, lastModifiedZoned)</span>
+<span class="fc" id="L224">                                    .set(FileConstants.LAST_MODIFIED, lastModifiedMillis))</span>
+<span class="fc" id="L225">                            .build();</span>
+
+<span class="fc" id="L227">                    LOGGER.debug(&quot;creating message context for file {}&quot;, sftpDirEntryWrapper.getFilename());</span>
+
+<span class="fc" id="L229">                    contextPayload.getMetaData().add(SOURCE_FILENAME, sftpDirEntryWrapper.getSource());</span>
+<span class="fc" id="L230">                    contextPayload.getMetaData().add(TARGET_FILENAME, sftpDirEntryWrapper.getTarget());</span>
+<span class="fc" id="L231">                    contextPayload</span>
+<span class="fc" id="L232">                            .getMetaData()</span>
+<span class="fc" id="L233">                            .add(</span>
+                                    &quot;ProcessingBehavior&quot;,
+<span class="fc" id="L235">                                    sftpDirEntryWrapper.getProcessingBehavior().name());</span>
+
+<span class="fc" id="L237">                    contextPayloads.add(contextPayload);</span>
+                }
+<span class="fc" id="L239">                ProcessingBehavior processingBehavior = sftpDirEntryWrapper.getProcessingBehavior();</span>
+<span class="pc bpc" id="L240" title="1 of 2 branches missed.">                if (processingBehavior.timing == ProcessingBehavior.Timing.PREPROCESSING) {</span>
+<span class="nc" id="L241">                    processingBehavior.processEntry(sftpTransactionContext.getSftpClient(), sftpDirEntryWrapper);</span>
+                }
+<span class="fc" id="L243">            }</span>
+
+<span class="fc" id="L245">            TransformatorSupportService transformatorSupportService = parameters.value(PARAM_TRANSFORMATOR_SERVICE);</span>
+
+<span class="pc bpc" id="L247" title="1 of 2 branches missed.">            if (transformatorSupportService != null) {</span>
+<span class="nc" id="L248">                contextPayloads = transformatorSupportService.transform(contextPayloads);</span>
+            }
+
+<span class="fc" id="L251">            prepareMessageContexts(contextPayloads, messageContexts, combinePayloads);</span>
+
+<span class="nc" id="L253">        } catch (IOException e) {</span>
+<span class="nc" id="L254">            throw new NexusException(</span>
+<span class="nc" id="L255">                    NexusError.builder().message(&quot;failed to process payload&quot;).build(), e);</span>
+<span class="fc" id="L256">        }</span>
+<span class="fc" id="L257">        return messageContexts;</span>
+    }
+
+    @SuppressWarnings(&quot;PMD.ExhaustiveSwitchHasDefault&quot;) // false positive see https://github.com/pmd/pmd/issues/5514
+    private void applyProcessingConfig(
+            SftpDirEntryWrapper sftpDirEntryWrapper, PostProcessingTask postProcessing, String serverPath)
+            throws NexusException {
+<span class="pc bpc" id="L264" title="2 of 4 branches missed.">        switch (postProcessing) {</span>
+            case DELETE:
+<span class="fc" id="L266">                sftpDirEntryWrapper.setProcessingBehavior(ProcessingBehavior.DELETE_AFTER_PROCESSING);</span>
+<span class="fc" id="L267">                break;</span>
+            case RENAME:
+<span class="fc" id="L269">                sftpDirEntryWrapper.setProcessingBehavior(ProcessingBehavior.RENAME_AFTER_PROCESSING);</span>
+<span class="fc" id="L270">                String prefix = parameters.value(PARAM_POST_PROCESSING_RENAMING_PREFIX);</span>
+<span class="pc bpc" id="L271" title="1 of 2 branches missed.">                if (StringUtils.isBlank(prefix)) {</span>
+<span class="nc" id="L272">                    prefix = &quot;processed_&quot;;</span>
+                }
+<span class="fc" id="L274">                sftpDirEntryWrapper.setTarget(serverPath + prefix + sftpDirEntryWrapper.getFilename());</span>
+<span class="fc" id="L275">                break;</span>
+            case NOTHING:
+<span class="nc" id="L277">                sftpDirEntryWrapper.setProcessingBehavior(ProcessingBehavior.DO_NOTHING_AFTER_PROCESSING);</span>
+<span class="nc" id="L278">                break;</span>
+            default:
+<span class="nc" id="L280">                throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L281">                        .message(&quot;unknown post processing config&quot;)</span>
+<span class="nc" id="L282">                        .extension(&quot;post_processing&quot;, postProcessing)</span>
+<span class="nc" id="L283">                        .build());</span>
+        }
+<span class="fc" id="L285">    }</span>
+
+    private void prepareMessageContexts(
+            List&lt;ContextPayload&gt; contextPayloads, List&lt;MessageContext&gt; messageContexts, boolean combinePayloads) {
+<span class="fc" id="L289">        String sourcePartnerId = parameters.value(PARAM_SOURCE_PARTNER_ID);</span>
+<span class="fc" id="L290">        String targetPartnerId = parameters.value(PARAM_TARGET_PARTNER_ID);</span>
+<span class="fc" id="L291">        ActionInfo choreographyAndAction = parameters.value(PARAM_CHOREOGRAPHY_ACTION);</span>
+
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        for (int i = 0; i &lt; contextPayloads.size(); i++) {</span>
+<span class="fc" id="L294">            ContextPayload payload = contextPayloads.get(i);</span>
+<span class="fc bfc" id="L295" title="All 4 branches covered.">            if (combinePayloads &amp;&amp; i &gt; 0) {</span>
+<span class="fc" id="L296">                MessageContext messageContext = messageContexts.getFirst();</span>
+<span class="fc" id="L297">                messageContext.getSourceMessage().getPayloads().add(payload);</span>
+<span class="fc" id="L298">            } else {</span>
+<span class="fc" id="L299">                MessageContext messageContext =</span>
+<span class="fc" id="L300">                        generateMessageContext(payload, sourcePartnerId, targetPartnerId, choreographyAndAction);</span>
+<span class="fc" id="L301">                messageContexts.add(messageContext);</span>
+            }
+        }
+<span class="fc" id="L304">    }</span>
+
+    /**
+     * Executes the SFTP polling service.
+     * Deprecated algorithms can be enabled for interoperability reasons but require careful consideration of security implications.
+     *
+     * @throws NexusException
+     */
+    @Override
+    @SuppressWarnings(&quot;deprecation&quot;)
+    public void execute() throws NexusException {
+<span class="fc" id="L315">        sftpTransactionContext = new SFTPTransactionContext();</span>
+<span class="fc" id="L316">        String password = parameters.value(PARAM_LOGIN_PASSWORD);</span>
+<span class="fc" id="L317">        String privateKeyData = parameters.value(PARAM_SSH_KEY_DATA);</span>
+<span class="fc" id="L318">        String privateKeyPassword = parameters.value(PARAM_SSH_KEY_PASSWORD);</span>
+<span class="fc" id="L319">        String host = parameters.value(PARAM_HOST);</span>
+<span class="fc" id="L320">        long port = parameters.value(PARAM_PORT);</span>
+<span class="fc" id="L321">        String hostKeyData = parameters.value(PARAM_HOST_KEY_DATA);</span>
+<span class="fc" id="L322">        String hostKeyAlgorithm = parameters.value(PARAM_HOST_KEY_ALGORITHM);</span>
+<span class="fc" id="L323">        String user = parameters.value(PARAM_LOGIN_USERNAME);</span>
+<span class="fc" id="L324">        boolean enableDeprecatedAlgorithms = parameters.value(PARAM_ENABLE_DEPRECATED_ALGORITHMS);</span>
+<span class="fc" id="L325">        Duration serverConnectTimeout = parameters.value(PARAM_SERVER_CONNECT_TIMEOUT);</span>
+
+<span class="pc bpc" id="L327" title="1 of 2 branches missed.">        if (StringUtils.isBlank(user)) {</span>
+<span class="nc" id="L328">            throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L329">                    .message(&quot;The username must not be empty&quot;)</span>
+<span class="nc" id="L330">                    .build());</span>
+        }
+
+<span class="fc" id="L333">        try (SshClient client = SshClient.setUpDefaultClient()) {</span>
+
+            // TODO: replace with with multiselect and options from enum list as soon as its available
+<span class="fc bfc" id="L336" title="All 2 branches covered.">            if (enableDeprecatedAlgorithms) {</span>
+<span class="fc" id="L337">                List&lt;NamedFactory&lt;Signature&gt;&gt; signatureFactories = client.getSignatureFactories();</span>
+<span class="fc" id="L338">                Set&lt;BuiltinSignatures&gt; signatures = EnumSet.of(BuiltinSignatures.dsa);</span>
+<span class="fc" id="L339">                signatureFactories.addAll(NamedFactory.setUpBuiltinFactories(false, signatures));</span>
+<span class="fc" id="L340">                client.setSignatureFactories(signatureFactories);</span>
+            }
+<span class="fc" id="L342">            client.start();</span>
+<span class="fc" id="L343">            SftpUtils.applyHostKeyValidation(client, hostKeyAlgorithm, hostKeyData);</span>
+<span class="fc" id="L344">            try (ClientSession session = client.connect(user, host, (int) port)</span>
+<span class="fc" id="L345">                    .verify(serverConnectTimeout)</span>
+<span class="fc" id="L346">                    .getSession()) {</span>
+<span class="fc" id="L347">                sftpTransactionContext.setClient(client);</span>
+<span class="fc" id="L348">                sftpTransactionContext.setSession(session);</span>
+
+<span class="fc bfc" id="L350" title="All 2 branches covered.">                if (StringUtils.isNotBlank(privateKeyData)) {</span>
+<span class="fc" id="L351">                    SftpUtils.authenticateSessionViaSshKey(session, privateKeyData, privateKeyPassword);</span>
+<span class="pc bpc" id="L352" title="1 of 2 branches missed.">                } else if (StringUtils.isNotBlank(password)) {</span>
+<span class="fc" id="L353">                    SftpUtils.authenticateSessionViaPassword(session, password);</span>
+                } else {
+<span class="nc" id="L355">                    throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L356">                            .message(&quot;SSH Key or password must be provided for authentication&quot;)</span>
+<span class="nc" id="L357">                            .build());</span>
+                }
+<span class="fc" id="L359">                session.auth().verify(serverConnectTimeout);</span>
+
+<span class="fc" id="L361">                sftpTransactionContext.setSftpClient(</span>
+<span class="fc" id="L362">                        SftpClientFactory.instance().createSftpClient(session));</span>
+
+<span class="fc" id="L364">                super.execute();</span>
+<span class="fc" id="L365">                cleanupSftpServer();</span>
+            }
+<span class="fc" id="L367">        } catch (IOException | GeneralSecurityException e) {</span>
+<span class="fc" id="L368">            throw new NexusException(</span>
+<span class="fc" id="L369">                    NexusError.builder()</span>
+<span class="fc" id="L370">                            .message(&quot;Error while connecting to SFTP server&quot;)</span>
+<span class="fc" id="L371">                            .build(),</span>
+                    e);
+<span class="fc" id="L373">        }</span>
+<span class="fc" id="L374">    }</span>
+
+    private void cleanupSftpServer() {
+<span class="fc bfc" id="L377" title="All 2 branches covered.">        for (SftpDirEntryWrapper sftpDirEntryWrapper : sftpTransactionContext.getSftpDirEntries()) {</span>
+<span class="fc" id="L378">            ProcessingBehavior processingBehavior = sftpDirEntryWrapper.getProcessingBehavior();</span>
+<span class="pc bpc" id="L379" title="1 of 2 branches missed.">            if (processingBehavior.timing == ProcessingBehavior.Timing.POSTPROCESSING) {</span>
+                try {
+<span class="fc" id="L381">                    processingBehavior.processEntry(sftpTransactionContext.getSftpClient(), sftpDirEntryWrapper);</span>
+<span class="nc" id="L382">                } catch (NexusException e) {</span>
+<span class="nc" id="L383">                    LOGGER.error(&quot;can't cleanup file {}&quot;, sftpDirEntryWrapper.getSource(), e);</span>
+<span class="fc" id="L384">                }</span>
+            }
+<span class="fc" id="L386">            LOGGER.info(&quot;finished cleanup of file {}&quot;, sftpDirEntryWrapper.getSource());</span>
+<span class="fc" id="L387">        }</span>
+<span class="fc" id="L388">    }</span>
+
+    @Override
+    protected void afterResolving(MessageContext messageContext) {
+<span class="fc" id="L392">        super.afterResolving(messageContext);</span>
+<span class="fc" id="L393">        String source = messageContext</span>
+<span class="fc" id="L394">                .getSourceMessage()</span>
+<span class="fc" id="L395">                .getPayloads()</span>
+<span class="fc" id="L396">                .getFirst()</span>
+<span class="fc" id="L397">                .getMetaData()</span>
+<span class="fc" id="L398">                .getFirstOrNull(SOURCE_FILENAME);</span>
+<span class="pc bpc" id="L399" title="1 of 2 branches missed.">        if (source != null) {</span>
+<span class="fc" id="L400">            sftpTransactionContext.getSftpDirEntries().stream()</span>
+<span class="fc" id="L401">                    .filter(sftpDirEntryWrapper -&gt;</span>
+<span class="fc" id="L402">                            sftpDirEntryWrapper.getSource().equals(source))</span>
+<span class="fc" id="L403">                    .findFirst()</span>
+<span class="fc" id="L404">                    .ifPresent(sftpDirEntryWrapper -&gt; {</span>
+<span class="fc" id="L405">                        sftpDirEntryWrapper.setProcessedCount(sftpDirEntryWrapper.getProcessedCount() + 1);</span>
+<span class="fc" id="L406">                    });</span>
+        }
+<span class="fc" id="L408">    }</span>
+
+    protected List&lt;SftpDirEntryWrapper&gt; filterFileList(List&lt;SftpDirEntryWrapper&gt; fileList) {
+
+<span class="fc" id="L412">        String pattern = parameters.value(PARAM_FILENAME_FILTER_PATTERN);</span>
+<span class="pc bpc" id="L413" title="1 of 2 branches missed.">        if (StringUtils.isBlank(pattern)) {</span>
+<span class="nc" id="L414">            return fileList;</span>
+        }
+<span class="fc" id="L416">        Pattern matcherPattern = Pattern.compile(pattern);</span>
+<span class="fc" id="L417">        List&lt;SftpDirEntryWrapper&gt; filteredFileList = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L418" title="All 2 branches covered.">        for (SftpDirEntryWrapper sftpDirEntryWrapper : fileList) {</span>
+<span class="fc" id="L419">            Matcher matcher =</span>
+<span class="fc" id="L420">                    matcherPattern.matcher(sftpDirEntryWrapper.getEntry().getFilename());</span>
+<span class="fc bfc" id="L421" title="All 2 branches covered.">            if (matcher.matches()) {</span>
+<span class="fc" id="L422">                filteredFileList.add(sftpDirEntryWrapper);</span>
+            }
+<span class="fc" id="L424">        }</span>
+<span class="fc" id="L425">        return filteredFileList;</span>
+    }
+
+    protected List&lt;SftpDirEntryWrapper&gt; sortFileList(List&lt;SftpDirEntryWrapper&gt; fileList) {
+
+<span class="fc" id="L430">        SftpSortingAttribute sftpSortingAttribute =</span>
+<span class="fc" id="L431">                SftpSortingAttribute.valueOf(parameters.value(PARAM_FILENAME_SORTING_FIELD));</span>
+<span class="fc" id="L432">        SortingDirection direction = SortingDirection.valueOf(parameters.value(PARAM_FILENAME_SORTING_DIRECTION));</span>
+<span class="pc bpc" id="L433" title="1 of 2 branches missed.">        if (sftpSortingAttribute != SftpSortingAttribute.NONE) {</span>
+<span class="fc" id="L434">            sftpSortingAttribute.sort(fileList);</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">            if (direction == SortingDirection.DESCENDING) {</span>
+<span class="fc" id="L436">                Collections.reverse(fileList);</span>
+            }
+        }
+<span class="fc" id="L439">        return fileList;</span>
+    }
+
+    /**
+     * This method is called after the file list has been filtered and sorted.
+     * It can be overridden to perform additional processing on the file list.
+     *
+     * @param fileList the file list to process
+     * @return the processed file list
+     */
+    protected List&lt;SftpDirEntryWrapper&gt; extendedProcessingFileList(List&lt;SftpDirEntryWrapper&gt; fileList) {
+<span class="fc" id="L450">        return fileList;</span>
+    }
+
+    private MessageContext generateMessageContext(
+            ContextPayload payload, String sourcePartnerId, String targetPartnerId, ActionInfo choreographyAndAction) {
+
+<span class="fc" id="L456">        MessageContext messageContext = contextFactory.createNew();</span>
+<span class="fc" id="L457">        Message message = new Message();</span>
+<span class="fc" id="L458">        message.setType(MessageType.NORMAL);</span>
+<span class="fc" id="L459">        messageContext.setSourceMessage(message);</span>
+<span class="fc" id="L460">        message.getPayloads().add(payload);</span>
+
+<span class="fc bfc" id="L462" title="All 2 branches covered.">        if (StringUtils.isNotBlank(sourcePartnerId)) {</span>
+<span class="fc" id="L463">            messageContext.setSourcePartnerId(sourcePartnerId);</span>
+        }
+<span class="fc bfc" id="L465" title="All 2 branches covered.">        if (StringUtils.isNotBlank(targetPartnerId)) {</span>
+<span class="fc" id="L466">            messageContext.setTargetPartnerId(targetPartnerId);</span>
+        }
+<span class="fc bfc" id="L468" title="All 2 branches covered.">        if (choreographyAndAction != null) {</span>
+<span class="pc bpc" id="L469" title="1 of 2 branches missed.">            if (StringUtils.isNotBlank(choreographyAndAction.getChoreographyId())) {</span>
+<span class="fc" id="L470">                messageContext.setChoreographyId(choreographyAndAction.getChoreographyId());</span>
+            }
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">            if (StringUtils.isNotBlank(choreographyAndAction.getActionId())) {</span>
+<span class="fc" id="L473">                messageContext.setActionId(choreographyAndAction.getActionId());</span>
+            }
+        }
+
+<span class="fc" id="L477">        return messageContext;</span>
+    }
+
+    @Override
+    public void start() {
+<span class="nc" id="L482">        ScheduleProvider&lt;?&gt; scheduleProvider = createScheduleProvider(parameters)</span>
+<span class="nc" id="L483">                .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L484">                        .message(&quot;No scheduling configuration found&quot;)</span>
+<span class="nc" id="L485">                        .build()));</span>
+<span class="nc" id="L486">        schedulingService.register(this, scheduleProvider);</span>
+<span class="nc" id="L487">    }</span>
+
+    @Override
+    public void stop() {
+<span class="nc" id="L491">        schedulingService.deregister(this);</span>
+<span class="nc" id="L492">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

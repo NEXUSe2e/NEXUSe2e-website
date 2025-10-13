@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConversationQueryDelegate.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.repository</a> &gt; <span class="el_source">ConversationQueryDelegate.java</span></div><h1>ConversationQueryDelegate.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.repository;
+
+import com.evolvsys.nexuse2e.core.message.ConversationFilter;
+import com.evolvsys.nexuse2e.core.model.entity.ConversationEntity;
+import com.evolvsys.nexuse2e.core.model.entity.QConversationEntity;
+import com.evolvsys.nexuse2e.core.utils.DateRangeFilterUtils;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.annotations.QueryDelegate;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.Expressions;
+import java.time.ZonedDateTime;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.lang.Nullable;
+
+/**
+ * @author Florian Drees
+ * @since 05.03.2024
+ */
+public final class ConversationQueryDelegate {
+    private ConversationQueryDelegate() {}
+
+    @QueryDelegate(ConversationEntity.class)
+    public static Predicate filter(
+            QConversationEntity qConversationEntity, @Nullable ConversationFilter conversationFilter, String timeZone) {
+<span class="fc" id="L26">        BooleanBuilder builder = new BooleanBuilder();</span>
+<span class="pc bpc" id="L27" title="1 of 2 branches missed.">        if (conversationFilter != null) {</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">            if (StringUtils.isNotEmpty(conversationFilter.getConversationId())) {</span>
+<span class="fc" id="L29">                builder.and(qConversationEntity.conversationId.contains(conversationFilter.getConversationId()));</span>
+            }
+<span class="fc bfc" id="L31" title="All 2 branches covered.">            if (CollectionUtils.isNotEmpty(conversationFilter.getChoreographyIds())) {</span>
+<span class="fc" id="L32">                builder.and(qConversationEntity.choreography.id.in(conversationFilter.getChoreographyIds()));</span>
+            }
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (conversationFilter.getFinishedFrom() != null) {</span>
+<span class="fc" id="L35">                builder.and(qConversationEntity.finished.goe(conversationFilter.getFinishedFrom()));</span>
+            }
+<span class="fc bfc" id="L37" title="All 2 branches covered.">            if (conversationFilter.getFinishedTill() != null) {</span>
+<span class="fc" id="L38">                builder.and(qConversationEntity.finished.loe(conversationFilter.getFinishedTill()));</span>
+            }
+<span class="fc bfc" id="L40" title="All 2 branches covered.">            if (CollectionUtils.isNotEmpty(conversationFilter.getLastDirections())) {</span>
+<span class="fc" id="L41">                builder.and(qConversationEntity.lastDirection.in(conversationFilter.getLastDirections()));</span>
+            }
+<span class="fc bfc" id="L43" title="All 2 branches covered.">            if (CollectionUtils.isNotEmpty(conversationFilter.getStatuses())) {</span>
+<span class="fc" id="L44">                builder.and(qConversationEntity.status.in(conversationFilter.getStatuses()));</span>
+            }
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if (StringUtils.isNotBlank(conversationFilter.getLastSourcePartnerId())) {</span>
+<span class="fc" id="L47">                builder.and(qConversationEntity.lastSourcePartner.partnerId.contains(</span>
+<span class="fc" id="L48">                        conversationFilter.getLastSourcePartnerId()));</span>
+            }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            if (StringUtils.isNotBlank(conversationFilter.getLastSourcePartnerDescription())) {</span>
+<span class="fc" id="L51">                builder.and(qConversationEntity.lastSourcePartner.description.contains(</span>
+<span class="fc" id="L52">                        conversationFilter.getLastSourcePartnerDescription()));</span>
+            }
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            if (StringUtils.isNotBlank(conversationFilter.getLastTargetPartnerId())) {</span>
+<span class="fc" id="L55">                builder.and(qConversationEntity.lastTargetPartner.partnerId.contains(</span>
+<span class="fc" id="L56">                        conversationFilter.getLastTargetPartnerId()));</span>
+            }
+<span class="fc bfc" id="L58" title="All 2 branches covered.">            if (StringUtils.isNotBlank(conversationFilter.getLastTargetPartnerDescription())) {</span>
+<span class="fc" id="L59">                builder.and(qConversationEntity.lastTargetPartner.description.contains(</span>
+<span class="fc" id="L60">                        conversationFilter.getLastTargetPartnerDescription()));</span>
+            }
+<span class="fc bfc" id="L62" title="All 2 branches covered.">            if (conversationFilter.getLastUpdatedSince() != null) {</span>
+<span class="fc" id="L63">                builder.and(qConversationEntity.lastUpdated.loe(</span>
+<span class="fc" id="L64">                        ZonedDateTime.now().minus(conversationFilter.getLastUpdatedSince())));</span>
+            }
+<span class="fc" id="L66">            Predicate predicate = DateRangeFilterUtils.filter(</span>
+                    qConversationEntity.created,
+                    timeZone,
+<span class="fc" id="L69">                    conversationFilter.getCreatedRange(),</span>
+<span class="fc" id="L70">                    conversationFilter.getCreatedFrom(),</span>
+<span class="fc" id="L71">                    conversationFilter.getCreatedTill());</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (predicate != null) {</span>
+<span class="fc" id="L73">                builder.and(predicate);</span>
+            }
+<span class="fc bfc" id="L75" title="All 2 branches covered.">            if (conversationFilter.getLastPartnerId() != null) {</span>
+<span class="fc" id="L76">                builder.and(Expressions.anyOf(</span>
+<span class="fc" id="L77">                        qConversationEntity.lastSourcePartner.id.eq(conversationFilter.getLastPartnerId()),</span>
+<span class="fc" id="L78">                        qConversationEntity.lastTargetPartner.id.eq(conversationFilter.getLastPartnerId())));</span>
+            }
+        }
+<span class="fc" id="L81">        return builder.getValue();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

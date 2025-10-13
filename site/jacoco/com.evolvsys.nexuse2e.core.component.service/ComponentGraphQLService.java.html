@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ComponentGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.component.service</a> &gt; <span class="el_source">ComponentGraphQLService.java</span></div><h1>ComponentGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.component.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.nexuse2e.core.component.ComponentFilter;
+import com.evolvsys.nexuse2e.core.component.model.dto.ComponentDto;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import io.leangen.graphql.annotations.GraphQLContext;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+
+/**
+ * @author Florian Drees
+ * @since 16.11.2023
+ */
+@GraphQLService
+@RequiredArgsConstructor
+public class ComponentGraphQLService {
+    private final ComponentService componentService;
+
+    @GraphQLQuery(name = &quot;component_list&quot;)
+    @GraphQLNonNull
+    public List&lt;@GraphQLNonNull ComponentDto&gt; list(ComponentFilter componentFilter) {
+<span class="nc" id="L25">        return componentService.list(componentFilter);</span>
+    }
+
+    @GraphQLQuery(description = &quot;Gets all parameter definitions of the provided component&quot;)
+    public List&lt;@GraphQLNonNull ParameterDto&gt; parameterDefinitions(@GraphQLContext ComponentDto componentDto) {
+<span class="nc" id="L30">        return componentService.getParameterDefinitions(componentDto.getComponentId());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

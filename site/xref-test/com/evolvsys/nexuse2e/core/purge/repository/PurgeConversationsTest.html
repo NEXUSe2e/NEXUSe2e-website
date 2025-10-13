@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>PurgeConversationsTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../testapidocs/com/evolvsys/nexuse2e/core/purge/repository/PurgeConversationsTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.core.purge.repository;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.assertj.core.api.Assertions.assertThat;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.ConversationFilter;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.purge.model.PurgeResult;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.Test;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> org.springframework.boot.test.context.SpringBootTest;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment"> * @author SvenBarden</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> * @since 26.03.2024</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  @SpringBootTest(
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>          properties = {
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>              <span class="jxr_string">"spring.datasource.url=jdbc:h2:mem:purgeConversationsTest;IGNORECASE=TRUE"</span>,
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>              <span class="jxr_string">"spring.liquibase.contexts=test-purge"</span>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>          })
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">class</strong> PurgeConversationsTest <strong class="jxr_keyword">extends</strong> <a name="PurgeRepositoryTest" href="../../../../../../com/evolvsys/nexuse2e/core/purge/repository/PurgeRepositoryTest.html#PurgeRepositoryTest">PurgeRepositoryTest</a> {
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>      @Test
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      <strong class="jxr_keyword">void</strong> purgeConversations() {
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>          verifySetup();
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>          PurgeResult purgeResult = purgeRepository.purgeConversations(
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>                  ConversationFilter.builder().choreographyIds(List.of(101L)).build());
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>          assertThat(purgeResult)
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>                  .isEqualTo(PurgeResult.builder()
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>                          .deletedMessages(8)
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>                          .deletedConversations(2)
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>                          .deletedPayloads(7)
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>                          .deletedBinaries(7)
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>                          .deletedMetaDatas(11)
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>                          .deletedLogs(6)
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>                          .deletedManualActions(4)
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>                          .deletedManualActionsPartly(1)
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>                          .build());
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>          assertThat(countConversations()).describedAs(<span class="jxr_string">"Conversation count"</span>).isEqualTo(1);
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>          assertThat(countMessages()).describedAs(<span class="jxr_string">"Message count"</span>).isEqualTo(2);
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>          assertThat(countPayloads()).describedAs(<span class="jxr_string">"Payloads count"</span>).isEqualTo(2);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>          assertThat(countBinaries()).describedAs(<span class="jxr_string">"Binaries count"</span>).isEqualTo(2);
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>          assertThat(countMetaDatas()).describedAs(<span class="jxr_string">"MetaData count"</span>).isEqualTo(3);
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>          assertThat(countLogs()).describedAs(<span class="jxr_string">"Log count"</span>).isEqualTo(3);
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          assertThat(countManualActions()).describedAs(<span class="jxr_string">"ManualAction count"</span>).isEqualTo(4);
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          assertThat(countMessageReferences())
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                  .describedAs(<span class="jxr_string">"Message references count"</span>)
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                  .isEqualTo(3);
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>      }
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceActionType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.action</a> &gt; <span class="el_source">ServiceActionType.java</span></div><h1>ServiceActionType.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.action;
+
+import com.evolvsys.app.core.process.ProcessActionType;
+import com.evolvsys.app.core.process.ProcessDefinition;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.service.model.ServiceDto;
+import lombok.Getter;
+
+/**
+ * @author Florian Drees
+ * @since 21.02.2024
+ */
+<span class="fc" id="L13">@Getter</span>
+public enum ServiceActionType implements ProcessActionType&lt;ServiceEntity, ServiceDto&gt; {
+<span class="fc" id="L15">    RUN_ONCE(ProcessDefinition.&lt;ServiceEntity, ServiceDto&gt;builder()</span>
+<span class="fc" id="L16">            .action(ServiceRunOnceAction.class)</span>
+<span class="fc" id="L17">            .processValidCheck(ServiceRunOnceValidCheck.class)</span>
+<span class="fc" id="L18">            .build()),</span>
+<span class="fc" id="L19">    START(ProcessDefinition.&lt;ServiceEntity, ServiceDto&gt;builder()</span>
+<span class="fc" id="L20">            .action(ServiceStartAction.class)</span>
+<span class="pc bnc" id="L21" title="All 2 branches missed.">            .isValidDto(dto -&gt; !dto.isEnabled())</span>
+<span class="pc bnc" id="L22" title="All 2 branches missed.">            .isValidEntity(entity -&gt; !entity.isEnabled())</span>
+<span class="fc" id="L23">            .build()),</span>
+<span class="fc" id="L24">    STOP(ProcessDefinition.&lt;ServiceEntity, ServiceDto&gt;builder()</span>
+<span class="fc" id="L25">            .action(ServiceStopAction.class)</span>
+<span class="fc" id="L26">            .isValidDto(ServiceDto::isEnabled)</span>
+<span class="fc" id="L27">            .isValidEntity(ServiceEntity::isEnabled)</span>
+<span class="fc" id="L28">            .build());</span>
+
+    private final ProcessDefinition&lt;ServiceEntity, ServiceDto&gt; process;
+
+<span class="fc" id="L32">    ServiceActionType(ProcessDefinition&lt;ServiceEntity, ServiceDto&gt; process) {</span>
+<span class="fc" id="L33">        this.process = process;</span>
+<span class="fc" id="L34">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

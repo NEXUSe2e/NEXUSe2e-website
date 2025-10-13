@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.service</a> &gt; <span class="el_source">ServiceGraphQLService.java</span></div><h1>ServiceGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.nexuse2e.core.config.service.ConfigGraphQLService;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import com.evolvsys.nexuse2e.core.pipeline.PipelineBatchLoader;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineDto;
+import com.evolvsys.nexuse2e.core.service.ServiceFilter;
+import com.evolvsys.nexuse2e.core.service.ServiceParameterBatchLoader;
+import com.evolvsys.nexuse2e.core.service.model.ServiceDto;
+import com.evolvsys.nexuse2e.core.service.validation.ValidServiceHasConnections;
+import io.leangen.graphql.annotations.*;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * &lt;p&gt;Service for (Nexus-) sender services.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 14.12.2023
+ */
+@GraphQLService
+@RequiredArgsConstructor
+<span class="fc" id="L32">@Slf4j</span>
+public class ServiceGraphQLService {
+    private final ServiceService serviceService;
+    private final DataLoaderService dataLoaderService;
+
+    @GraphQLMutation(name = &quot;service_update&quot;, description = &quot;Updates or saves a service&quot;)
+    @GraphQLNonNull
+    public ServiceDto update(@Valid ServiceDto serviceDto) {
+<span class="fc" id="L40">        return ConfigGraphQLService.notifySubscribers(serviceService.save(serviceDto));</span>
+    }
+
+    @GraphQLMutation(name = &quot;service_delete&quot;, description = &quot;Deletes a service&quot;)
+    public boolean delete(@ValidServiceHasConnections long serviceId) {
+<span class="fc" id="L45">        serviceService.delete(serviceId);</span>
+<span class="fc" id="L46">        ConfigGraphQLService.notifySubscribers();</span>
+<span class="fc" id="L47">        return true;</span>
+    }
+
+    @GraphQLMutation(name = &quot;service_startService&quot;, description = &quot;Start the service in the scheduler&quot;)
+    @GraphQLNonNull
+    public ServiceDto startService(long serviceId) {
+<span class="fc" id="L53">        return ConfigGraphQLService.notifySubscribers(serviceService.startService(serviceId));</span>
+    }
+
+    @GraphQLMutation(name = &quot;service_stopService&quot;, description = &quot;Remove the service from the scheduler&quot;)
+    @GraphQLNonNull
+    public ServiceDto stopService(long serviceId) {
+<span class="fc" id="L59">        return ConfigGraphQLService.notifySubscribers(serviceService.stopService(serviceId));</span>
+    }
+
+    @GraphQLMutation(name = &quot;service_runOnce&quot;, description = &quot;Runs the service once&quot;)
+    public boolean runServiceOnce(long serviceId) {
+<span class="fc" id="L64">        return serviceService.run(serviceId);</span>
+    }
+
+    @GraphQLQuery(name = &quot;service_list&quot;, description = &quot;List all services&quot;)
+    @GraphQLNonNull
+    public List&lt;@GraphQLNonNull ServiceDto&gt; list(ServiceFilter serviceFilter) {
+<span class="fc" id="L70">        return serviceService.list(serviceFilter);</span>
+    }
+
+    @GraphQLQuery(name = &quot;service_getById&quot;, description = &quot;Gets a service&quot;)
+    public Optional&lt;ServiceDto&gt; getById(long serviceId) {
+<span class="fc" id="L75">        return serviceService.getById(serviceId);</span>
+    }
+
+    @GraphQLQuery(description = &quot;list all parameters of the provided service&quot;)
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull ParameterDto&gt;&gt; parameters(
+            @GraphQLContext ServiceDto serviceDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L81">        LOGGER.trace(&quot;getting parameters for service {}&quot;, serviceDto);</span>
+<span class="fc" id="L82">        return dataLoaderService.load(</span>
+<span class="fc" id="L83">                resolutionEnvironment, ServiceParameterBatchLoader.class, serviceDto, Function.identity());</span>
+    }
+
+    @GraphQLQuery(description = &quot;load the resolver pipeline for the provided service&quot;)
+    public CompletableFuture&lt;PipelineDto&gt; resolverPipeline(
+            @GraphQLContext ServiceDto serviceDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L89">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PipelineBatchLoader.class,
+                serviceDto,
+                &quot;resolverPipelineId&quot;,
+                ServiceDto::getResolverPipelineId);
+    }
+
+    @GraphQLQuery(description = &quot;load the return pipeline for the provided service&quot;)
+    public CompletableFuture&lt;PipelineDto&gt; returnPipeline(
+            @GraphQLContext ServiceDto serviceDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L100">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PipelineBatchLoader.class,
+                serviceDto,
+                &quot;returnPipelineId&quot;,
+                ServiceDto::getReturnPipelineId);
+    }
+
+    @GraphQLQuery(description = &quot;load the error pipeline for the provided service&quot;)
+    public CompletableFuture&lt;PipelineDto&gt; errorPipeline(
+            @GraphQLContext ServiceDto serviceDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L111">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PipelineBatchLoader.class,
+                serviceDto,
+                &quot;errorPipelineId&quot;,
+                ServiceDto::getErrorPipelineId);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

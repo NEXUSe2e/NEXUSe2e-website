@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ChoreographyNameConstraintValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.choreography.validation</a> &gt; <span class="el_source">ChoreographyNameConstraintValidator.java</span></div><h1>ChoreographyNameConstraintValidator.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.choreography.validation;
+
+import com.evolvsys.nexuse2e.core.choreography.model.ChoreographyDto;
+import com.evolvsys.nexuse2e.core.choreography.repository.ChoreographyRepository;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * &lt;p&gt;Validation of the name of a choreography.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 03.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+public class ChoreographyNameConstraintValidator
+        implements ConstraintValidator&lt;ValidChoreographyName, ChoreographyDto&gt; {
+    private final ChoreographyRepository choreographyRepository;
+
+    @Override
+    public boolean isValid(ChoreographyDto value, ConstraintValidatorContext context) {
+<span class="fc" id="L25">        return Optional.ofNullable(value.getId())</span>
+<span class="pc bnc" id="L26" title="All 2 branches missed.">                .map(id -&gt; !choreographyRepository.existsByChoreographyIdAndIdNot(value.getChoreographyId(), id))</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">                .orElseGet(() -&gt; !choreographyRepository.existsByChoreographyId(value.getChoreographyId()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

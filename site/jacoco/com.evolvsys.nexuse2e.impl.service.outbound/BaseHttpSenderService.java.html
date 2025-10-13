@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseHttpSenderService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.outbound</a> &gt; <span class="el_source">BaseHttpSenderService.java</span></div><h1>BaseHttpSenderService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.outbound;
+
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.function.NexusConsumer;
+import com.evolvsys.nexuse2e.core.message.context.ContextFactory;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.route.model.ContextRoute;
+import com.evolvsys.nexuse2e.core.service.NexusOutflowService;
+import com.evolvsys.nexuse2e.core.service.http.WebClientContext;
+import com.evolvsys.nexuse2e.core.utils.HttpUtils;
+import com.evolvsys.nexuse2e.impl.parameter.HttpConnectionParameters;
+import com.evolvsys.nexuse2e.impl.service.support.HttpAuthenticationSupportService;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.*;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+/**
+ * @author SvenBarden
+ * @since 16.09.2024
+ */
+<span class="fc" id="L43">@Slf4j</span>
+<span class="fc" id="L44">abstract class BaseHttpSenderService extends NexusOutflowService implements HttpConnectionParameters {</span>
+    protected static final String PARAM_VALID_RESPONSE_STATUSES = &quot;valid_response_statuses&quot;;
+
+    protected boolean validResponseStatus(HttpStatusCode httpStatusCode) {
+        //noinspection unchecked
+<span class="fc" id="L49">        return HttpUtils.validResponseStatus(</span>
+<span class="fc" id="L50">                httpStatusCode, (List&lt;String&gt;) parameters.value(PARAM_VALID_RESPONSE_STATUSES));</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L55">        return List.of(</span>
+<span class="fc" id="L56">                URL.get().build(),</span>
+<span class="fc" id="L57">                METHOD.get().build(),</span>
+<span class="fc" id="L58">                CONTENT_AS_STREAM.get().build(),</span>
+<span class="fc" id="L59">                CONNECTION_TIMEOUT.get().build(),</span>
+<span class="fc" id="L60">                RESPONSE_TIMEOUT.get().build(),</span>
+<span class="fc" id="L61">                SSL_PROTOCOLS.get().build(),</span>
+<span class="fc" id="L62">                SSL_CIPHERS.get().build(),</span>
+<span class="fc" id="L63">                ENABLE_HOSTNAME_VERIFICATION.get().build(),</span>
+<span class="fc" id="L64">                VALIDATE_CERT_CHAIN.get().build(),</span>
+<span class="fc" id="L65">                AUTH_SERVICE.get().build(),</span>
+<span class="fc" id="L66">                ParameterDefinition.builder()</span>
+<span class="fc" id="L67">                        .name(PARAM_VALID_RESPONSE_STATUSES)</span>
+<span class="fc" id="L68">                        .displayName(&quot;Valid response statuses&quot;)</span>
+<span class="fc" id="L69">                        .description(</span>
+                                &quot;Response statuses for a message to not be marked as failed. May contain x as wildcard (e.g. 2xx or 20x).&quot;)
+<span class="fc" id="L71">                        .defaultValue(List.of(&quot;2xx&quot;))</span>
+<span class="fc" id="L72">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L73">                        .required(true)</span>
+<span class="fc" id="L74">                        .build());</span>
+    }
+
+    protected void validateParameters() {
+<span class="pc bpc" id="L78" title="2 of 4 branches missed.">        if (!parameters.containsKey(PARAM_URL) || StringUtils.isBlank(parameters.value(PARAM_URL))) {</span>
+<span class="nc" id="L79">            throw new IllegalArgumentException(&quot;parameter 'url' must be provided to the sender service!&quot;);</span>
+        }
+<span class="fc" id="L81">    }</span>
+
+    protected void addAuthenticationSupport(
+            NexusConsumer&lt;HttpAuthenticationSupportService&gt; authenticationSupportServiceConsumer)
+            throws NexusException {
+<span class="fc" id="L86">        HttpAuthenticationSupportService authenticationSupportService = parameters.value(PARAM_AUTH_SERVICE);</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        if (authenticationSupportService != null) {</span>
+<span class="fc" id="L88">            LOGGER.debug(&quot;using authentication support service {}&quot;, authenticationSupportService.getServiceId());</span>
+<span class="fc" id="L89">            authenticationSupportServiceConsumer.accept(authenticationSupportService);</span>
+        }
+<span class="fc" id="L91">    }</span>
+
+    protected void setAdditionalHeaders(
+            Consumer&lt;Consumer&lt;HttpHeaders&gt;&gt; headersConsumer, ExecutionContext executionContext) {
+<span class="fc" id="L95">        Message message = executionContext.getMessage();</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        if (message.getMetaData().hasKey(HttpConstants.ADDITIONAL_HEADERS)) {</span>
+<span class="fc" id="L97">            HttpHeaders additionalHeaders = message.getMetaData().getFirstOrThrows(HttpConstants.ADDITIONAL_HEADERS);</span>
+<span class="fc" id="L98">            headersConsumer.accept(httpHeaders -&gt; httpHeaders.addAll(additionalHeaders));</span>
+        }
+<span class="fc" id="L100">    }</span>
+
+    protected void setContentType(Consumer&lt;MediaType&gt; contentTypeConsumer, ExecutionContext executionContext) {
+<span class="fc" id="L103">        MediaType contentType = getContentType(executionContext);</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (contentType != null) {</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">            if (contentType.getCharset() == null) {</span>
+<span class="fc" id="L106">                contentType = new MediaType(</span>
+<span class="fc" id="L107">                        contentType, Charset.forName(executionContext.getData().getEncoding()));</span>
+            }
+<span class="fc" id="L109">            contentTypeConsumer.accept(contentType);</span>
+        }
+<span class="fc" id="L111">    }</span>
+
+    protected MediaType getContentType(ExecutionContext executionContext) {
+        MediaType contentType;
+<span class="fc" id="L115">        ContextPayload data = executionContext.getData();</span>
+<span class="fc" id="L116">        List&lt;ContextPayload&gt; contextPayloads = executionContext.getDataAsList();</span>
+<span class="fc" id="L117">        Message message = executionContext.getMessage();</span>
+<span class="fc bfc" id="L118" title="All 2 branches covered.">        if (contextPayloads.size() &gt; 1) {</span>
+            // multipart message
+<span class="fc" id="L120">            contentType = message.getMetaData()</span>
+<span class="fc" id="L121">                    .getFirst(HttpConstants.CONTENT_TYPE)</span>
+<span class="fc" id="L122">                    .or(() -&gt; message.getMetaData()</span>
+<span class="fc" id="L123">                            .getFirst(HttpConstants.PREFIX_REQUEST_HEADER, &quot;content-type&quot;)</span>
+<span class="pc" id="L124">                            .map(o -&gt; MediaType.parseMediaType((String) o)))</span>
+<span class="fc" id="L125">                    .orElse(null);</span>
+<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        } else if (data != null) {</span>
+<span class="fc" id="L127">            contentType = MediaType.valueOf(data.getContentType());</span>
+        } else {
+<span class="nc" id="L129">            contentType = null;</span>
+        }
+
+<span class="fc" id="L132">        return contentType;</span>
+    }
+
+    protected WebClientContext buildWebClientContext(
+            ExecutionContext executionContext,
+            Function&lt;ContextRoute, WebClientContext.WebClientContextBuilder&gt; factoryFunction) {
+<span class="fc" id="L138">        WebClientContext.WebClientContextBuilder contextBuilder = factoryFunction</span>
+<span class="fc" id="L139">                .apply(executionContext.getRoute())</span>
+<span class="fc" id="L140">                .connectionTimeout(parameters.value(PARAM_CONNECTION_TIMEOUT))</span>
+<span class="fc" id="L141">                .responseTimeout(parameters.value(PARAM_RESPONSE_TIMEOUT))</span>
+<span class="fc" id="L142">                .protocols(parameters.value(PARAM_SSL_PROTOCOLS))</span>
+<span class="fc" id="L143">                .ciphers(parameters.value(PARAM_SSL_CIPHERS))</span>
+<span class="fc" id="L144">                .disableHostNameVerification(Boolean.FALSE.equals(parameters.value(PARAM_ENABLE_HOSTNAME_VERIFICATION)))</span>
+<span class="fc" id="L145">                .validateCertChain(parameters.value(PARAM_VALIDATE_CERT_CHAIN));</span>
+
+<span class="fc bfc" id="L147" title="All 2 branches covered.">        if (parameters.value(PARAM_URL, String.class).startsWith(&quot;https&quot;)) {</span>
+<span class="fc" id="L148">            contextBuilder.ssl(true);</span>
+        }
+
+<span class="fc" id="L151">        return contextBuilder.build();</span>
+    }
+
+    protected void addBody(
+            Consumer&lt;MultiValueMap&lt;String, HttpEntity&lt;?&gt;&gt;&gt; multipartConsumer,
+            BiConsumer&lt;String, String&gt; headerConsumer,
+            Consumer&lt;InputStream&gt; streamConsumer,
+            Consumer&lt;byte[]&gt; byteArrayConsumer,
+            ExecutionContext executionContext) {
+<span class="fc bfc" id="L160" title="All 2 branches covered.">        if (executionContext.getDataAsList().size() &gt; 1) {</span>
+<span class="fc" id="L161">            multipartConsumer.accept(buildMultipartBody(executionContext));</span>
+        } else {
+<span class="fc" id="L163">            ContextPayload contextData = executionContext.getData();</span>
+<span class="pc bpc" id="L164" title="1 of 2 branches missed.">            if (LOGGER.isTraceEnabled()) {</span>
+<span class="nc" id="L165">                LOGGER.trace(</span>
+                        &quot;adding body content {}&quot;,
+<span class="nc" id="L167">                        contextData.getContent().getString(Charset.forName(contextData.getEncoding())));</span>
+            }
+
+<span class="fc bfc" id="L170" title="All 2 branches covered.">            if (parameters.value(PARAM_CONTENT_AS_STREAM)) {</span>
+<span class="fc" id="L171">                headerConsumer.accept(&quot;content-length&quot;, String.valueOf(contextData.getSize()));</span>
+<span class="fc" id="L172">                streamConsumer.accept(contextData.getContent().getInputStream());</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">                if (StringUtils.isNotBlank(contextData.getContentId())) {</span>
+<span class="nc" id="L174">                    headerConsumer.accept(HttpConstants.CONTENT_ID.getName(), contextData.getContentId());</span>
+                }
+            } else {
+<span class="fc" id="L177">                byteArrayConsumer.accept(contextData.getContent().getByteArray());</span>
+<span class="pc bpc" id="L178" title="1 of 2 branches missed.">                if (StringUtils.isNotBlank(contextData.getContentId())) {</span>
+<span class="nc" id="L179">                    headerConsumer.accept(HttpConstants.CONTENT_ID.getName(), contextData.getContentId());</span>
+                }
+            }
+        }
+<span class="fc" id="L183">    }</span>
+
+    protected MultiValueMap&lt;String, HttpEntity&lt;?&gt;&gt; buildMultipartBody(ExecutionContext executionContext) {
+<span class="fc" id="L186">        MultipartBodyBuilder multipartBodyBuilder = new MultipartBodyBuilder();</span>
+<span class="fc" id="L187">        List&lt;ContextPayload&gt; contextPayloads = executionContext.getDataAsList();</span>
+
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        for (int i = 0; i &lt; contextPayloads.size(); i++) {</span>
+<span class="fc" id="L190">            ContextPayload contextPayload = contextPayloads.get(i);</span>
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">            if (LOGGER.isTraceEnabled()) {</span>
+<span class="nc" id="L192">                LOGGER.trace(</span>
+                        &quot;adding multipart {} to request: {}&quot;,
+<span class="nc" id="L194">                        i,</span>
+<span class="nc" id="L195">                        contextPayload.getContent().getString(Charset.forName(contextPayload.getEncoding())));</span>
+            }
+            Object content;
+<span class="fc bfc" id="L198" title="All 2 branches covered.">            if (parameters.value(PARAM_CONTENT_AS_STREAM)) {</span>
+<span class="fc" id="L199">                content = new InputStreamResource(contextPayload.getContent().getInputStream());</span>
+            } else {
+<span class="fc" id="L201">                content = contextPayload.getContent().getByteArray();</span>
+            }
+
+<span class="fc" id="L204">            MultipartBodyBuilder.PartBuilder headerBuilder = multipartBodyBuilder</span>
+<span class="fc" id="L205">                    .part(&quot;part&quot; + i, content, MediaType.parseMediaType(contextPayload.getContentType()))</span>
+<span class="fc" id="L206">                    .headers(headers -&gt; headers.addAll(contextPayload</span>
+<span class="fc" id="L207">                            .getMetaData()</span>
+<span class="fc" id="L208">                            .getFirstOrDefault(HttpConstants.ADDITIONAL_HEADERS, new HttpHeaders())));</span>
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">            if (StringUtils.isNotBlank(contextPayload.getContentId())) {</span>
+<span class="nc" id="L210">                headerBuilder.header(HttpConstants.CONTENT_ID.getName(), contextPayload.getContentId());</span>
+            }
+<span class="fc bfc" id="L212" title="All 2 branches covered.">            if (parameters.value(PARAM_CONTENT_AS_STREAM)) {</span>
+<span class="fc" id="L213">                headerBuilder.header(&quot;content-length&quot;, String.valueOf(contextPayload.getSize()));</span>
+            }
+        }
+<span class="fc" id="L216">        return multipartBodyBuilder.build();</span>
+    }
+
+    protected MessageContext handleResponse(
+            Supplier&lt;ResponseEntity&lt;String&gt;&gt; responseSupplier, ExecutionContext executionContext)
+            throws NexusException {
+<span class="fc" id="L222">        Message message = executionContext.getMessage();</span>
+<span class="fc" id="L223">        MessageContext messageContext = executionContext.getMessageContext();</span>
+        ResponseEntity&lt;String&gt; response;
+        try {
+<span class="fc" id="L226">            response = responseSupplier.get();</span>
+<span class="fc" id="L227">        } catch (Exception e) {</span>
+<span class="pc bpc" id="L228" title="3 of 4 branches missed.">            if (e instanceof WebClientResponseException we &amp;&amp; StringUtils.isNotBlank(we.getResponseBodyAsString())) {</span>
+<span class="nc" id="L229">                throw new NexusException(</span>
+<span class="nc" id="L230">                        NexusError.builder()</span>
+<span class="nc" id="L231">                                .message(String.format(</span>
+                                        &quot;Error calling http target - error response: '%s'&quot;,
+<span class="nc" id="L233">                                        we.getResponseBodyAsString()))</span>
+<span class="nc" id="L234">                                .extension(MESSAGE_ID, message.getId())</span>
+<span class="nc" id="L235">                                .extension(&quot;statusCode&quot;, we.getStatusCode().value())</span>
+<span class="nc" id="L236">                                .extension(&quot;statusText&quot;, we.getStatusText())</span>
+<span class="nc" id="L237">                                .build(),</span>
+                        e);
+            }
+<span class="fc" id="L240">            throw new NexusException(</span>
+<span class="fc" id="L241">                    NexusError.builder()</span>
+<span class="fc" id="L242">                            .message(String.format(&quot;Error calling http target: '%s&quot;, e.getMessage()))</span>
+<span class="fc" id="L243">                            .extension(MESSAGE_ID, message.getId())</span>
+<span class="fc" id="L244">                            .build(),</span>
+                    e);
+<span class="fc" id="L246">        }</span>
+
+<span class="pc bpc" id="L248" title="1 of 2 branches missed.">        if (response == null) {</span>
+<span class="nc" id="L249">            LOGGER.debug(&quot;got no response&quot;);</span>
+<span class="nc" id="L250">            throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L251">                    .message(&quot;no response from http target&quot;)</span>
+<span class="nc" id="L252">                    .extension(MESSAGE_ID, message.getId())</span>
+<span class="nc" id="L253">                    .build());</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">        } else if (validResponseStatus(response.getStatusCode()) == false) {</span>
+<span class="nc" id="L255">            throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L256">                    .message(&quot;invalid response from http target&quot;)</span>
+<span class="nc" id="L257">                    .extension(MESSAGE_ID, message.getId())</span>
+<span class="nc" id="L258">                    .extension(&quot;responseCode&quot;, response.getStatusCode().toString())</span>
+<span class="nc" id="L259">                    .extension(&quot;validResponseCodes&quot;, parameters.value(PARAM_VALID_RESPONSE_STATUSES))</span>
+<span class="nc" id="L260">                    .build());</span>
+        } else {
+<span class="fc" id="L262">            LOGGER.debug(&quot;got response {}&quot;, response.getStatusCode());</span>
+<span class="fc" id="L263">            String body = response.getBody();</span>
+<span class="fc" id="L264">            LOGGER.trace(&quot;body response: {}&quot;, body);</span>
+
+<span class="pc bpc" id="L266" title="3 of 4 branches missed.">            if (returnPipeline != null &amp;&amp; executionContext.getMessageType() != MessageType.RETURN) {</span>
+<span class="nc" id="L267">                Message returnMessage = new Message();</span>
+<span class="nc" id="L268">                returnMessage.setType(MessageType.RETURN);</span>
+<span class="nc" id="L269">                messageContext.setReturnMessage(returnMessage);</span>
+
+<span class="nc bnc" id="L271" title="All 2 branches missed.">                if (body == null) {</span>
+<span class="nc" id="L272">                    LOGGER.debug(&quot;body in response is null&quot;);</span>
+                } else {
+<span class="nc" id="L274">                    byte[] bytes = body.getBytes(StandardCharsets.UTF_8);</span>
+<span class="nc" id="L275">                    messageContext.setReturnData(ContextPayload.builder()</span>
+<span class="nc" id="L276">                            .content(PayloadContent.of(bytes))</span>
+<span class="nc" id="L277">                            .encoding(&quot;utf-8&quot;)</span>
+<span class="nc" id="L278">                            .size(bytes.length)</span>
+<span class="nc" id="L279">                            .build());</span>
+                }
+
+<span class="nc" id="L282">                messageContext = returnPipeline</span>
+<span class="nc" id="L283">                        .execute(ContextFactory.createExecutionContext(messageContext, MessageType.RETURN))</span>
+<span class="nc" id="L284">                        .getMessageContext();</span>
+            }
+        }
+<span class="fc" id="L287">        return messageContext;</span>
+    }
+
+    protected MultiValueMap&lt;String, String&gt; getRequestParametersFromMetadata(ExecutionContext executionContext) {
+<span class="fc" id="L291">        MultiValueMap&lt;String, String&gt; requestParams = new LinkedMultiValueMap&lt;&gt;();</span>
+<span class="fc bfc" id="L292" title="All 2 branches covered.">        for (String key : executionContext.getMetaData().keys(HttpConstants.PREFIX_OUTBOUND_REQUEST_PARAMETER)) {</span>
+<span class="fc" id="L293">            requestParams.put(</span>
+<span class="fc" id="L294">                    key, executionContext.getMetaData().get(HttpConstants.PREFIX_OUTBOUND_REQUEST_PARAMETER, key));</span>
+<span class="fc" id="L295">        }</span>
+<span class="fc" id="L296">        return requestParams;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

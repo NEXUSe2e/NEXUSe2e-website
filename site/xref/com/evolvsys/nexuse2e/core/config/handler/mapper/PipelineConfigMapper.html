@@ -1,0 +1,68 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>PipelineConfigMapper xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../../apidocs/com/evolvsys/nexuse2e/core/config/handler/mapper/PipelineConfigMapper.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.core.config.handler.mapper;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.config.model.PipelineConfig;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.pipeline.model.PipelineEntity;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.pipeline.repository.PipelineRepository;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> java.util.Optional;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> org.mapstruct.*;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> org.springframework.beans.factory.annotation.Autowired;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <em class="jxr_javadoccomment"> * @author SvenBarden</em>
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <em class="jxr_javadoccomment"> * @since 27.11.2023</em>
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  @Mapper(config = DefaultConfigMapperConfig.<strong class="jxr_keyword">class</strong>, uses = PipeletConfigMapper.<strong class="jxr_keyword">class</strong>)
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">class</strong> <a name="PipelineConfigMapper" href="../../../../../../../com/evolvsys/nexuse2e/core/config/handler/mapper/PipelineConfigMapper.html#PipelineConfigMapper">PipelineConfigMapper</a> {
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>      <strong class="jxr_keyword">private</strong> <a name="PipelineRepository" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/repository/PipelineRepository.html#PipelineRepository">PipelineRepository</a> pipelineRepository;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>      @Autowired
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>      <strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">void</strong> config(<a name="PipelineRepository" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/repository/PipelineRepository.html#PipelineRepository">PipelineRepository</a> pipelineRepository) {
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>          <strong class="jxr_keyword">this</strong>.pipelineRepository = pipelineRepository;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>      }
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      <strong class="jxr_keyword">public</strong> <a name="PipelineEntity" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/model/PipelineEntity.html#PipelineEntity">PipelineEntity</a> idToEntity(String pipelineId) {
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>          <strong class="jxr_keyword">return</strong> pipelineRepository.findByPipelineId(pipelineId).orElse(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      }
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      <strong class="jxr_keyword">public</strong> String entityToString(<a name="PipelineEntity" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/model/PipelineEntity.html#PipelineEntity">PipelineEntity</a> pipelineEntity) {
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>          <strong class="jxr_keyword">return</strong> pipelineEntity == <strong class="jxr_keyword">null</strong> ? <strong class="jxr_keyword">null</strong> : pipelineEntity.getPipelineId();
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>      }
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>      @Mapping(target = <span class="jxr_string">"pipelets"</span>, ignore = <strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>      @Mapping(target = <span class="jxr_string">"description"</span>, source = <span class="jxr_string">"description"</span>, qualifiedByName = <span class="jxr_string">"toTrimmedString_pipeline"</span>)
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>      @InheritConfiguration
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">void</strong> updateEntity(PipelineConfig pipelineConfig, @MappingTarget <a name="PipelineEntity" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/model/PipelineEntity.html#PipelineEntity">PipelineEntity</a> pipelineEntity);
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>      @Named(<span class="jxr_string">"toTrimmedString_pipeline"</span>)
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>      <strong class="jxr_keyword">protected</strong> String toTrimmedString(String stringToTrim) {
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>          <strong class="jxr_keyword">return</strong> Optional.ofNullable(stringToTrim).map(String::trim).orElse(stringToTrim);
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>      }
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>      <strong class="jxr_keyword">public</strong> String configToString(PipelineConfig pipelineConfig) {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>          <strong class="jxr_keyword">return</strong> pipelineConfig == <strong class="jxr_keyword">null</strong> ? <strong class="jxr_keyword">null</strong> : pipelineConfig.getPipelineId();
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>      }
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>      <strong class="jxr_keyword">public</strong> PipelineConfig stringToConfig(String pipelineId) {
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>          <strong class="jxr_keyword">return</strong> pipelineRepository
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>                  .findByPipelineId(pipelineId)
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>                  .map(<strong class="jxr_keyword">this</strong>::toConfig)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                  .orElse(<strong class="jxr_keyword">null</strong>);
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>      }
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>  
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> PipelineConfig toConfig(<a name="PipelineEntity" href="../../../../../../../com/evolvsys/nexuse2e/core/pipeline/model/PipelineEntity.html#PipelineEntity">PipelineEntity</a> pipelineEntity);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">abstract</strong> <strong class="jxr_keyword">void</strong> merge(PipelineConfig newConfig, @MappingTarget PipelineConfig oldConfig);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

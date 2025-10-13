@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.repository</a> &gt; <span class="el_source">CertificateRepository.java</span></div><h1>CertificateRepository.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.repository;
+
+import com.evolvsys.app.core.repository.ListProviderRepository;
+import com.evolvsys.nexuse2e.core.certificate.model.*;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 06.02.2024
+ */
+public interface CertificateRepository
+        extends JpaRepository&lt;CertificateEntity, Long&gt;,
+                QuerydslPredicateExecutor&lt;CertificateEntity&gt;,
+                ListProviderRepository&lt;CertificateEntity, Long, CertificateFilter&gt; {
+    List&lt;CertificateEntity&gt; findByType(CertificateType type);
+
+    List&lt;CertificateEntity&gt; findByCertificateContainerAndActive(
+            CertificateContainerEntity certificateContainer, boolean active);
+
+    Optional&lt;CertificateEntity&gt; findFirstByCertificateContainerAndActive(
+            CertificateContainerEntity certificateContainer, boolean active);
+
+    @Override
+    default Page&lt;CertificateEntity&gt; findAllToRead(
+            Pageable pageable, CertificateFilter filter, BooleanExpression securityPredicate) {
+<span class="nc" id="L36">        return findAll(securityPredicate.and(QCertificateEntity.certificateEntity.filter(filter)), pageable);</span>
+    }
+
+    boolean existsByCertificateContainerAndInfo_sha1Fingerprint(
+            CertificateContainerEntity certificateContainer, String sha1Fingerprint);
+
+    boolean existsByCertificateContainerNullAndInfo_sha1Fingerprint(String sha1Fingerprint);
+
+    List&lt;CertificateEntity&gt; findByTypeAndActive(CertificateType type, boolean active);
+
+    @EntityGraph(attributePaths = &quot;file.fileContent&quot;)
+    List&lt;CertificateEntity&gt; getByTypeAndActive(CertificateType type, boolean active);
+
+    Optional&lt;CertificateEntity&gt; findByNameAndType(String name, CertificateType type);
+
+    List&lt;CertificateEntity&gt; findByCertificateContainer(CertificateContainerEntity certificateContainer);
+
+    Optional&lt;CertificateEntity&gt; findByCertificateContainerAndName(
+            CertificateContainerEntity certificateContainer, String name);
+
+    @Transactional
+    long deleteByCertificateContainerNotNull();
+
+    @Query(
+            &quot;&quot;&quot;
+                    select outerCert from CertificateEntity outerCert where
+                    outerCert.id in (
+                        select
+                            first_value(innerCert.id) over (
+                                partition by innerCert.certificateContainer.id
+                                order by innerCert.info.validUntil desc
+                            )
+                        from CertificateEntity innerCert
+                        where innerCert.active = :active and innerCert.certificateContainer.id IN(:certificateContainerIds)
+                    )
+                &quot;&quot;&quot;)
+    List&lt;CertificateEntity&gt; findFirstByActiveAndCertificateContainer_Id(
+            boolean active, Collection&lt;Long&gt; certificateContainerIds);
+
+    boolean existsByCertificateContainer_Id(Long id);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

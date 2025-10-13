@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageLogbackAppender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.logging</a> &gt; <span class="el_source">MessageLogbackAppender.java</span></div><h1>MessageLogbackAppender.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.logging;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.filter.ThresholdFilter;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.UnsynchronizedAppenderBase;
+import ch.qos.logback.core.spi.FilterReply;
+import com.evolvsys.nexuse2e.core.logging.model.ForMessageLoggingContext;
+import com.evolvsys.nexuse2e.core.logging.model.LogFilterType;
+import com.evolvsys.nexuse2e.core.logging.service.LogFilterCacheService;
+import com.evolvsys.nexuse2e.core.logging.service.LoggingService;
+import com.evolvsys.nexuse2e.core.utils.ErrorUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.SmartLifecycle;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 04.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L29">@Slf4j</span>
+public class MessageLogbackAppender extends UnsynchronizedAppenderBase&lt;ILoggingEvent&gt;
+        implements SmartLifecycle, InitializingBean {
+    private final LoggingService loggingService;
+    private final LogFilterCacheService logFilterCacheService;
+    private DatabaseLogFilterHelper databaseLogFilterHelper;
+
+    private static ThresholdFilter createThresholdFilter() {
+<span class="fc" id="L37">        ThresholdFilter thresholdFilter = new ThresholdFilter();</span>
+<span class="fc" id="L38">        thresholdFilter.setLevel(Level.INFO.levelStr);</span>
+<span class="fc" id="L39">        thresholdFilter.start();</span>
+<span class="fc" id="L40">        return thresholdFilter;</span>
+    }
+
+    @Override
+    public boolean isAutoStartup() {
+<span class="fc" id="L45">        return false;</span>
+    }
+
+    private void updateFilters() {
+<span class="fc" id="L49">        databaseLogFilterHelper.updateFilters();</span>
+<span class="fc" id="L50">    }</span>
+
+    @Override
+    protected void append(ILoggingEvent event) {
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (event.getLoggerName().equals(MessageLogbackAppender.class.getName()) == false) {</span>
+            try {
+<span class="fc" id="L56">                LOGGER.debug(&quot;write log message {} from {}&quot;, event, event.getLoggerName());</span>
+<span class="fc bfc" id="L57" title="All 2 branches covered.">                if (MessageLogContextHolder.exists()</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">                        &amp;&amp; (MessageLogContextHolder.getContext().isForceGlobal() == false)) {</span>
+<span class="fc" id="L59">                    loggingService.log(</span>
+<span class="fc" id="L60">                            MessageLogContextHolder.getContext().getMessageContext(),</span>
+<span class="fc" id="L61">                            MessageLogContextHolder.getContext().getExecutionContext(),</span>
+                            event);
+                } else {
+<span class="fc" id="L64">                    ForMessageLoggingContext context = null;</span>
+<span class="pc bpc" id="L65" title="1 of 2 branches missed.">                    if (CollectionUtils.isNotEmpty(event.getKeyValuePairs())) {</span>
+<span class="nc" id="L66">                        context = event.getKeyValuePairs().stream()</span>
+<span class="nc" id="L67">                                .filter(keyValuePair -&gt; ForMessageLoggingContext.KEY_NAME.equals(keyValuePair.key))</span>
+<span class="nc" id="L68">                                .findFirst()</span>
+<span class="nc" id="L69">                                .map(keyValuePair -&gt; (ForMessageLoggingContext) keyValuePair.value)</span>
+<span class="nc" id="L70">                                .orElse(null);</span>
+                    }
+
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">                    if (context == null) {</span>
+<span class="fc" id="L74">                        loggingService.log(null, null, event);</span>
+                    } else {
+<span class="nc" id="L76">                        loggingService.log(context, event);</span>
+                    }
+                }
+<span class="nc" id="L79">            } catch (Throwable e) {</span>
+<span class="nc" id="L80">                LOGGER.error(&quot;could not write log message {}&quot;, ErrorUtils.aggregate(e), e);</span>
+<span class="fc" id="L81">            }</span>
+        }
+<span class="fc" id="L83">    }</span>
+
+    @Override
+    public FilterReply getFilterChainDecision(ILoggingEvent event) {
+<span class="fc" id="L87">        updateFilters();</span>
+<span class="fc" id="L88">        return super.getFilterChainDecision(event);</span>
+    }
+
+    @Override
+    public boolean isRunning() {
+<span class="fc" id="L93">        return isStarted();</span>
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (LoggerFactory.getILoggerFactory() instanceof LoggerContext loggerContext) {</span>
+<span class="fc" id="L99">            LOGGER.info(&quot;registering message logback appender&quot;);</span>
+<span class="fc" id="L100">            setContext(loggerContext);</span>
+<span class="fc" id="L101">            setName(getClass().getSimpleName());</span>
+
+<span class="fc" id="L103">            ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger(Logger.ROOT_LOGGER_NAME);</span>
+<span class="fc" id="L104">            synchronized (this) {</span>
+<span class="fc" id="L105">                databaseLogFilterHelper = new DatabaseLogFilterHelper(</span>
+<span class="fc" id="L106">                        logFilterCacheService, this, LogFilterType.DATABASE, createThresholdFilter());</span>
+<span class="fc" id="L107">                updateFilters();</span>
+<span class="fc" id="L108">            }</span>
+<span class="fc" id="L109">            start();</span>
+<span class="fc" id="L110">            rootLogger.addAppender(this);</span>
+<span class="fc" id="L111">        } else {</span>
+<span class="nc" id="L112">            throw new IllegalStateException(&quot;logger context ist not of type logback&quot;);</span>
+        }
+<span class="fc" id="L114">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CsvToJsonSplitterTransformatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">CsvToJsonSplitterTransformatorService.java</span></div><h1>CsvToJsonSplitterTransformatorService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.KeyValue;
+
+/**
+ *
+ */
+<span class="fc" id="L22">@Slf4j</span>
+<span class="fc" id="L23">public class CsvToJsonSplitterTransformatorService extends TransformatorSupportService {</span>
+
+    private static final String PARAM_TRANSFORM_BEFORE = &quot;transform_before&quot;;
+    private static final String PARAM_TRANSFORM_AFTER = &quot;transform_after&quot;;
+    private static final String PARAM_COLUMN_MAPPING = &quot;column_mapping&quot;;
+    private static final String PARAM_KEY_COLUMNS = &quot;key_columns&quot;;
+    private static final String PARAM_HAS_HEADER = &quot;has_header&quot;;
+    private static final String PARAM_BLACK_LIST = &quot;black_list&quot;;
+    private static final String PARAM_WHITE_LIST = &quot;white_list&quot;;
+    private static final String PARAM_SEPARATOR_CHAR = &quot;separator_char&quot;;
+    private static final String PARAM_COPY_METADATA = &quot;copy_metadata&quot;;
+    private static final String PARAM_GENERATE_TOC = &quot;generate_toc&quot;;
+
+<span class="fc" id="L36">    private final List&lt;String&gt; keys = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L37">    private final List&lt;String&gt; blackListFilter = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L38">    private final List&lt;String&gt; whiteListFilter = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L39">    private final Map&lt;String, JsonFieldRenderType&gt; columnTypeMapping = new LinkedHashMap&lt;&gt;();</span>
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L43">        return List.of(</span>
+<span class="fc" id="L44">                ParameterDefinition.builder()</span>
+<span class="fc" id="L45">                        .name(PARAM_TRANSFORM_BEFORE)</span>
+<span class="fc" id="L46">                        .required(false)</span>
+<span class="fc" id="L47">                        .displayName(&quot;Pre Transformer&quot;)</span>
+<span class="fc" id="L48">                        .description(&quot;An optional Transformer Service which is executed before this transformer.&quot;)</span>
+<span class="fc" id="L49">                        .type(ParameterType.SUPPORT_SERVICE)</span>
+<span class="fc" id="L50">                        .build(),</span>
+<span class="fc" id="L51">                ParameterDefinition.builder()</span>
+<span class="fc" id="L52">                        .name(PARAM_TRANSFORM_AFTER)</span>
+<span class="fc" id="L53">                        .required(false)</span>
+<span class="fc" id="L54">                        .displayName(&quot;Post Transformer&quot;)</span>
+<span class="fc" id="L55">                        .description(&quot;An optional Transformer Service which is executed after this transformer.&quot;)</span>
+<span class="fc" id="L56">                        .type(ParameterType.SUPPORT_SERVICE)</span>
+<span class="fc" id="L57">                        .build(),</span>
+<span class="fc" id="L58">                ParameterDefinition.builder()</span>
+<span class="fc" id="L59">                        .name(PARAM_SEPARATOR_CHAR)</span>
+<span class="fc" id="L60">                        .displayName(&quot;Separator Character&quot;)</span>
+<span class="fc" id="L61">                        .description(&quot;The character used for column separation. The default is ';'.&quot;)</span>
+<span class="fc" id="L62">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L63">                        .required(true)</span>
+<span class="fc" id="L64">                        .defaultValue(&quot;;&quot;)</span>
+<span class="fc" id="L65">                        .build(),</span>
+<span class="fc" id="L66">                ParameterDefinition.builder()</span>
+<span class="fc" id="L67">                        .name(PARAM_COLUMN_MAPPING)</span>
+<span class="fc" id="L68">                        .required(true)</span>
+<span class="fc" id="L69">                        .displayName(&quot;Column Mapping&quot;)</span>
+<span class="fc" id="L70">                        .description(</span>
+                                &quot;Defines the columns available in the json and their type. (currently allowed is STRING, NUMBER and BOOLEAN)&quot;)
+<span class="fc" id="L72">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L73">                        .build(),</span>
+<span class="fc" id="L74">                ParameterDefinition.builder()</span>
+<span class="fc" id="L75">                        .name(PARAM_KEY_COLUMNS)</span>
+<span class="fc" id="L76">                        .required(false)</span>
+<span class="fc" id="L77">                        .displayName(&quot;Key Columns&quot;)</span>
+<span class="fc" id="L78">                        .description(</span>
+                                &quot;Keys are used to group the lines by this field. For every group a new json document is created.&quot;)
+<span class="fc" id="L80">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L81">                        .build(),</span>
+<span class="fc" id="L82">                ParameterDefinition.builder()</span>
+<span class="fc" id="L83">                        .name(PARAM_HAS_HEADER)</span>
+<span class="fc" id="L84">                        .required(true)</span>
+<span class="fc" id="L85">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L86">                        .displayName(&quot;CSV header row&quot;)</span>
+<span class="fc" id="L87">                        .description(</span>
+                                &quot;This flag is used to skip the first row in case you provided a file with a header row in it.&quot;)
+<span class="fc" id="L89">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L90">                        .build(),</span>
+<span class="fc" id="L91">                ParameterDefinition.builder()</span>
+<span class="fc" id="L92">                        .name(PARAM_BLACK_LIST)</span>
+<span class="fc" id="L93">                        .required(false)</span>
+<span class="fc" id="L94">                        .displayName(&quot;Column Black List&quot;)</span>
+<span class="fc" id="L95">                        .description(</span>
+                                &quot;All values added in this list are excluded from the final JSON structure. The values must match the header mappings.&quot;)
+<span class="fc" id="L97">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L98">                        .build(),</span>
+<span class="fc" id="L99">                ParameterDefinition.builder()</span>
+<span class="fc" id="L100">                        .name(PARAM_WHITE_LIST)</span>
+<span class="fc" id="L101">                        .required(false)</span>
+<span class="fc" id="L102">                        .displayName(&quot;Column White List&quot;)</span>
+<span class="fc" id="L103">                        .description(</span>
+                                &quot;Only values in this list are included in the final JSON Structure. The values must match the header mappings.&quot;)
+<span class="fc" id="L105">                        .type(ParameterType.STRING_LIST)</span>
+<span class="fc" id="L106">                        .build(),</span>
+<span class="fc" id="L107">                ParameterDefinition.builder()</span>
+<span class="fc" id="L108">                        .name(PARAM_COPY_METADATA)</span>
+<span class="fc" id="L109">                        .required(true)</span>
+<span class="fc" id="L110">                        .displayName(&quot;Copy Metadata&quot;)</span>
+<span class="fc" id="L111">                        .description(&quot;Copy all Metadata from original payload to all generated payloads.&quot;)</span>
+<span class="fc" id="L112">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L113">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L114">                        .build(),</span>
+<span class="fc" id="L115">                ParameterDefinition.builder()</span>
+<span class="fc" id="L116">                        .name(PARAM_GENERATE_TOC)</span>
+<span class="fc" id="L117">                        .required(true)</span>
+<span class="fc" id="L118">                        .displayName(&quot;Create Table of Content&quot;)</span>
+<span class="fc" id="L119">                        .description(</span>
+                                &quot;Optionally create an additional payload containing a table of content with all keys found.&quot;)
+<span class="fc" id="L121">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L122">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L123">                        .build());</span>
+    }
+
+    @Override
+    public List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        if (payloads == null) {</span>
+<span class="fc" id="L130">            return List.of();</span>
+        }
+
+<span class="fc" id="L133">        TransformatorSupportService preTransformer = getParameters().value(PARAM_TRANSFORM_BEFORE);</span>
+<span class="fc" id="L134">        TransformatorSupportService postTransformer = getParameters().value(PARAM_TRANSFORM_AFTER);</span>
+<span class="fc" id="L135">        List&lt;KeyValue&lt;String, String&gt;&gt; rawColumnTypeMapping = getParameters().value(PARAM_COLUMN_MAPPING);</span>
+<span class="fc" id="L136">        List&lt;String&gt; rawKeys = getParameters().value(PARAM_KEY_COLUMNS);</span>
+<span class="fc" id="L137">        boolean hasHeader = getParameters().value(PARAM_HAS_HEADER);</span>
+<span class="fc" id="L138">        List&lt;String&gt; blackList = getParameters().value(PARAM_BLACK_LIST);</span>
+<span class="fc" id="L139">        List&lt;String&gt; whiteList = getParameters().value(PARAM_WHITE_LIST);</span>
+<span class="fc" id="L140">        String separatorChar = getParameters().value(PARAM_SEPARATOR_CHAR);</span>
+<span class="fc" id="L141">        boolean copyPayloads = getParameters().value(PARAM_COPY_METADATA);</span>
+<span class="fc" id="L142">        boolean generateToC = getParameters().value(PARAM_GENERATE_TOC);</span>
+
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">        if (preTransformer != null) {</span>
+<span class="nc" id="L145">            payloads = preTransformer.transform(payloads);</span>
+        }
+
+<span class="pc bpc" id="L148" title="1 of 2 branches missed.">        if (CollectionUtils.isNotEmpty(rawColumnTypeMapping)) {</span>
+<span class="fc" id="L149">            columnTypeMapping.clear();</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">            for (KeyValue&lt;String, String&gt; entry : rawColumnTypeMapping) {</span>
+<span class="fc" id="L151">                columnTypeMapping.put(</span>
+<span class="fc" id="L152">                        entry.getKey(),</span>
+<span class="fc" id="L153">                        JsonFieldRenderType.valueOf(entry.getValue().toUpperCase()));</span>
+<span class="fc" id="L154">            }</span>
+        }
+
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">        if (rawKeys != null) {</span>
+<span class="fc" id="L158">            keys.clear();</span>
+<span class="fc" id="L159">            keys.addAll(rawKeys);</span>
+        }
+
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (blackList != null) {</span>
+<span class="fc" id="L163">            blackListFilter.clear();</span>
+<span class="fc" id="L164">            blackListFilter.addAll(blackList);</span>
+        }
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        if (whiteList != null) {</span>
+<span class="nc" id="L167">            whiteListFilter.clear();</span>
+<span class="nc" id="L168">            whiteListFilter.addAll(whiteList);</span>
+        }
+
+<span class="fc" id="L171">        List&lt;ContextPayload&gt; result = new ArrayList&lt;&gt;();</span>
+
+<span class="fc" id="L173">        CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder()</span>
+<span class="fc" id="L174">                .setColumnSeparator(separatorChar.charAt(0))</span>
+<span class="fc" id="L175">                .setUseHeader(false)</span>
+<span class="fc" id="L176">                .setSkipFirstDataRow(hasHeader);</span>
+
+<span class="fc" id="L178">        columnTypeMapping.keySet().forEach(csvSchemaBuilder::addColumn);</span>
+
+<span class="fc" id="L180">        CsvSchema csvSchema = csvSchemaBuilder.build();</span>
+
+<span class="fc" id="L182">        CsvMapper csvMapper = new CsvMapper();</span>
+<span class="fc" id="L183">        JsonFactory jsonFactory = new JsonFactory();</span>
+
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        for (ContextPayload payload : payloads) {</span>
+<span class="fc" id="L186">            CsvPayloadProcessor csvPayloadProcessor =</span>
+<span class="fc" id="L187">                    getCsvPayloadProcessor(payload, csvMapper, csvSchema, jsonFactory, generateToC);</span>
+
+<span class="fc" id="L189">            List&lt;ContextPayload&gt; transformedPayloads = csvPayloadProcessor.processPayload();</span>
+
+<span class="pc bpc" id="L191" title="1 of 2 branches missed.">            if (copyPayloads) {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">                for (ContextPayload transformedPayload : transformedPayloads) {</span>
+<span class="fc" id="L193">                    transformedPayload.getMetaData().add(payload.getMetaData());</span>
+<span class="fc" id="L194">                }</span>
+            }
+<span class="fc" id="L196">            result.addAll(transformedPayloads);</span>
+<span class="fc" id="L197">        }</span>
+
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (postTransformer != null) {</span>
+<span class="nc" id="L200">            result = postTransformer.transform(result);</span>
+        }
+<span class="fc" id="L202">        return result;</span>
+    }
+
+    protected CsvPayloadProcessor getCsvPayloadProcessor(
+            ContextPayload payload,
+            CsvMapper csvMapper,
+            CsvSchema csvSchema,
+            JsonFactory jsonFactory,
+            boolean generateToC) {
+<span class="fc" id="L211">        CsvProcessorConfig csvProcessorConfig = CsvProcessorConfig.builder()</span>
+<span class="fc" id="L212">                .payload(payload)</span>
+<span class="fc" id="L213">                .csvMapper(csvMapper)</span>
+<span class="fc" id="L214">                .csvSchema(csvSchema)</span>
+<span class="fc" id="L215">                .jsonFactory(jsonFactory)</span>
+<span class="fc" id="L216">                .keys(keys)</span>
+<span class="fc" id="L217">                .columnTypeMapping(columnTypeMapping)</span>
+<span class="fc" id="L218">                .blackListFilter(blackListFilter)</span>
+<span class="fc" id="L219">                .whiteListFilter(whiteListFilter)</span>
+<span class="fc" id="L220">                .generateTableOfContents(generateToC)</span>
+<span class="fc" id="L221">                .build();</span>
+<span class="fc" id="L222">        return new CsvPayloadProcessor(csvProcessorConfig);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

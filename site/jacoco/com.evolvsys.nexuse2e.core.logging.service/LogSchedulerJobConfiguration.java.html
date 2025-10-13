@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LogSchedulerJobConfiguration.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.logging.service</a> &gt; <span class="el_source">LogSchedulerJobConfiguration.java</span></div><h1>LogSchedulerJobConfiguration.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.logging.service;
+
+import java.time.ZonedDateTime;
+import java.util.Date;
+import org.quartz.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author SvenBarden
+ * @since 21.03.2024
+ */
+@Configuration
+<span class="fc" id="L14">class LogSchedulerJobConfiguration {</span>
+<span class="fc" id="L15">    static final JobKey PERSIST_LOGS_JOB_KEY = new JobKey(&quot;persist&quot;, &quot;log&quot;);</span>
+<span class="fc" id="L16">    static final TriggerKey PERSIST_LOGS_TRIGGER_KEY = new TriggerKey(&quot;persist&quot;, &quot;log&quot;);</span>
+
+    @Bean
+    JobDetail persistLogsJob() {
+<span class="fc" id="L20">        return JobBuilder.newJob(PersistLogsJob.class)</span>
+<span class="fc" id="L21">                .withIdentity(PERSIST_LOGS_JOB_KEY)</span>
+<span class="fc" id="L22">                .storeDurably()</span>
+<span class="fc" id="L23">                .build();</span>
+    }
+
+    @Bean
+    Trigger persistLogsTrigger() {
+<span class="fc" id="L28">        return TriggerBuilder.newTrigger()</span>
+<span class="fc" id="L29">                .withIdentity(PERSIST_LOGS_TRIGGER_KEY)</span>
+<span class="fc" id="L30">                .forJob(PERSIST_LOGS_JOB_KEY)</span>
+<span class="fc" id="L31">                .withSchedule(SimpleScheduleBuilder.repeatSecondlyForever(10)</span>
+<span class="fc" id="L32">                        .withMisfireHandlingInstructionNextWithRemainingCount())</span>
+<span class="fc" id="L33">                .startAt(Date.from(ZonedDateTime.now().plusMinutes(2).toInstant()))</span>
+<span class="fc" id="L34">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

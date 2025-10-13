@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateContainerCertificatesBatchLoader.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificateContainerCertificatesBatchLoader.java</span></div><h1>CertificateContainerCertificatesBatchLoader.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import com.evolvsys.app.core.graphql.dataloader.BaseRelationBatchLoader;
+import com.evolvsys.app.core.graphql.repository.BatchLoaderRepository;
+import com.evolvsys.nexuse2e.core.certificate.mapper.CertificateMapper;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateDto;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.QCertificateEntity;
+import com.querydsl.core.types.OrderSpecifier;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 07.02.2024
+ */
+@Component
+public class CertificateContainerCertificatesBatchLoader
+        extends BaseRelationBatchLoader&lt;CertificateDto, CertificateEntity, CertificateContainerEntity&gt; {
+    public CertificateContainerCertificatesBatchLoader(
+            CertificateMapper mapper, BatchLoaderRepository batchLoaderRepository) {
+<span class="fc" id="L22">        super(mapper, batchLoaderRepository, QCertificateEntity.certificateEntity.certificateContainer);</span>
+<span class="fc" id="L23">    }</span>
+
+    @Override
+    protected OrderSpecifier&lt;?&gt;[] orderSpecifiers() {
+<span class="nc" id="L27">        return new OrderSpecifier[] {</span>
+<span class="nc" id="L28">            QCertificateEntity.certificateEntity.info.validUntil.asc(), QCertificateEntity.certificateEntity.id.desc()</span>
+        };
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

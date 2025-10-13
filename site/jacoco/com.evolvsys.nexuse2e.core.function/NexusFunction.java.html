@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NexusFunction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.function</a> &gt; <span class="el_source">NexusFunction.java</span></div><h1>NexusFunction.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.function;
+
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Objects;
+
+/**
+ * Represents a function that accepts one argument and produces a result.
+ *
+ * &lt;p&gt;This is a functional interface
+ * whose functional method is {@link #apply(Object)}.
+ *
+ * @param &lt;T&gt; the type of the input to the function
+ * @param &lt;R&gt; the type of the result of the function
+ * @author SvenBarden
+ * @since 20.09.2024
+ */
+@FunctionalInterface
+public interface NexusFunction&lt;T, R&gt; {
+
+    /**
+     * Applies this function to the given argument.
+     *
+     * @param t the function argument
+     * @return the function result
+     */
+    R apply(T t) throws NexusException;
+
+    default &lt;V&gt; NexusFunction&lt;V, R&gt; compose(NexusFunction&lt;? super V, ? extends T&gt; before) {
+<span class="nc" id="L30">        Objects.requireNonNull(before);</span>
+<span class="nc" id="L31">        return (V v) -&gt; apply(before.apply(v));</span>
+    }
+
+    /**
+     * Returns a composed function that first applies this function to
+     * its input, and then applies the {@code after} function to the result.
+     * If evaluation of either function throws an exception, it is relayed to
+     * the caller of the composed function.
+     *
+     * @param &lt;V&gt;   the type of output of the {@code after} function, and of the
+     *              composed function
+     * @param after the function to apply after this function is applied
+     * @return a composed function that first applies this function and then
+     *         applies the {@code after} function
+     * @throws NullPointerException if after is null
+     *
+     * @see #compose(NexusFunction)
+     */
+    default &lt;V&gt; NexusFunction&lt;T, V&gt; andThen(NexusFunction&lt;? super R, ? extends V&gt; after) {
+<span class="nc" id="L50">        Objects.requireNonNull(after);</span>
+<span class="nc" id="L51">        return (T t) -&gt; after.apply(apply(t));</span>
+    }
+
+    /**
+     * Returns a function that always returns its input argument.
+     *
+     * @param &lt;T&gt; the type of the input and output objects to the function
+     * @return a function that always returns its input argument
+     */
+    @SuppressFBWarnings(value = &quot;FII_USE_FUNCTION_IDENTITY&quot;, justification = &quot;We need our own identify function&quot;)
+    static &lt;T&gt; NexusFunction&lt;T, T&gt; identity() {
+<span class="nc" id="L62">        return t -&gt; t;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

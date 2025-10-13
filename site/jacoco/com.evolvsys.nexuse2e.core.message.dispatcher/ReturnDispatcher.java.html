@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ReturnDispatcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.dispatcher</a> &gt; <span class="el_source">ReturnDispatcher.java</span></div><h1>ReturnDispatcher.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.dispatcher;
+
+import com.evolvsys.nexuse2e.core.action.Action;
+import com.evolvsys.nexuse2e.core.action.ActionFactory;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.ContextMessageService;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.utils.ErrorUtils;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 21.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L21">@Slf4j</span>
+class ReturnDispatcher implements Dispatcher {
+    private final ActionFactory actionFactory;
+    private final ContextMessageService messageService;
+
+    @Override
+    public MessageContext dispatch(MessageContext messageContext) throws NexusException {
+<span class="fc" id="L28">        String actionId = messageContext.getActionId();</span>
+<span class="fc" id="L29">        String choreographyId = messageContext.getChoreographyId();</span>
+
+<span class="fc" id="L31">        Action action = actionFactory.getAction(choreographyId, actionId);</span>
+
+<span class="fc" id="L33">        LOGGER.debug(</span>
+                &quot;running return pipeline for message {} in action {} from choreography {}&quot;,
+<span class="fc" id="L35">                messageContext.getSourceMessage().getId(),</span>
+<span class="fc" id="L36">                action.getActionId(),</span>
+<span class="fc" id="L37">                action.getChoreographyId());</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (messageContext.getReturnMessage() != null) {</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">            if (action.hasReturnPipeline()) {</span>
+                try {
+<span class="nc" id="L41">                    messageContext = action.getReturnPipeline()</span>
+<span class="nc" id="L42">                            .execute(messageContext.createExecutionContext(MessageType.RETURN))</span>
+<span class="nc" id="L43">                            .getMessageContext();</span>
+<span class="nc" id="L44">                } catch (NexusException e) {</span>
+                    // TODO error handling
+<span class="nc" id="L46">                    LOGGER.error(&quot;error running return pipeline: {}&quot;, ErrorUtils.aggregate(e), e);</span>
+<span class="nc" id="L47">                }</span>
+            }
+
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (messageContext.getReturnMessage() != null) {</span>
+<span class="nc bnc" id="L51" title="All 2 branches missed.">                if (messageContext.getReturnMessage().getId() == null) {</span>
+<span class="nc" id="L52">                    messageContext.getReturnMessage().setId(UUID.randomUUID().toString());</span>
+<span class="nc" id="L53">                    messageContext</span>
+<span class="nc" id="L54">                            .getReturnMessage()</span>
+<span class="nc" id="L55">                            .setConversationId(messageContext.getSourceMessage().getConversationId());</span>
+                }
+<span class="nc" id="L57">                messageService.save(messageContext.getReturnMessage(), action);</span>
+            }
+        } else {
+<span class="fc" id="L60">            LOGGER.trace(&quot;context has no return message, do not run return pipeline&quot;);</span>
+        }
+<span class="fc" id="L62">        return messageContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

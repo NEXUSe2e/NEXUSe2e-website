@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BaseStringDtoValueTypeConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.parameter.converter</a> &gt; <span class="el_source">BaseStringDtoValueTypeConverter.java</span></div><h1>BaseStringDtoValueTypeConverter.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.parameter.converter;
+
+import com.evolvsys.nexuse2e.core.model.entity.ParameterEntity;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.apache.commons.collections4.CollectionUtils;
+
+/**
+ * &lt;p&gt;Interface to convert parameter values between strings and their given data type of the entity.&lt;/p&gt;
+ * &lt;p&gt;Overrides basic methods which are equal across all types with dto type string.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 15.01.2024
+ */
+<span class="fc" id="L19">public abstract class BaseStringDtoValueTypeConverter&lt;ContextValueT&gt; implements TypeConverter&lt;ContextValueT, String&gt; {</span>
+
+    @Override
+    public Function&lt;ParameterDto, String&gt; getDtoGetter() {
+<span class="fc" id="L23">        return ParameterDto::getValue;</span>
+    }
+
+    @Override
+    public BiFunction&lt;ParameterDto, String, ParameterDto&gt; getDtoSetter() {
+<span class="fc" id="L28">        return ParameterDto::setValue;</span>
+    }
+
+    @Override
+    public BiFunction&lt;ParameterDto, String, ParameterDto&gt; getDtoDefaultSetter() {
+<span class="fc" id="L33">        return ParameterDto::setDefaultValue;</span>
+    }
+
+    @Override
+    @SuppressFBWarnings(value = &quot;FII_USE_METHOD_REFERENCE&quot;, justification = &quot;casting required&quot;)
+    public Function&lt;ParameterDefinition, ContextValueT&gt; getDefinitionDefaultGetter() {
+        //noinspection unchecked
+<span class="fc" id="L40">        return parameterDefinition -&gt; (ContextValueT) parameterDefinition.getDefaultValue();</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toConfigValue(ParameterEntity parameterEntity) {
+<span class="fc" id="L45">        String dtoValue = toDtoValue(parameterEntity);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        return dtoValue == null ? List.of() : List.of(dtoValue);</span>
+    }
+
+    @Override
+    public void updateFromConfig(ParameterEntity parameterEntity, List&lt;String&gt; configValue) {
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        updateFromDto(parameterEntity, CollectionUtils.isEmpty(configValue) ? null : configValue.getFirst());</span>
+<span class="fc" id="L52">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

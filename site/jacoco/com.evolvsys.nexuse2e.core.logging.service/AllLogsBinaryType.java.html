@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AllLogsBinaryType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.logging.service</a> &gt; <span class="el_source">AllLogsBinaryType.java</span></div><h1>AllLogsBinaryType.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.logging.service;
+
+import static com.evolvsys.nexuse2e.core.file.TempFileCleanupService.TEMP_FILE_NAME_PREFIX;
+
+import com.evolvsys.app.core.binary.model.BinaryResult;
+import com.evolvsys.app.core.binary.service.BinaryType;
+import com.evolvsys.nexuse2e.core.config.NEXUSe2eConfigurationProperties;
+import com.evolvsys.nexuse2e.core.utils.ErrorUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 18.03.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L30">@Slf4j</span>
+public class AllLogsBinaryType implements BinaryType {
+    public static final String NAME = &quot;ALL_LOGS_FILE&quot;;
+    private final NEXUSe2eConfigurationProperties configurationProperties;
+
+    @Override
+    public String name() {
+<span class="fc" id="L37">        return NAME;</span>
+    }
+
+    private Optional&lt;BinaryResult&gt; zip(Resource directoryResource) {
+        Optional&lt;BinaryResult&gt; result;
+        try {
+<span class="fc" id="L43">            File directory = directoryResource.getFile();</span>
+
+<span class="pc bpc" id="L45" title="2 of 4 branches missed.">            if (directory.exists() &amp;&amp; directory.isDirectory()) {</span>
+<span class="fc" id="L46">                File tempFile =</span>
+<span class="fc" id="L47">                        Files.createTempFile(TEMP_FILE_NAME_PREFIX, &quot;logs&quot;).toFile();</span>
+
+<span class="fc" id="L49">                try (OutputStream tempOutput = Files.newOutputStream(tempFile.toPath());</span>
+<span class="fc" id="L50">                        ZipOutputStream zipOutputStream = new ZipOutputStream(tempOutput)) {</span>
+<span class="fc" id="L51">                    File[] files = directory.listFiles();</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">                    if (files != null) {</span>
+<span class="fc bfc" id="L53" title="All 2 branches covered.">                        for (File file : files) {</span>
+<span class="pc bpc" id="L54" title="1 of 4 branches missed.">                            if (file.exists() &amp;&amp; file.isFile()) {</span>
+<span class="fc" id="L55">                                ZipEntry zipEntry = new ZipEntry(file.getName());</span>
+<span class="fc" id="L56">                                zipEntry.setSize(file.length());</span>
+<span class="fc" id="L57">                                zipOutputStream.putNextEntry(zipEntry);</span>
+<span class="fc" id="L58">                                try (InputStream fileInputStream = Files.newInputStream(file.toPath())) {</span>
+<span class="fc" id="L59">                                    fileInputStream.transferTo(zipOutputStream);</span>
+                                }
+<span class="fc" id="L61">                                zipOutputStream.closeEntry();</span>
+                            }
+                        }
+<span class="fc" id="L64">                        zipOutputStream.finish();</span>
+                    }
+                }
+
+<span class="fc" id="L68">                result = Optional.of(BinaryResult.builder()</span>
+<span class="fc" id="L69">                        .fileName(&quot;NEXUSe2e_logs_&quot; + LocalDateTime.now().withNano(0) + &quot;.zip&quot;)</span>
+<span class="fc" id="L70">                        .size(tempFile.length())</span>
+<span class="fc" id="L71">                        .mimeType(&quot;application/zip&quot;)</span>
+<span class="fc" id="L72">                        .resource(new FileSystemResource(tempFile))</span>
+<span class="fc" id="L73">                        .build());</span>
+<span class="fc" id="L74">            } else {</span>
+<span class="nc" id="L75">                result = Optional.empty();</span>
+            }
+<span class="nc" id="L77">        } catch (IOException e) {</span>
+<span class="nc" id="L78">            LOGGER.error(&quot;could not zip log files: {}&quot;, ErrorUtils.aggregate(e), e);</span>
+<span class="nc" id="L79">            result = Optional.empty();</span>
+<span class="fc" id="L80">        }</span>
+<span class="fc" id="L81">        return result;</span>
+    }
+
+    @Override
+    public Optional&lt;BinaryResult&gt; get(String id) {
+<span class="fc" id="L86">        return Optional.ofNullable(configurationProperties.getLogFileDirectory())</span>
+<span class="fc" id="L87">                .flatMap(this::zip);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidConfigComponentIdConstraintValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.validation</a> &gt; <span class="el_source">ValidConfigComponentIdConstraintValidator.java</span></div><h1>ValidConfigComponentIdConstraintValidator.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.validation;
+
+import com.evolvsys.nexuse2e.core.component.ComponentRegistry;
+import com.evolvsys.nexuse2e.core.component.ComponentType;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 25.04.2024
+ */
+@Component
+@RequiredArgsConstructor
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+class ValidConfigComponentIdConstraintValidator implements ConstraintValidator&lt;ValidConfigComponentId, String&gt; {
+    private final ComponentRegistry componentRegistry;
+    private ComponentType[] types;
+
+    @Override
+    public void initialize(ValidConfigComponentId constraintAnnotation) {
+<span class="fc" id="L28">        synchronized (this) {</span>
+<span class="fc" id="L29">            types = ObjectUtils.defaultIfNull(constraintAnnotation.types(), ComponentType.values());</span>
+<span class="fc" id="L30">        }</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        boolean isValid;
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (StringUtils.isBlank(value)) {</span>
+<span class="fc" id="L37">            isValid = true;</span>
+        } else {
+<span class="fc" id="L39">            isValid = componentRegistry</span>
+<span class="fc" id="L40">                    .getComponent(value)</span>
+<span class="fc" id="L41">                    .map(registeredNexusComponent -&gt;</span>
+<span class="fc" id="L42">                            ArrayUtils.contains(types, registeredNexusComponent.getComponentType()))</span>
+<span class="fc" id="L43">                    .orElse(Boolean.FALSE);</span>
+        }
+<span class="fc" id="L45">        return isValid;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

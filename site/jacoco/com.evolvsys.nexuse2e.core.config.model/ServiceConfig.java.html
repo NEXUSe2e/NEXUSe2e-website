@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.model</a> &gt; <span class="el_source">ServiceConfig.java</span></div><h1>ServiceConfig.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.model;
+
+import com.evolvsys.nexuse2e.core.component.ComponentType;
+import com.evolvsys.nexuse2e.core.config.validation.*;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.groups.Default;
+import jakarta.xml.bind.annotation.XmlAttribute;
+import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlElementWrapper;
+import jakarta.xml.bind.annotation.XmlType;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.Data;
+
+/**
+ * @author SvenBarden
+ * @since 26.10.2023
+ */
+@Data
+@XmlType(
+        name = &quot;service&quot;,
+        propOrder = {})
+@ValidServiceParameters(payload = ValidationLevel.Warn.class)
+public class ServiceConfig implements ConfigurableConfig {
+    @XmlAttribute(required = true)
+    @NotBlank(payload = ValidationLevel.Fatal.class, groups = Default.class)
+    private String serviceId;
+
+    @XmlAttribute(required = true)
+    @NotBlank(payload = ValidationLevel.Fatal.class, groups = Default.class)
+    @ValidConfigComponentId(
+            types = {ComponentType.INFLOW_SERVICE, ComponentType.OUTFLOW_SERVICE, ComponentType.SUPPORT_SERVICE},
+            payload = ValidationLevel.Error.class)
+    private String componentId;
+
+    @XmlAttribute
+    private Boolean enabled = Boolean.FALSE;
+
+    @XmlAttribute
+    @ValidConfigPipelineId(payload = ValidationLevel.Error.class)
+    private String resolverPipeline;
+
+    @XmlAttribute
+    @ValidConfigPipelineId(payload = ValidationLevel.Error.class)
+    private String returnPipeline;
+
+    @XmlAttribute
+    @ValidConfigPipelineId(payload = ValidationLevel.Error.class)
+    private String errorPipeline;
+
+    @JacksonXmlCData
+    @XmlElement
+    private String description;
+
+    @XmlElement(name = &quot;parameter&quot;)
+    @XmlElementWrapper
+    @GraphQLQuery(name = &quot;parameters&quot;)
+    @Valid
+    @ValidConfigUniqueIdentifier(propertyNames = &quot;name&quot;, payload = ValidationLevel.Fatal.class)
+    private List&lt;@GraphQLNonNull ParameterConfig&gt; parameters = new ArrayList&lt;&gt;();
+
+    @Override // required for jaxb schema generation
+    @SuppressFBWarnings(value = &quot;EI_EXPOSE_REP&quot;, justification = &quot;intentional modification&quot;)
+    public List&lt;@GraphQLNonNull ParameterConfig&gt; getParameters() {
+<span class="fc" id="L70">        return parameters;</span>
+    }
+
+    @Override // required for jaxb schema generation
+    public String getComponentId() {
+<span class="fc" id="L75">        return componentId;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

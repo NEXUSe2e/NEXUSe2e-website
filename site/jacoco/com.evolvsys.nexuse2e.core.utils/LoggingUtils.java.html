@@ -1,0 +1,556 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LoggingUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.utils</a> &gt; <span class="el_source">LoggingUtils.java</span></div><h1>LoggingUtils.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.utils;
+
+import com.evolvsys.nexuse2e.core.logging.MessageLogContextHolder;
+import com.evolvsys.nexuse2e.core.logging.model.ForMessageLoggingContext;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Delegate;
+import lombok.experimental.UtilityClass;
+import org.slf4j.Logger;
+import org.slf4j.Marker;
+import org.slf4j.spi.LoggingEventBuilder;
+
+/**
+ * @author SvenBarden
+ * @since 22.05.2024
+ */
+@UtilityClass
+public class LoggingUtils {
+
+    public static void global(Runnable runnable) {
+        try {
+<span class="fc" id="L21">            MessageLogContextHolder.getContext().setForceGlobal(true);</span>
+<span class="fc" id="L22">            runnable.run();</span>
+        } finally {
+<span class="fc" id="L24">            MessageLogContextHolder.getContext().setForceGlobal(false);</span>
+        }
+<span class="fc" id="L26">    }</span>
+
+    public static Logger globalWrapper(Logger logger) {
+<span class="fc" id="L29">        return new GlobalWrapper(logger);</span>
+    }
+
+    public static Logger forMessageWrapper(Logger logger, ForMessageLoggingContext forMessageLoggingContext) {
+<span class="fc" id="L33">        return new ForMessageWrapper(logger, forMessageLoggingContext);</span>
+    }
+
+    @RequiredArgsConstructor
+    @SuppressWarnings(&quot;PMD.ExcessivePublicCount&quot;)
+    static class ForMessageWrapper implements Logger {
+        @Delegate
+        private final Logger delegate;
+
+        private final ForMessageLoggingContext forMessageLoggingContext;
+
+        private LoggingEventBuilder extend(LoggingEventBuilder loggingEventBuilder) {
+<span class="fc" id="L45">            return loggingEventBuilder.addKeyValue(ForMessageLoggingContext.KEY_NAME, forMessageLoggingContext);</span>
+        }
+
+        @Override
+        public void trace(String msg) {
+<span class="nc" id="L50">            extend(delegate.atTrace()).log(msg);</span>
+<span class="nc" id="L51">        }</span>
+
+        @Override
+        public void trace(String format, Object arg) {
+<span class="nc" id="L55">            extend(delegate.atTrace()).log(format, arg);</span>
+<span class="nc" id="L56">        }</span>
+
+        @Override
+        public void trace(String format, Object arg1, Object arg2) {
+<span class="nc" id="L60">            extend(delegate.atTrace()).log(format, arg1, arg2);</span>
+<span class="nc" id="L61">        }</span>
+
+        @Override
+        public void trace(String format, Object... arguments) {
+<span class="nc" id="L65">            extend(delegate.atTrace()).log(format, arguments);</span>
+<span class="nc" id="L66">        }</span>
+
+        @Override
+        public void trace(String msg, Throwable t) {
+<span class="nc" id="L70">            extend(delegate.atTrace()).log(msg, t);</span>
+<span class="nc" id="L71">        }</span>
+
+        @Override
+        public void trace(Marker marker, String msg) {
+<span class="nc" id="L75">            extend(delegate.atTrace()).addMarker(marker).log(msg);</span>
+<span class="nc" id="L76">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object arg) {
+<span class="nc" id="L80">            extend(delegate.atTrace()).addMarker(marker).log(format, arg);</span>
+<span class="nc" id="L81">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L85">            extend(delegate.atTrace()).addMarker(marker).log(format, arg1, arg2);</span>
+<span class="nc" id="L86">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L90">            extend(delegate.atTrace()).addMarker(marker).log(format, argArray);</span>
+<span class="nc" id="L91">        }</span>
+
+        @Override
+        public void trace(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L95">            extend(delegate.atTrace()).addMarker(marker).log(msg, t);</span>
+<span class="nc" id="L96">        }</span>
+
+        @Override
+        public void debug(String msg) {
+<span class="nc" id="L100">            extend(delegate.atDebug()).log(msg);</span>
+<span class="nc" id="L101">        }</span>
+
+        @Override
+        public void debug(String format, Object arg) {
+<span class="nc" id="L105">            extend(delegate.atDebug()).log(format, arg);</span>
+<span class="nc" id="L106">        }</span>
+
+        @Override
+        public void debug(String format, Object arg1, Object arg2) {
+<span class="nc" id="L110">            extend(delegate.atDebug()).log(format, arg1, arg2);</span>
+<span class="nc" id="L111">        }</span>
+
+        @Override
+        public void debug(String format, Object... arguments) {
+<span class="nc" id="L115">            extend(delegate.atDebug()).log(format, arguments);</span>
+<span class="nc" id="L116">        }</span>
+
+        @Override
+        public void debug(String msg, Throwable t) {
+<span class="nc" id="L120">            extend(delegate.atDebug()).log(msg, t);</span>
+<span class="nc" id="L121">        }</span>
+
+        @Override
+        public void debug(Marker marker, String msg) {
+<span class="nc" id="L125">            extend(delegate.atDebug()).addMarker(marker).log(msg);</span>
+<span class="nc" id="L126">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object arg) {
+<span class="nc" id="L130">            extend(delegate.atDebug()).addMarker(marker).log(format, arg);</span>
+<span class="nc" id="L131">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L135">            extend(delegate.atDebug()).addMarker(marker).log(format, arg1, arg2);</span>
+<span class="nc" id="L136">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L140">            extend(delegate.atDebug()).addMarker(marker).log(format, argArray);</span>
+<span class="nc" id="L141">        }</span>
+
+        @Override
+        public void debug(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L145">            extend(delegate.atDebug()).addMarker(marker).log(msg, t);</span>
+<span class="nc" id="L146">        }</span>
+
+        @Override
+        public void info(String msg) {
+<span class="nc" id="L150">            extend(delegate.atInfo()).log(msg);</span>
+<span class="nc" id="L151">        }</span>
+
+        @Override
+        public void info(String format, Object arg) {
+<span class="nc" id="L155">            extend(delegate.atInfo()).log(format, arg);</span>
+<span class="nc" id="L156">        }</span>
+
+        @Override
+        public void info(String format, Object arg1, Object arg2) {
+<span class="nc" id="L160">            extend(delegate.atInfo()).log(format, arg1, arg2);</span>
+<span class="nc" id="L161">        }</span>
+
+        @Override
+        public void info(String format, Object... arguments) {
+<span class="fc" id="L165">            extend(delegate.atInfo()).log(format, arguments);</span>
+<span class="fc" id="L166">        }</span>
+
+        @Override
+        public void info(String msg, Throwable t) {
+<span class="nc" id="L170">            extend(delegate.atInfo()).log(msg, t);</span>
+<span class="nc" id="L171">        }</span>
+
+        @Override
+        public void info(Marker marker, String msg) {
+<span class="nc" id="L175">            extend(delegate.atInfo()).addMarker(marker).log(msg);</span>
+<span class="nc" id="L176">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object arg) {
+<span class="nc" id="L180">            extend(delegate.atInfo()).addMarker(marker).log(format, arg);</span>
+<span class="nc" id="L181">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L185">            extend(delegate.atInfo()).addMarker(marker).log(format, arg1, arg2);</span>
+<span class="nc" id="L186">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L190">            extend(delegate.atInfo()).addMarker(marker).log(format, argArray);</span>
+<span class="nc" id="L191">        }</span>
+
+        @Override
+        public void info(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L195">            extend(delegate.atInfo()).addMarker(marker).log(msg, t);</span>
+<span class="nc" id="L196">        }</span>
+
+        @Override
+        public void warn(String msg) {
+<span class="nc" id="L200">            extend(delegate.atWarn()).log(msg);</span>
+<span class="nc" id="L201">        }</span>
+
+        @Override
+        public void warn(String format, Object arg) {
+<span class="nc" id="L205">            extend(delegate.atWarn()).log(format, arg);</span>
+<span class="nc" id="L206">        }</span>
+
+        @Override
+        public void warn(String format, Object arg1, Object arg2) {
+<span class="nc" id="L210">            extend(delegate.atWarn()).log(format, arg1, arg2);</span>
+<span class="nc" id="L211">        }</span>
+
+        @Override
+        public void warn(String format, Object... arguments) {
+<span class="nc" id="L215">            extend(delegate.atWarn()).log(format, arguments);</span>
+<span class="nc" id="L216">        }</span>
+
+        @Override
+        public void warn(String msg, Throwable t) {
+<span class="nc" id="L220">            extend(delegate.atWarn()).log(msg, t);</span>
+<span class="nc" id="L221">        }</span>
+
+        @Override
+        public void warn(Marker marker, String msg) {
+<span class="nc" id="L225">            extend(delegate.atWarn()).addMarker(marker).log(msg);</span>
+<span class="nc" id="L226">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object arg) {
+<span class="nc" id="L230">            extend(delegate.atWarn()).addMarker(marker).log(format, arg);</span>
+<span class="nc" id="L231">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L235">            extend(delegate.atWarn()).addMarker(marker).log(format, arg1, arg2);</span>
+<span class="nc" id="L236">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L240">            extend(delegate.atWarn()).addMarker(marker).log(format, argArray);</span>
+<span class="nc" id="L241">        }</span>
+
+        @Override
+        public void warn(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L245">            extend(delegate.atWarn()).addMarker(marker).log(msg, t);</span>
+<span class="nc" id="L246">        }</span>
+
+        @Override
+        public void error(String msg) {
+<span class="nc" id="L250">            extend(delegate.atError()).log(msg);</span>
+<span class="nc" id="L251">        }</span>
+
+        @Override
+        public void error(String format, Object arg) {
+<span class="nc" id="L255">            extend(delegate.atError()).log(format, arg);</span>
+<span class="nc" id="L256">        }</span>
+
+        @Override
+        public void error(String format, Object arg1, Object arg2) {
+<span class="nc" id="L260">            extend(delegate.atError()).log(format, arg1, arg2);</span>
+<span class="nc" id="L261">        }</span>
+
+        @Override
+        public void error(String format, Object... arguments) {
+<span class="nc" id="L265">            extend(delegate.atError()).log(format, arguments);</span>
+<span class="nc" id="L266">        }</span>
+
+        @Override
+        public void error(String msg, Throwable t) {
+<span class="nc" id="L270">            extend(delegate.atError()).log(msg, t);</span>
+<span class="nc" id="L271">        }</span>
+
+        @Override
+        public void error(Marker marker, String msg) {
+<span class="nc" id="L275">            extend(delegate.atError()).addMarker(marker).log(msg);</span>
+<span class="nc" id="L276">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object arg) {
+<span class="nc" id="L280">            extend(delegate.atError()).addMarker(marker).log(format, arg);</span>
+<span class="nc" id="L281">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L285">            extend(delegate.atError()).addMarker(marker).log(format, arg1, arg2);</span>
+<span class="nc" id="L286">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L290">            extend(delegate.atError()).addMarker(marker).log(format, argArray);</span>
+<span class="nc" id="L291">        }</span>
+
+        @Override
+        public void error(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L295">            extend(delegate.atError()).addMarker(marker).log(msg, t);</span>
+<span class="nc" id="L296">        }</span>
+    }
+
+    @RequiredArgsConstructor
+    @SuppressWarnings(&quot;PMD.ExcessivePublicCount&quot;)
+    static class GlobalWrapper implements Logger {
+        @Delegate
+        private final Logger delegate;
+
+        @Override
+        public void trace(String msg) {
+<span class="nc" id="L307">            global(() -&gt; delegate.trace(msg));</span>
+<span class="nc" id="L308">        }</span>
+
+        @Override
+        public void trace(String format, Object arg) {
+<span class="fc" id="L312">            global(() -&gt; delegate.trace(format, arg));</span>
+<span class="fc" id="L313">        }</span>
+
+        @Override
+        public void trace(String format, Object arg1, Object arg2) {
+<span class="nc" id="L317">            global(() -&gt; delegate.trace(format, arg1, arg2));</span>
+<span class="nc" id="L318">        }</span>
+
+        @Override
+        public void trace(String format, Object... arguments) {
+<span class="fc" id="L322">            global(() -&gt; delegate.trace(format, arguments));</span>
+<span class="fc" id="L323">        }</span>
+
+        @Override
+        public void trace(String msg, Throwable t) {
+<span class="nc" id="L327">            global(() -&gt; delegate.trace(msg, t));</span>
+<span class="nc" id="L328">        }</span>
+
+        @Override
+        public void trace(Marker marker, String msg) {
+<span class="nc" id="L332">            global(() -&gt; delegate.trace(marker, msg));</span>
+<span class="nc" id="L333">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object arg) {
+<span class="nc" id="L337">            global(() -&gt; delegate.trace(marker, format, arg));</span>
+<span class="nc" id="L338">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L342">            global(() -&gt; delegate.trace(marker, format, arg1, arg2));</span>
+<span class="nc" id="L343">        }</span>
+
+        @Override
+        public void trace(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L347">            global(() -&gt; delegate.trace(marker, format, argArray));</span>
+<span class="nc" id="L348">        }</span>
+
+        @Override
+        public void trace(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L352">            global(() -&gt; delegate.trace(marker, msg, t));</span>
+<span class="nc" id="L353">        }</span>
+
+        @Override
+        public void debug(String msg) {
+<span class="nc" id="L357">            global(() -&gt; delegate.debug(msg));</span>
+<span class="nc" id="L358">        }</span>
+
+        @Override
+        public void debug(String format, Object arg) {
+<span class="nc" id="L362">            global(() -&gt; delegate.debug(format, arg));</span>
+<span class="nc" id="L363">        }</span>
+
+        @Override
+        public void debug(String format, Object arg1, Object arg2) {
+<span class="nc" id="L367">            global(() -&gt; delegate.debug(format, arg1, arg2));</span>
+<span class="nc" id="L368">        }</span>
+
+        @Override
+        public void debug(String format, Object... arguments) {
+<span class="nc" id="L372">            global(() -&gt; delegate.debug(format, arguments));</span>
+<span class="nc" id="L373">        }</span>
+
+        @Override
+        public void debug(String msg, Throwable t) {
+<span class="nc" id="L377">            global(() -&gt; delegate.debug(msg, t));</span>
+<span class="nc" id="L378">        }</span>
+
+        @Override
+        public void debug(Marker marker, String msg) {
+<span class="nc" id="L382">            global(() -&gt; delegate.debug(marker, msg));</span>
+<span class="nc" id="L383">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object arg) {
+<span class="nc" id="L387">            global(() -&gt; delegate.debug(marker, format, arg));</span>
+<span class="nc" id="L388">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L392">            global(() -&gt; delegate.debug(marker, format, arg1, arg2));</span>
+<span class="nc" id="L393">        }</span>
+
+        @Override
+        public void debug(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L397">            global(() -&gt; delegate.debug(marker, format, argArray));</span>
+<span class="nc" id="L398">        }</span>
+
+        @Override
+        public void debug(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L402">            global(() -&gt; delegate.debug(marker, msg, t));</span>
+<span class="nc" id="L403">        }</span>
+
+        @Override
+        public void info(String msg) {
+<span class="nc" id="L407">            global(() -&gt; delegate.info(msg));</span>
+<span class="nc" id="L408">        }</span>
+
+        @Override
+        public void info(String format, Object arg) {
+<span class="nc" id="L412">            global(() -&gt; delegate.info(format, arg));</span>
+<span class="nc" id="L413">        }</span>
+
+        @Override
+        public void info(String format, Object arg1, Object arg2) {
+<span class="nc" id="L417">            global(() -&gt; delegate.info(format, arg1, arg2));</span>
+<span class="nc" id="L418">        }</span>
+
+        @Override
+        public void info(String format, Object... arguments) {
+<span class="nc" id="L422">            global(() -&gt; delegate.info(format, arguments));</span>
+<span class="nc" id="L423">        }</span>
+
+        @Override
+        public void info(String msg, Throwable t) {
+<span class="nc" id="L427">            global(() -&gt; delegate.info(msg, t));</span>
+<span class="nc" id="L428">        }</span>
+
+        @Override
+        public void info(Marker marker, String msg) {
+<span class="nc" id="L432">            global(() -&gt; delegate.info(marker, msg));</span>
+<span class="nc" id="L433">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object arg) {
+<span class="nc" id="L437">            global(() -&gt; delegate.info(marker, format, arg));</span>
+<span class="nc" id="L438">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L442">            global(() -&gt; delegate.info(marker, format, arg1, arg2));</span>
+<span class="nc" id="L443">        }</span>
+
+        @Override
+        public void info(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L447">            global(() -&gt; delegate.info(marker, format, argArray));</span>
+<span class="nc" id="L448">        }</span>
+
+        @Override
+        public void info(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L452">            global(() -&gt; delegate.info(marker, msg, t));</span>
+<span class="nc" id="L453">        }</span>
+
+        @Override
+        public void warn(String msg) {
+<span class="nc" id="L457">            global(() -&gt; delegate.warn(msg));</span>
+<span class="nc" id="L458">        }</span>
+
+        @Override
+        public void warn(String format, Object arg) {
+<span class="nc" id="L462">            global(() -&gt; delegate.warn(format, arg));</span>
+<span class="nc" id="L463">        }</span>
+
+        @Override
+        public void warn(String format, Object arg1, Object arg2) {
+<span class="nc" id="L467">            global(() -&gt; delegate.warn(format, arg1, arg2));</span>
+<span class="nc" id="L468">        }</span>
+
+        @Override
+        public void warn(String format, Object... arguments) {
+<span class="nc" id="L472">            global(() -&gt; delegate.warn(format, arguments));</span>
+<span class="nc" id="L473">        }</span>
+
+        @Override
+        public void warn(String msg, Throwable t) {
+<span class="nc" id="L477">            global(() -&gt; delegate.warn(msg, t));</span>
+<span class="nc" id="L478">        }</span>
+
+        @Override
+        public void warn(Marker marker, String msg) {
+<span class="nc" id="L482">            global(() -&gt; delegate.warn(marker, msg));</span>
+<span class="nc" id="L483">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object arg) {
+<span class="nc" id="L487">            global(() -&gt; delegate.warn(marker, format, arg));</span>
+<span class="nc" id="L488">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L492">            global(() -&gt; delegate.warn(marker, format, arg1, arg2));</span>
+<span class="nc" id="L493">        }</span>
+
+        @Override
+        public void warn(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L497">            global(() -&gt; delegate.warn(marker, format, argArray));</span>
+<span class="nc" id="L498">        }</span>
+
+        @Override
+        public void warn(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L502">            global(() -&gt; delegate.warn(marker, msg, t));</span>
+<span class="nc" id="L503">        }</span>
+
+        @Override
+        public void error(String msg) {
+<span class="nc" id="L507">            global(() -&gt; delegate.error(msg));</span>
+<span class="nc" id="L508">        }</span>
+
+        @Override
+        public void error(String format, Object arg) {
+<span class="nc" id="L512">            global(() -&gt; delegate.error(format, arg));</span>
+<span class="nc" id="L513">        }</span>
+
+        @Override
+        public void error(String format, Object arg1, Object arg2) {
+<span class="nc" id="L517">            global(() -&gt; delegate.error(format, arg1, arg2));</span>
+<span class="nc" id="L518">        }</span>
+
+        @Override
+        public void error(String format, Object... arguments) {
+<span class="nc" id="L522">            global(() -&gt; delegate.error(format, arguments));</span>
+<span class="nc" id="L523">        }</span>
+
+        @Override
+        public void error(String msg, Throwable t) {
+<span class="nc" id="L527">            global(() -&gt; delegate.error(msg, t));</span>
+<span class="nc" id="L528">        }</span>
+
+        @Override
+        public void error(Marker marker, String msg) {
+<span class="nc" id="L532">            global(() -&gt; delegate.error(marker, msg));</span>
+<span class="nc" id="L533">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object arg) {
+<span class="nc" id="L537">            global(() -&gt; delegate.error(marker, format, arg));</span>
+<span class="nc" id="L538">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object arg1, Object arg2) {
+<span class="nc" id="L542">            global(() -&gt; delegate.error(marker, format, arg1, arg2));</span>
+<span class="nc" id="L543">        }</span>
+
+        @Override
+        public void error(Marker marker, String format, Object... argArray) {
+<span class="nc" id="L547">            global(() -&gt; delegate.error(marker, format, argArray));</span>
+<span class="nc" id="L548">        }</span>
+
+        @Override
+        public void error(Marker marker, String msg, Throwable t) {
+<span class="nc" id="L552">            global(() -&gt; delegate.error(marker, msg, t));</span>
+<span class="nc" id="L553">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

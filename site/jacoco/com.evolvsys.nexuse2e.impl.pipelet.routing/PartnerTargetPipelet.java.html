@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PartnerTargetPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.routing</a> &gt; <span class="el_source">PartnerTargetPipelet.java</span></div><h1>PartnerTargetPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.routing;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * @author SvenBarden
+ * @since 23.10.2023
+ */
+<span class="fc" id="L14">public class PartnerTargetPipelet extends Pipelet {</span>
+    public static final String PARTNER_ID = &quot;partner_id&quot;;
+    public static final String SOURCE_PARTNER_ID = &quot;source_partner_id&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L20">        return List.of(</span>
+<span class="fc" id="L21">                ParameterDefinition.builder()</span>
+<span class="fc" id="L22">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L23">                        .name(PARTNER_ID)</span>
+<span class="fc" id="L24">                        .displayName(&quot;Target partnerId&quot;)</span>
+<span class="fc" id="L25">                        .description(&quot;Static target partner id used for every message (optional)&quot;)</span>
+<span class="fc" id="L26">                        .build(),</span>
+<span class="fc" id="L27">                ParameterDefinition.builder()</span>
+<span class="fc" id="L28">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L29">                        .name(SOURCE_PARTNER_ID)</span>
+<span class="fc" id="L30">                        .displayName(&quot;Source partnerId&quot;)</span>
+<span class="fc" id="L31">                        .description(&quot;Static source partner id used for every message (optional)&quot;)</span>
+<span class="fc" id="L32">                        .build());</span>
+    }
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) {
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (StringUtils.isNotBlank(parameters.value(SOURCE_PARTNER_ID))) {</span>
+<span class="fc" id="L38">            executionContext.setSourcePartnerId(parameters.value(SOURCE_PARTNER_ID));</span>
+        }
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (StringUtils.isNotBlank(parameters.value(PARTNER_ID))) {</span>
+<span class="fc" id="L41">            executionContext.setTargetPartnerId(parameters.value(PARTNER_ID));</span>
+        }
+<span class="fc" id="L43">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateBinaryType.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificateBinaryType.java</span></div><h1>CertificateBinaryType.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import static com.evolvsys.nexuse2e.core.file.TempFileCleanupService.TEMP_FILE_NAME_PREFIX;
+
+import com.evolvsys.app.core.binary.model.BinaryResult;
+import com.evolvsys.app.core.binary.service.BinaryType;
+import com.evolvsys.nexuse2e.core.certificate.mapper.CertificateInfoMapper;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateInfo;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.utils.ErrorUtils;
+import com.evolvsys.nexuse2e.core.utils.NEXUSe2eFileUtils;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.security.cert.X509Certificate;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.stereotype.Component;
+
+/**
+ * &lt;p&gt;Provide all public certificates as pem files in a zip file for download.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 24.05.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L37">@Slf4j</span>
+public class CertificateBinaryType implements BinaryType {
+    public static final String NAME = &quot;CERTIFICATES_FILE&quot;;
+
+    private final CertificateChainLoader certificateChainLoader;
+    private final CertificateInfoMapper certificateInfoMapper;
+
+    @Override
+    public String name() {
+<span class="fc" id="L46">        return NAME;</span>
+    }
+
+    @Override
+    public Optional&lt;BinaryResult&gt; get(String id) {
+<span class="fc" id="L51">        return zip(id);</span>
+    }
+
+    private Optional&lt;BinaryResult&gt; zip(String id) {
+        Optional&lt;BinaryResult&gt; result;
+        try {
+<span class="fc" id="L57">            File tempFile =</span>
+<span class="fc" id="L58">                    Files.createTempFile(TEMP_FILE_NAME_PREFIX, &quot;certificates&quot;).toFile();</span>
+
+<span class="fc" id="L60">            List&lt;X509Certificate&gt; certificateChain = certificateChainLoader.getX509CertificateChain(Long.parseLong(id));</span>
+
+<span class="fc" id="L62">            CertificateInfo leafCertificateInfo = certificateInfoMapper.certificateToInfo(certificateChain.getFirst());</span>
+
+<span class="fc" id="L64">            try (OutputStream outputStream = Files.newOutputStream(tempFile.toPath());</span>
+<span class="fc" id="L65">                    ZipOutputStream zipOutputStream = new ZipOutputStream(outputStream)) {</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">                for (X509Certificate certificate : certificateChain) {</span>
+<span class="fc" id="L67">                    CertificateInfo certificateInfo = certificateInfoMapper.certificateToInfo(certificate);</span>
+
+<span class="fc" id="L69">                    String pemContent = CertificatePemWriter.toCertificate(certificate);</span>
+
+<span class="fc" id="L71">                    ZipEntry zipEntry =</span>
+<span class="fc" id="L72">                            new ZipEntry(NEXUSe2eFileUtils.cleanFileName(certificateInfo.getCommonName() + &quot;.pem&quot;));</span>
+<span class="fc" id="L73">                    zipOutputStream.putNextEntry(zipEntry);</span>
+<span class="fc" id="L74">                    zipEntry.setSize(pemContent.length());</span>
+<span class="fc" id="L75">                    IOUtils.write(pemContent, zipOutputStream, StandardCharsets.UTF_8);</span>
+<span class="fc" id="L76">                    zipOutputStream.closeEntry();</span>
+<span class="fc" id="L77">                }</span>
+<span class="fc" id="L78">                zipOutputStream.finish();</span>
+            }
+            // CPD-OFF ClientCertificateKeystoreBinaryType
+<span class="fc" id="L81">            result = Optional.of(BinaryResult.builder()</span>
+<span class="fc" id="L82">                    .fileName(getFileName(leafCertificateInfo.getCommonName()))</span>
+<span class="fc" id="L83">                    .size(tempFile.length())</span>
+<span class="fc" id="L84">                    .mimeType(&quot;application/zip&quot;)</span>
+<span class="fc" id="L85">                    .resource(new FileSystemResource(tempFile))</span>
+<span class="fc" id="L86">                    .build());</span>
+            // CPD-ON
+<span class="nc" id="L88">        } catch (IOException e) {</span>
+<span class="nc" id="L89">            LOGGER.error(&quot;Could not zip certificates: {}&quot;, ErrorUtils.aggregate(e), e);</span>
+<span class="nc" id="L90">            result = Optional.empty();</span>
+<span class="nc" id="L91">        } catch (NexusException e) {</span>
+<span class="nc" id="L92">            LOGGER.error(&quot;Could not build certificate chain: {}&quot;, ErrorUtils.aggregate(e), e);</span>
+<span class="nc" id="L93">            result = Optional.empty();</span>
+<span class="pc" id="L94">        }</span>
+<span class="fc" id="L95">        return result;</span>
+    }
+
+    public static String getFileName(String commonName) {
+<span class="fc" id="L99">        return NEXUSe2eFileUtils.cleanFileName(&quot;NEXUSe2e_publicKeyChain_&quot; + commonName + &quot;_&quot;</span>
+<span class="fc" id="L100">                + LocalDateTime.now().withNano(0) + &quot;.zip&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

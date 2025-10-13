@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DateRangeFilterUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.utils</a> &gt; <span class="el_source">DateRangeFilterUtils.java</span></div><h1>DateRangeFilterUtils.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.utils;
+
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.Predicate;
+import com.querydsl.core.types.dsl.DateTimePath;
+import java.time.*;
+import java.util.function.BiFunction;
+import lombok.experimental.UtilityClass;
+import org.springframework.lang.Nullable;
+
+/**
+ * @author SvenBarden
+ * @since 27.03.2024
+ */
+@UtilityClass
+public class DateRangeFilterUtils {
+
+    @Nullable
+    public static Predicate filter(
+            DateTimePath&lt;ZonedDateTime&gt; dateTimePath,
+            String timezone,
+            @Nullable Range range,
+            @Nullable ZonedDateTime from,
+            @Nullable ZonedDateTime till) {
+<span class="fc" id="L25">        BooleanBuilder builder = new BooleanBuilder();</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        if (range != null) {</span>
+<span class="fc" id="L27">            builder.and(range.rangeFunction.apply(dateTimePath, ZoneId.of(timezone)));</span>
+        }
+
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        if (from != null) {</span>
+<span class="fc" id="L31">            builder.and(dateTimePath.goe(from));</span>
+        }
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        if (till != null) {</span>
+<span class="fc" id="L34">            builder.and(dateTimePath.loe(till));</span>
+        }
+<span class="fc" id="L36">        return builder.getValue();</span>
+    }
+
+<span class="fc" id="L39">    public enum Range {</span>
+<span class="fc" id="L40">        LAST_24_H((dateTimePath, zoneId) -&gt;</span>
+<span class="fc" id="L41">                dateTimePath.goe(ZonedDateTime.now(zoneId).minusHours(24))),</span>
+<span class="fc" id="L42">        TODAY((dateTimePath, zoneId) -&gt; dateTimePath.goe(LocalDate.now(zoneId).atStartOfDay(zoneId))),</span>
+<span class="fc" id="L43">        YESTERDAY((dateTimePath, zoneId) -&gt; dateTimePath.between(</span>
+<span class="fc" id="L44">                LocalDate.now(zoneId).minusDays(1).atStartOfDay(zoneId),</span>
+<span class="fc" id="L45">                LocalDate.now(zoneId).minusDays(1).atTime(LocalTime.MAX).atZone(zoneId))),</span>
+<span class="fc" id="L46">        THIS_WEEK((dateTimePath, zoneId) -&gt;</span>
+<span class="fc" id="L47">                dateTimePath.goe(LocalDate.now(zoneId).atStartOfDay(zoneId).with(DayOfWeek.MONDAY))),</span>
+<span class="fc" id="L48">        LAST_WEEK((dateTimePath, zoneId) -&gt; dateTimePath.between(</span>
+<span class="fc" id="L49">                LocalDate.now(zoneId)</span>
+<span class="fc" id="L50">                        .atStartOfDay(zoneId)</span>
+<span class="fc" id="L51">                        .with(DayOfWeek.MONDAY)</span>
+<span class="fc" id="L52">                        .minusWeeks(1),</span>
+<span class="fc" id="L53">                LocalDate.now(zoneId)</span>
+<span class="fc" id="L54">                        .atTime(LocalTime.MAX)</span>
+<span class="fc" id="L55">                        .atZone(zoneId)</span>
+<span class="fc" id="L56">                        .with(DayOfWeek.SUNDAY)</span>
+<span class="fc" id="L57">                        .minusWeeks(1))),</span>
+<span class="fc" id="L58">        THIS_MONTH((dateTimePath, zoneId) -&gt;</span>
+<span class="fc" id="L59">                dateTimePath.goe(LocalDate.now(zoneId).atStartOfDay(zoneId).withDayOfMonth(1))),</span>
+<span class="fc" id="L60">        LAST_7_DAYS((dateTimePath, zoneId) -&gt;</span>
+<span class="fc" id="L61">                dateTimePath.goe(LocalDate.now(zoneId).atStartOfDay(zoneId).minusDays(6))),</span>
+<span class="fc" id="L62">        LAST_30_DAYS((dateTimePath, zoneId) -&gt;</span>
+<span class="fc" id="L63">                dateTimePath.goe(LocalDate.now(zoneId).atStartOfDay(zoneId).minusDays(29)));</span>
+
+        private final BiFunction&lt;DateTimePath&lt;ZonedDateTime&gt;, ZoneId, Predicate&gt; rangeFunction;
+
+<span class="fc" id="L67">        Range(BiFunction&lt;DateTimePath&lt;ZonedDateTime&gt;, ZoneId, Predicate&gt; rangeFunction) {</span>
+<span class="fc" id="L68">            this.rangeFunction = rangeFunction;</span>
+<span class="fc" id="L69">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

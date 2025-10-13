@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoutingByRequestParameterPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http</a> &gt; <span class="el_source">RoutingByRequestParameterPipelet.java</span></div><h1>RoutingByRequestParameterPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * &lt;p&gt;{@link Pipelet} to use request parameters from metadata for routing ids.&lt;/p&gt;
+ */
+<span class="fc" id="L15">public class RoutingByRequestParameterPipelet extends Pipelet {</span>
+    static final String PARAM_CHOREOGRAPHY_ID = &quot;choreography_id&quot;;
+    static final String PARAM_SOURCE_PARTNER_ID = &quot;source_partner_id&quot;;
+    static final String PARAM_TARGET_PARTNER_ID = &quot;target_partner_id&quot;;
+    static final String PARAM_ACTION_ID = &quot;action_id&quot;;
+    static final String PARAM_CONVERSATION_ID = &quot;conversation_id&quot;;
+    static final String PARAM_MESSAGE_ID = &quot;message_id&quot;;
+
+    static final String PARAM_DEFAULT_VALUE_CHOREOGRAPHY_ID = &quot;choreography&quot;;
+    static final String PARAM_DEFAULT_VALUE_SOURCE_PARTNER_ID = &quot;local_identity&quot;;
+    static final String PARAM_DEFAULT_VALUE_TARGET_PARTNER_ID = &quot;partner&quot;;
+    static final String PARAM_DEFAULT_VALUE_ACTION_ID = &quot;action&quot;;
+    static final String PARAM_DEFAULT_VALUE_CONVERSATION_ID = &quot;conversation&quot;;
+    static final String PARAM_DEFAULT_VALUE_MESSAGE_ID = &quot;message&quot;;
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+        // Choreography &amp; Action
+<span class="fc" id="L33">        String choreographyId = getRequestParameterValue(executionContext, parameters.value(PARAM_CHOREOGRAPHY_ID));</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (StringUtils.isNotBlank(choreographyId)) {</span>
+<span class="fc" id="L35">            executionContext.setChoreographyId(choreographyId);</span>
+        }
+
+<span class="fc" id="L38">        String actionId = getRequestParameterValue(executionContext, parameters.value(PARAM_ACTION_ID));</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">        if (StringUtils.isNotBlank(actionId)) {</span>
+<span class="fc" id="L40">            executionContext.setActionId(actionId);</span>
+        }
+
+        // Source &amp; Target Partner
+<span class="fc" id="L44">        String sourcePartnerId = getRequestParameterValue(executionContext, parameters.value(PARAM_SOURCE_PARTNER_ID));</span>
+<span class="fc" id="L45">        String targetPartnerId = getRequestParameterValue(executionContext, parameters.value(PARAM_TARGET_PARTNER_ID));</span>
+
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(targetPartnerId)) {</span>
+<span class="fc" id="L48">            executionContext.setTargetPartnerId(targetPartnerId);</span>
+        }
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(sourcePartnerId)) {</span>
+<span class="fc" id="L51">            executionContext.setSourcePartnerId(sourcePartnerId);</span>
+        }
+
+        // Conversation and Message
+<span class="fc" id="L55">        String conversationId = getRequestParameterValue(executionContext, parameters.value(PARAM_CONVERSATION_ID));</span>
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(conversationId)) {</span>
+<span class="fc" id="L57">            executionContext.getMessage().setConversationId(conversationId);</span>
+        }
+<span class="fc" id="L59">        String messageId = getRequestParameterValue(executionContext, parameters.value(PARAM_MESSAGE_ID));</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(messageId)) {</span>
+<span class="fc" id="L61">            executionContext.getMessage().setId(messageId);</span>
+        }
+
+<span class="fc" id="L64">        return executionContext;</span>
+    }
+
+    private String getRequestParameterValue(ExecutionContext executionContext, String key) {
+        // parameter prefix is required as the HttpReceiverService adds it to ensure the key is unique in the metadata
+<span class="fc" id="L69">        return executionContext.getMetaData().getFirstOrNull(HttpConstants.PREFIX_RECEIVED_REQUEST_PARAMETER, key);</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L74">        return List.of(</span>
+<span class="fc" id="L75">                ParameterDefinition.builder()</span>
+<span class="fc" id="L76">                        .name(PARAM_CHOREOGRAPHY_ID)</span>
+<span class="fc" id="L77">                        .displayName(&quot;Choreography Id request parameter name&quot;)</span>
+<span class="fc" id="L78">                        .description(&quot;Name of the required request parameter containing the choreography id&quot;)</span>
+<span class="fc" id="L79">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L80">                        .required(true)</span>
+<span class="fc" id="L81">                        .defaultValue(PARAM_DEFAULT_VALUE_CHOREOGRAPHY_ID)</span>
+<span class="fc" id="L82">                        .build(),</span>
+<span class="fc" id="L83">                ParameterDefinition.builder()</span>
+<span class="fc" id="L84">                        .name(PARAM_ACTION_ID)</span>
+<span class="fc" id="L85">                        .displayName(&quot;Action Id request parameter name&quot;)</span>
+<span class="fc" id="L86">                        .description(&quot;Name of the required request parameter containing the action id&quot;)</span>
+<span class="fc" id="L87">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L88">                        .required(true)</span>
+<span class="fc" id="L89">                        .defaultValue(PARAM_DEFAULT_VALUE_ACTION_ID)</span>
+<span class="fc" id="L90">                        .build(),</span>
+<span class="fc" id="L91">                ParameterDefinition.builder()</span>
+<span class="fc" id="L92">                        .name(PARAM_SOURCE_PARTNER_ID)</span>
+<span class="fc" id="L93">                        .displayName(&quot;Source Partner Id request parameter name&quot;)</span>
+<span class="fc" id="L94">                        .description(</span>
+                                &quot;Name of the optional request parameter containing the source partner id &quot;
+                                        + &quot;(Source partner id defaults to partner marked as default local identity if not provided in request)&quot;)
+<span class="fc" id="L97">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L98">                        .required(true)</span>
+<span class="fc" id="L99">                        .defaultValue(PARAM_DEFAULT_VALUE_SOURCE_PARTNER_ID)</span>
+<span class="fc" id="L100">                        .build(),</span>
+<span class="fc" id="L101">                ParameterDefinition.builder()</span>
+<span class="fc" id="L102">                        .name(PARAM_TARGET_PARTNER_ID)</span>
+<span class="fc" id="L103">                        .displayName(&quot;Target Partner Id request parameter name&quot;)</span>
+<span class="fc" id="L104">                        .description(</span>
+                                &quot;Name of the optional request parameter containing the target partner id &quot;
+                                        + &quot;(Target partner id defaults to partner marked as default local identity if not provided in request)&quot;)
+<span class="fc" id="L107">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L108">                        .required(true)</span>
+<span class="fc" id="L109">                        .defaultValue(PARAM_DEFAULT_VALUE_TARGET_PARTNER_ID)</span>
+<span class="fc" id="L110">                        .build(),</span>
+<span class="fc" id="L111">                ParameterDefinition.builder()</span>
+<span class="fc" id="L112">                        .name(PARAM_CONVERSATION_ID)</span>
+<span class="fc" id="L113">                        .displayName(&quot;Conversation Id request parameter name&quot;)</span>
+<span class="fc" id="L114">                        .description(&quot;Name of the optional request parameter containing the conversation id&quot;)</span>
+<span class="fc" id="L115">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L116">                        .required(true)</span>
+<span class="fc" id="L117">                        .defaultValue(PARAM_DEFAULT_VALUE_CONVERSATION_ID)</span>
+<span class="fc" id="L118">                        .build(),</span>
+<span class="fc" id="L119">                ParameterDefinition.builder()</span>
+<span class="fc" id="L120">                        .name(PARAM_MESSAGE_ID)</span>
+<span class="fc" id="L121">                        .displayName(&quot;Message Id request parameter name&quot;)</span>
+<span class="fc" id="L122">                        .description(&quot;Name of the optional request parameter containing the message id&quot;)</span>
+<span class="fc" id="L123">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L124">                        .required(true)</span>
+<span class="fc" id="L125">                        .defaultValue(PARAM_DEFAULT_VALUE_MESSAGE_ID)</span>
+<span class="fc" id="L126">                        .build());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

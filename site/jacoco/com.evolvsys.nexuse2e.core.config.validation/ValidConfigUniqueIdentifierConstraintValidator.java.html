@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidConfigUniqueIdentifierConstraintValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.validation</a> &gt; <span class="el_source">ValidConfigUniqueIdentifierConstraintValidator.java</span></div><h1>ValidConfigUniqueIdentifierConstraintValidator.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.validation;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import one.util.streamex.StreamEx;
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.collections4.CollectionUtils;
+
+/**
+ * @author SvenBarden
+ * @since 25.04.2024
+ */
+<span class="fc" id="L21">class ValidConfigUniqueIdentifierConstraintValidator</span>
+        implements ConstraintValidator&lt;ValidConfigUniqueIdentifier, Collection&lt;?&gt;&gt; {
+
+    private String[] propertyNames;
+    private boolean ignoreNullValues;
+
+    @Override
+    public void initialize(ValidConfigUniqueIdentifier constraintAnnotation) {
+<span class="fc" id="L29">        propertyNames = constraintAnnotation.propertyNames();</span>
+<span class="fc" id="L30">        ignoreNullValues = constraintAnnotation.ignoreNullValues();</span>
+<span class="fc" id="L31">    }</span>
+
+    @Override
+    public boolean isValid(Collection&lt;?&gt; values, ConstraintValidatorContext context) {
+        boolean isValid;
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (CollectionUtils.isEmpty(values)) {</span>
+<span class="fc" id="L38">            isValid = true;</span>
+        } else {
+<span class="fc" id="L40">            List&lt;?&gt; filteredValues = values.stream()</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">                    .filter(ignoreNullValues ? this::hasNonNullPropertyValue : v -&gt; true)</span>
+<span class="fc" id="L42">                    .toList();</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">            isValid = StreamEx.of(filteredValues).distinct(distinctFunction()).count() == filteredValues.size();</span>
+        }
+
+<span class="fc" id="L46">        return isValid;</span>
+    }
+
+    private boolean hasNonNullPropertyValue(Object value) {
+<span class="fc" id="L50">        boolean allPropertiesNull = true;</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (String propertyName : propertyNames) {</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            if (getPropertyValue(value, propertyName) != null) {</span>
+<span class="fc" id="L53">                allPropertiesNull = false;</span>
+<span class="fc" id="L54">                break;</span>
+            }
+        }
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        return !allPropertiesNull;</span>
+    }
+
+    private Function&lt;Object, Map&lt;String, String&gt;&gt; distinctFunction() {
+<span class="fc" id="L61">        return o -&gt; {</span>
+<span class="fc" id="L62">            Map&lt;String, String&gt; map = new LinkedHashMap&lt;&gt;(propertyNames.length);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">            for (String propertyName : propertyNames) {</span>
+<span class="fc" id="L64">                map.put(propertyName, getPropertyValue(o, propertyName));</span>
+            }
+<span class="fc" id="L66">            return map;</span>
+        };
+    }
+
+    @SuppressFBWarnings(&quot;EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS&quot;)
+    private String getPropertyValue(Object o, String propertyName) {
+        String propertyValue;
+        try {
+<span class="fc" id="L74">            propertyValue = BeanUtils.getProperty(o, propertyName);</span>
+<span class="nc" id="L75">        } catch (Throwable e) {</span>
+<span class="nc" id="L76">            throw new NexusRuntimeException(</span>
+<span class="nc" id="L77">                    NexusError.builder()</span>
+<span class="nc" id="L78">                            .message(&quot;Invalid unique id property found&quot;)</span>
+<span class="nc" id="L79">                            .extension(&quot;propertyName&quot;, propertyName)</span>
+<span class="nc" id="L80">                            .extension(&quot;value&quot;, o)</span>
+<span class="nc" id="L81">                            .build(),</span>
+                    e);
+<span class="fc" id="L83">        }</span>
+<span class="fc" id="L84">        return propertyValue;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

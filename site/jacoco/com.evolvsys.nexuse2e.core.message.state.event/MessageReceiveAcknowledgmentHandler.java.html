@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageReceiveAcknowledgmentHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.state.event</a> &gt; <span class="el_source">MessageReceiveAcknowledgmentHandler.java</span></div><h1>MessageReceiveAcknowledgmentHandler.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.state.event;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MessageStatus;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.repository.ConversationRepository;
+import com.evolvsys.nexuse2e.core.message.repository.MessageRepository;
+import com.evolvsys.nexuse2e.core.message.state.MessageEventType;
+import com.evolvsys.nexuse2e.core.model.entity.ConversationEntity;
+import com.evolvsys.nexuse2e.core.model.entity.ConversationStatus;
+import com.evolvsys.nexuse2e.core.model.entity.MessageEntity;
+import com.evolvsys.nexuse2e.internal.Message;
+import java.time.ZonedDateTime;
+import java.util.EnumSet;
+import java.util.Set;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 29.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L29">@Slf4j</span>
+class MessageReceiveAcknowledgmentHandler implements MessageEventHandler {
+<span class="fc" id="L31">    private static final Set&lt;MessageStatus&gt; VALID_MESSAGE_STATUS =</span>
+<span class="fc" id="L32">            EnumSet.of(MessageStatus.FAILED_MISSING_ACKNOWLEDGMENT, MessageStatus.WAITING_FOR_ACKNOWLEDGMENT);</span>
+    private final MessageRepository messageRepository;
+    private final ConversationRepository conversationRepository;
+
+    private MessageEntity createEntity(Message message) {
+<span class="nc" id="L37">        LOGGER.trace(&quot;create new messageEntity with id {}&quot;, message.getId());</span>
+<span class="nc" id="L38">        MessageEntity messageEntity = new MessageEntity();</span>
+<span class="nc" id="L39">        messageEntity.setMessageId(message.getId());</span>
+<span class="nc" id="L40">        messageEntity.setType(message.getType());</span>
+<span class="nc" id="L41">        return messageEntity;</span>
+    }
+
+    private boolean updateReference(MessageEntity messageEntity, MessageEntity acknowledgmentEntity) {
+<span class="fc" id="L45">        boolean updateConversation = false;</span>
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">        if (VALID_MESSAGE_STATUS.contains(messageEntity.getStatus())) {</span>
+<span class="fc" id="L47">            LOGGER.debug(&quot;update message to status transferred {}&quot;, messageEntity.getMessageId());</span>
+<span class="fc" id="L48">            messageEntity.setStatus(MessageStatus.TRANSFERRED);</span>
+<span class="fc" id="L49">            messageEntity.setNextRequeue(null);</span>
+<span class="fc" id="L50">            messageEntity.setFinished(ZonedDateTime.now());</span>
+<span class="fc" id="L51">            messageEntity = messageRepository.save(messageEntity);</span>
+<span class="fc" id="L52">            updateConversation = true;</span>
+        }
+<span class="fc" id="L54">        acknowledgmentEntity.setReferenceMessage(messageEntity);</span>
+<span class="fc" id="L55">        return updateConversation;</span>
+    }
+
+    @Override
+    @Transactional(rollbackFor = NexusException.class)
+    public void handle(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L61">        Message message = executionContext.getMessage();</span>
+
+<span class="fc" id="L63">        MessageEntity acknowledgmentEntity =</span>
+<span class="pc" id="L64">                messageRepository.findByMessageId(message.getId()).orElseGet(() -&gt; createEntity(message));</span>
+<span class="fc" id="L65">        boolean updateConversation = false;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (StringUtils.isNotBlank(message.getReferenceMessageId())) {</span>
+<span class="fc" id="L67">            LOGGER.trace(&quot;setting referenceId to {}&quot;, message.getReferenceMessageId());</span>
+<span class="fc" id="L68">            MessageEntity referenceMessageEntity = messageRepository</span>
+<span class="fc" id="L69">                    .findByMessageId(message.getReferenceMessageId())</span>
+<span class="pc" id="L70">                    .orElseThrow(() -&gt; new NexusException(NexusError.builder().build()));</span>
+<span class="fc" id="L71">            updateConversation = updateReference(referenceMessageEntity, acknowledgmentEntity);</span>
+        }
+
+<span class="fc" id="L74">        acknowledgmentEntity.setStatus(MessageStatus.RECEIVED);</span>
+<span class="fc" id="L75">        acknowledgmentEntity.setFinished(ZonedDateTime.now());</span>
+
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">        if (updateConversation) {</span>
+<span class="fc" id="L78">            ConversationEntity conversation = acknowledgmentEntity.getConversation();</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">            if (executionContext.getAction().isValidTerminationAction()) {</span>
+<span class="fc" id="L80">                conversation.setStatus(ConversationStatus.SUCCESS);</span>
+<span class="fc" id="L81">                conversation.setFinished(ZonedDateTime.now());</span>
+            } else {
+<span class="fc" id="L83">                conversation.setStatus(ConversationStatus.IDLE);</span>
+            }
+
+<span class="fc" id="L86">            conversationRepository.save(conversation);</span>
+        }
+
+<span class="fc" id="L89">        messageRepository.save(acknowledgmentEntity);</span>
+<span class="fc" id="L90">    }</span>
+
+    @Override
+    public MessageEventType type() {
+<span class="fc" id="L94">        return MessageEventType.RECEIVE_ACKNOWLEDGMENT;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

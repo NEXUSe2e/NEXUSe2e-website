@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessagePackagerPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http</a> &gt; <span class="el_source">MessagePackagerPipelet.java</span></div><h1>MessagePackagerPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.constants.HttpMessageConstants;
+import com.evolvsys.nexuse2e.core.ebxml.EbxmlUtils;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.parameter.Parameters;
+import com.evolvsys.nexuse2e.internal.BinaryEncoding;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+
+<span class="fc" id="L26">@Slf4j</span>
+<span class="fc" id="L27">public class MessagePackagerPipelet extends Pipelet {</span>
+    private boolean trimContent;
+    private boolean contentDisposition;
+<span class="fc" id="L30">    private BinaryEncoding contentEncoding = BinaryEncoding.BASE64;</span>
+
+    @Override
+    @SuppressFBWarnings(&quot;CFS_CONFUSING_FUNCTION_SEMANTICS&quot;)
+    public ExecutionContext execute(ExecutionContext executionContext) {
+<span class="fc" id="L35">        resolveParameters(parameters);</span>
+
+<span class="fc" id="L37">        executionContext.clearData();</span>
+<span class="fc" id="L38">        addContextPayloads(executionContext);</span>
+
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="nc" id="L41">            LOGGER.trace(&quot;packed message parts: &quot;);</span>
+<span class="nc" id="L42">            executionContext</span>
+<span class="nc" id="L43">                    .getDataAsList()</span>
+<span class="nc" id="L44">                    .forEach(contextPayload -&gt; LOGGER.trace(</span>
+<span class="nc" id="L45">                            contextPayload.getContent().getString(Charset.forName(contextPayload.getEncoding()))));</span>
+        }
+
+<span class="fc" id="L48">        return executionContext;</span>
+    }
+
+    public void addContextPayloads(ExecutionContext executionContext) {
+<span class="fc" id="L52">        List&lt;ContextPayload&gt; payloads = executionContext.getMessage().getPayloads();</span>
+<span class="pc bpc" id="L53" title="1 of 2 branches missed.">        if (CollectionUtils.isNotEmpty(payloads)) {</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">            for (ContextPayload payload : payloads) {</span>
+<span class="fc" id="L55">                ContextPayload contextPayload = new ContextPayload();</span>
+<span class="fc" id="L56">                HttpHeaders additionalHeaders = new HttpHeaders();</span>
+
+<span class="fc" id="L58">                String contentId = ObjectUtils.defaultIfNull(payload.getContentId(), &quot;&quot;);</span>
+<span class="pc bpc" id="L59" title="1 of 4 branches missed.">                if (trimContent &amp;&amp; StringUtils.isNotBlank(contentId)) {</span>
+<span class="fc" id="L60">                    payload.setContentId(contentId = contentId.replaceAll(&quot;__body_\\d+&quot;, &quot;&quot;));</span>
+                }
+<span class="fc" id="L62">                additionalHeaders.set(HttpConstants.CONTENT_ID.getName(), String.format(&quot;&lt;%s&gt;&quot;, contentId));</span>
+
+<span class="fc bfc" id="L64" title="All 2 branches covered.">                if (EbxmlUtils.isBinaryType(payload.getContentType())) {</span>
+<span class="pc bpc" id="L65" title="1 of 3 branches missed.">                    switch (contentEncoding) {</span>
+<span class="fc" id="L66">                        case BINARY -&gt; contextPayload.setContent(payload.getContent());</span>
+                        case UNSUPPORTED -&gt; {
+<span class="nc" id="L68">                            LOGGER.warn(&quot;BinaryEncoding.UNSUPPORTED found as target encoding. Will use base64 instead&quot;);</span>
+<span class="nc" id="L69">                            addBase64EncodedContent(contextPayload, payload.getContent(), contentId, additionalHeaders);</span>
+<span class="nc" id="L70">                        }</span>
+                        default -&gt;
+<span class="fc" id="L72">                            addBase64EncodedContent(contextPayload, payload.getContent(), contentId, additionalHeaders);</span>
+                    }
+                } else {
+<span class="fc" id="L75">                    contextPayload.setContent(payload.getContent());</span>
+                }
+
+<span class="fc" id="L78">                contextPayload.setSize(contextPayload.getContent().getSize());</span>
+<span class="fc" id="L79">                contextPayload.setContentType(payload.getContentType());</span>
+<span class="fc" id="L80">                contextPayload.setEncoding(payload.getEncoding());</span>
+<span class="fc" id="L81">                contextPayload.getMetaData().set(HttpConstants.ADDITIONAL_HEADERS, additionalHeaders);</span>
+
+<span class="fc" id="L83">                executionContext.addData(contextPayload);</span>
+<span class="fc" id="L84">            }</span>
+        }
+<span class="fc" id="L86">    }</span>
+
+    private void addBase64EncodedContent(
+            ContextPayload payload, PayloadContent content, String contentId, HttpHeaders additionalHeaders) {
+<span class="fc" id="L90">        payload.setContent(PayloadContent.of(Base64.getEncoder().encode(content.getByteArray())));</span>
+
+<span class="pc bpc" id="L92" title="1 of 4 branches missed.">        if (contentDisposition &amp;&amp; StringUtils.isNotBlank(contentId)) {</span>
+<span class="fc" id="L93">            additionalHeaders.setContentDisposition(</span>
+<span class="fc" id="L94">                    ContentDisposition.attachment().filename(contentId).build());</span>
+<span class="fc" id="L95">            additionalHeaders.set(</span>
+<span class="fc" id="L96">                    &quot;Content-Transfer-Encoding&quot;, contentEncoding.toString().toLowerCase());</span>
+        }
+<span class="fc" id="L98">    }</span>
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L102">        List&lt;ParameterDefinition&gt; parameterDefinitions = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L103">        parameterDefinitions.add(ParameterDefinition.builder()</span>
+<span class="fc" id="L104">                .name(HttpConstants.ENCODING.getName())</span>
+<span class="fc" id="L105">                .displayName(&quot;Binary Encoding&quot;)</span>
+<span class="fc" id="L106">                .description(&quot;Which encoding to use for binary content&quot;)</span>
+<span class="fc" id="L107">                .required(false)</span>
+<span class="fc" id="L108">                .defaultValue(BinaryEncoding.BASE64.name())</span>
+<span class="fc" id="L109">                .type(ParameterType.DROPDOWN_LIST)</span>
+<span class="fc" id="L110">                .option(BinaryEncoding.BASE64.name())</span>
+<span class="fc" id="L111">                .option(BinaryEncoding.BINARY.name())</span>
+<span class="fc" id="L112">                .build());</span>
+<span class="fc" id="L113">        parameterDefinitions.add(ParameterDefinition.builder()</span>
+<span class="fc" id="L114">                .name(HttpMessageConstants.USE_CONTENT_DISPOSITION.getName())</span>
+<span class="fc" id="L115">                .displayName(&quot;Use content disposition&quot;)</span>
+<span class="fc" id="L116">                .description(</span>
+                        &quot;Adds the content disposition mime header to the message (only for Base64 encoded binary type content)&quot;)
+<span class="fc" id="L118">                .required(false)</span>
+<span class="fc" id="L119">                .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L120">                .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L121">                .build());</span>
+<span class="fc" id="L122">        parameterDefinitions.add(ParameterDefinition.builder()</span>
+<span class="fc" id="L123">                .name(HttpMessageConstants.TRIM_CONTENT.getName())</span>
+<span class="fc" id="L124">                .displayName(&quot;Trim content&quot;)</span>
+<span class="fc" id="L125">                .description(&quot;Trims the content id in the mime header&quot;)</span>
+<span class="fc" id="L126">                .required(false)</span>
+<span class="fc" id="L127">                .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L128">                .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L129">                .build());</span>
+<span class="fc" id="L130">        return parameterDefinitions;</span>
+    }
+
+    private void resolveParameters(Parameters parameters) {
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        if (parameters != null) {</span>
+<span class="fc bfc" id="L135" title="All 2 branches covered.">            if (parameters.containsKey(HttpConstants.ENCODING.getName())) {</span>
+<span class="fc" id="L136">                Object temporaryEncodingValue = parameters.value(HttpConstants.ENCODING.getName());</span>
+                BinaryEncoding temporaryEncoding;
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">                if (temporaryEncodingValue instanceof String) {</span>
+<span class="fc" id="L139">                    temporaryEncoding = BinaryEncoding.of(temporaryEncodingValue.toString());</span>
+                } else {
+<span class="nc" id="L141">                    temporaryEncoding = (BinaryEncoding) temporaryEncodingValue;</span>
+                }
+
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                if (temporaryEncoding != BinaryEncoding.UNSUPPORTED) {</span>
+<span class="fc" id="L145">                    contentEncoding = temporaryEncoding;</span>
+                }
+            }
+
+<span class="fc" id="L149">            trimContent = parameters.value(HttpMessageConstants.TRIM_CONTENT.getName());</span>
+<span class="fc" id="L150">            contentDisposition = parameters.value(HttpMessageConstants.USE_CONTENT_DISPOSITION.getName());</span>
+        }
+<span class="fc" id="L152">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

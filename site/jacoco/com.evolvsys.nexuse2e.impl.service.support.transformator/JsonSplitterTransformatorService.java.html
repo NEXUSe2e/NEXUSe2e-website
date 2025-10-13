@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonSplitterTransformatorService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support.transformator</a> &gt; <span class="el_source">JsonSplitterTransformatorService.java</span></div><h1>JsonSplitterTransformatorService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support.transformator;
+
+import com.evolvsys.nexuse2e.core.component.BeanFactoryAware;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.StreamSupport;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.BeanFactory;
+import org.springframework.http.MediaType;
+
+/**
+ * @author SvenBarden
+ * @since 08.07.2024
+ */
+<span class="fc" id="L33">@Slf4j</span>
+<span class="fc" id="L34">public class JsonSplitterTransformatorService extends TransformatorSupportService implements BeanFactoryAware {</span>
+    public static final String METADATA_CATEGORY = &quot;json_splitter&quot;;
+
+    private static final String PARAM_ADD_RAW = &quot;add_raw&quot;;
+    private static final String PARAM_ARRAY_POINTER = &quot;array_pointer&quot;;
+    private static final String PARAM_METADATA_POINTER = &quot;metadata_pointer&quot;;
+    private static final String PARAM_CONTENT_POINTER = &quot;content_pointer&quot;;
+
+    protected BeanFactory beanFactory;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L46">        return List.of(</span>
+<span class="fc" id="L47">                ParameterDefinition.builder()</span>
+<span class="fc" id="L48">                        .name(PARAM_ADD_RAW)</span>
+<span class="fc" id="L49">                        .displayName(&quot;Add raw payload&quot;)</span>
+<span class="fc" id="L50">                        .description(</span>
+                                &quot;Adds the original raw payload as an additional message to the context with the meta-data 'raw-source' set to 'true'.&quot;)
+<span class="fc" id="L52">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L53">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L54">                        .build(),</span>
+<span class="fc" id="L55">                ParameterDefinition.builder()</span>
+<span class="fc" id="L56">                        .name(PARAM_ARRAY_POINTER)</span>
+<span class="fc" id="L57">                        .displayName(&quot;Json array pointer&quot;)</span>
+<span class="fc" id="L58">                        .description(</span>
+                                &quot;A json pointer to the node where the json splitting should start. Has to point to an array node.&quot;)
+<span class="fc" id="L60">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L61">                        .build(),</span>
+<span class="fc" id="L62">                ParameterDefinition.builder()</span>
+<span class="fc" id="L63">                        .name(PARAM_METADATA_POINTER)</span>
+<span class="fc" id="L64">                        .displayName(&quot;Json Metadata pointer&quot;)</span>
+<span class="fc" id="L65">                        .description(</span>
+                                &quot;A json pointer to the node whose content should be added as metadata to the payload. If the value is blank, no metadata is included.&quot;)
+<span class="fc" id="L67">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L68">                        .build(),</span>
+<span class="fc" id="L69">                ParameterDefinition.builder()</span>
+<span class="fc" id="L70">                        .name(PARAM_CONTENT_POINTER)</span>
+<span class="fc" id="L71">                        .displayName(&quot;Json content pointer&quot;)</span>
+<span class="fc" id="L72">                        .description(</span>
+                                &quot;A json pointer to the node whose content should be added as the payload. The pointer is applied for each payload after splitting the json.&quot;)
+<span class="fc" id="L74">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L75">                        .build());</span>
+    }
+
+    @Override
+    public List&lt;ContextPayload&gt; transform(Collection&lt;ContextPayload&gt; payloads) throws NexusException {
+        List&lt;ContextPayload&gt; transformedPayloads;
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (CollectionUtils.isEmpty(payloads)) {</span>
+<span class="fc" id="L82">            LOGGER.debug(&quot;No payloads to transform&quot;);</span>
+<span class="fc" id="L83">            transformedPayloads = new ArrayList&lt;&gt;();</span>
+        } else {
+<span class="fc" id="L85">            transformedPayloads = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L86">            ObjectMapper objectMapper = beanFactory.getBean(ObjectMapper.class);</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">            for (ContextPayload payload : payloads) {</span>
+<span class="fc" id="L89">                try (InputStream inputStream = payload.getContent().getInputStream()) {</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">                    if (LOGGER.isTraceEnabled()) {</span>
+<span class="nc" id="L91">                        LOGGER.trace(</span>
+                                &quot;splitting {} payload {}&quot;,
+<span class="nc" id="L93">                                payload.getEncoding(),</span>
+<span class="nc" id="L94">                                payload.getContent().getString(Charset.forName(payload.getEncoding())));</span>
+                    }
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">                    if (parameters.value(PARAM_ADD_RAW)) {</span>
+<span class="fc" id="L98">                        transformedPayloads.add(payload);</span>
+<span class="fc" id="L99">                        payload.getMetaData().add(META_DATA_RAW, Boolean.TRUE);</span>
+<span class="fc" id="L100">                        LOGGER.trace(&quot;adding raw payload to result list&quot;);</span>
+                    }
+
+                    JsonNode jsonNode;
+                    // jackson requires inputStream content encoding to be utf-8. If it is not we need to convert the
+                    // content to in memory string
+<span class="fc bfc" id="L106" title="All 2 branches covered.">                    if (Charset.forName(payload.getEncoding()).equals(StandardCharsets.UTF_8)) {</span>
+<span class="fc" id="L107">                        jsonNode = objectMapper.readTree(inputStream);</span>
+                    } else {
+<span class="fc" id="L109">                        jsonNode = objectMapper.readTree(</span>
+<span class="fc" id="L110">                                IOUtils.toString(inputStream, Charset.forName(payload.getEncoding())));</span>
+                    }
+
+<span class="fc" id="L113">                    Optional&lt;JsonNode&gt; optionalMetadata = Optional.empty();</span>
+<span class="fc" id="L114">                    String metadataPointer = parameters.value(PARAM_METADATA_POINTER);</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">                    if (StringUtils.isNotBlank(metadataPointer)) {</span>
+<span class="fc" id="L116">                        JsonNode metadataContent = jsonNode.at(metadataPointer);</span>
+<span class="fc" id="L117">                        optionalMetadata = Optional.of(metadataContent);</span>
+<span class="fc" id="L118">                        LOGGER.trace(&quot;Extracted json metadata/headers {} from payload&quot;, metadataContent);</span>
+                    }
+
+<span class="fc" id="L121">                    String jsonPointer = parameters.value(PARAM_ARRAY_POINTER);</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">                    if (StringUtils.isNotBlank(jsonPointer)) {</span>
+<span class="fc" id="L123">                        LOGGER.trace(&quot;Splitting payload at json node via pointer {}&quot;, jsonPointer);</span>
+<span class="fc" id="L124">                        jsonNode = jsonNode.at(jsonPointer);</span>
+                    }
+
+<span class="fc bfc" id="L127" title="All 2 branches covered.">                    if (jsonNode.isArray()) {</span>
+<span class="fc" id="L128">                        String contentPointer = parameters.value(PARAM_CONTENT_POINTER);</span>
+<span class="fc" id="L129">                        List&lt;String&gt; extracted = StreamSupport.stream(jsonNode.spliterator(), false)</span>
+<span class="fc" id="L130">                                .map(node -&gt; navigateWithContentPointer(node, contentPointer))</span>
+<span class="fc" id="L131">                                .map(JsonNode::toString)</span>
+<span class="fc" id="L132">                                .toList();</span>
+<span class="fc" id="L133">                        LOGGER.debug(</span>
+<span class="fc" id="L134">                                &quot;extracted {} payloads from base payload {}&quot;, extracted.size(), payload.getContentId());</span>
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">                        for (int i = 0; i &lt; extracted.size(); i++) {</span>
+<span class="fc" id="L137">                            String string = extracted.get(i);</span>
+<span class="fc" id="L138">                            ContextPayload contextPayload = stringToPayload(</span>
+                                    string,
+<span class="fc" id="L140">                                    payload.getContentId() + &quot;_&quot; + payload.getSequenceNumber() + &quot;_&quot; + i,</span>
+<span class="fc" id="L141">                                    payload.getEncoding());</span>
+
+<span class="fc" id="L143">                            optionalMetadata.ifPresent(</span>
+<span class="fc" id="L144">                                    metadataNode -&gt; addMetadataToPayload(contextPayload, metadataNode));</span>
+<span class="fc" id="L145">                            transformedPayloads.add(contextPayload);</span>
+                        }
+<span class="fc" id="L147">                    } else {</span>
+<span class="fc" id="L148">                        LOGGER.error(</span>
+                                &quot;Json node is not a json array: {}&quot;,
+<span class="fc" id="L150">                                payload.getContent().getString(Charset.forName(payload.getEncoding())));</span>
+                    }
+<span class="nc" id="L152">                } catch (IOException e) {</span>
+<span class="nc" id="L153">                    LOGGER.error(&quot;error while transforming payloads&quot;, e);</span>
+<span class="fc" id="L154">                }</span>
+<span class="fc" id="L155">            }</span>
+        }
+<span class="fc" id="L157">        return transformedPayloads;</span>
+    }
+
+    private ContextPayload stringToPayload(String content, String name, String charset) {
+<span class="fc" id="L161">        PayloadContent payloadContent = PayloadContent.of(content.getBytes(Charset.forName(charset)));</span>
+<span class="fc" id="L162">        return ContextPayload.builder()</span>
+<span class="fc" id="L163">                .contentType(MediaType.APPLICATION_JSON_VALUE)</span>
+<span class="fc" id="L164">                .encoding(charset)</span>
+<span class="fc" id="L165">                .contentId(name)</span>
+<span class="fc" id="L166">                .size(payloadContent.getSize())</span>
+<span class="fc" id="L167">                .content(payloadContent)</span>
+<span class="fc" id="L168">                .build();</span>
+    }
+
+    private void addMetadataToPayload(ContextPayload payload, JsonNode metadataNode) {
+<span class="fc" id="L172">        Iterator&lt;Map.Entry&lt;String, JsonNode&gt;&gt; fields = metadataNode.fields();</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">        while (fields.hasNext()) {</span>
+<span class="fc" id="L174">            Map.Entry&lt;String, JsonNode&gt; entry = fields.next();</span>
+<span class="fc" id="L175">            payload.getMetaData()</span>
+<span class="fc" id="L176">                    .add(METADATA_CATEGORY, entry.getKey(), entry.getValue().toPrettyString());</span>
+
+<span class="fc" id="L178">            LOGGER.trace(&quot;Added metadata node {} with value {} to the payload.&quot;, entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L179">        }</span>
+<span class="fc" id="L180">    }</span>
+
+    private JsonNode navigateWithContentPointer(JsonNode jsonNode, String contentPointer) {
+<span class="fc bfc" id="L183" title="All 2 branches covered.">        if (StringUtils.isNotBlank(contentPointer)) {</span>
+<span class="fc" id="L184">            LOGGER.debug(&quot;Extract payload at json via pointer '{}'&quot;, contentPointer);</span>
+<span class="fc" id="L185">            jsonNode = jsonNode.at(contentPointer);</span>
+        }
+<span class="fc" id="L187">        return jsonNode;</span>
+    }
+
+    @Override
+    public void setBeanFactory(BeanFactory beanFactory) {
+<span class="fc" id="L192">        this.beanFactory = beanFactory;</span>
+<span class="fc" id="L193">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

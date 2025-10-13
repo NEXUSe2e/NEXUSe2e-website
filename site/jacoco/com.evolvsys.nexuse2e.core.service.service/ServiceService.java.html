@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.service</a> &gt; <span class="el_source">ServiceService.java</span></div><h1>ServiceService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.service;
+
+import com.evolvsys.app.core.auth.service.CurrentUserService;
+import com.evolvsys.app.core.process.ProcessExecutionContext;
+import com.evolvsys.app.core.process.ProcessService;
+import com.evolvsys.app.core.service.BaseService;
+import com.evolvsys.app.core.service.ListService;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.service.BaseInflowNexusService;
+import com.evolvsys.nexuse2e.core.service.ServiceFactory;
+import com.evolvsys.nexuse2e.core.service.ServiceFilter;
+import com.evolvsys.nexuse2e.core.service.ServiceUtils;
+import com.evolvsys.nexuse2e.core.service.action.ServiceActionType;
+import com.evolvsys.nexuse2e.core.service.mapper.ServiceMapper;
+import com.evolvsys.nexuse2e.core.service.model.ServiceDto;
+import com.evolvsys.nexuse2e.core.service.repository.ServiceRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.util.Comparator;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
+
+/**
+ * &lt;p&gt;Service for (Nexus-) services.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 14.12.2023
+ */
+@Service
+<span class="fc" id="L34">@Slf4j</span>
+public class ServiceService extends BaseService&lt;ServiceDto, ServiceEntity, ServiceRepository&gt; {
+    private final ServiceFactory serviceFactory;
+    private final ServiceUtils serviceUtils;
+    private final ProcessService processService;
+    private final ListService listService;
+
+    public ServiceService(
+            ServiceMapper mapper,
+            ServiceRepository repository,
+            CurrentUserService currentUserService,
+            ServiceFactory serviceFactory,
+            ServiceUtils serviceUtils,
+            ProcessService processService,
+            ListService listService) {
+<span class="fc" id="L49">        super(mapper, repository, currentUserService);</span>
+<span class="fc" id="L50">        this.serviceFactory = serviceFactory;</span>
+<span class="fc" id="L51">        this.serviceUtils = serviceUtils;</span>
+<span class="fc" id="L52">        this.processService = processService;</span>
+<span class="fc" id="L53">        this.listService = listService;</span>
+<span class="fc" id="L54">    }</span>
+
+    @Override
+    public ServiceEntity getEntity(ServiceDto dto) {
+<span class="nc" id="L58">        return getEntity(dto, repository::getEagerById);</span>
+    }
+
+    @Override
+    protected ServiceEntity createEntity() {
+<span class="nc" id="L63">        return new ServiceEntity();</span>
+    }
+
+    public List&lt;ServiceDto&gt; list(@Nullable ServiceFilter serviceFilter) {
+<span class="fc" id="L67">        return listService.list(serviceFilter, ServiceDto.class, repository::findAll).stream()</span>
+<span class="fc" id="L68">                .sorted(Comparator.comparing(ServiceEntity::getServiceId))</span>
+<span class="fc" id="L69">                .map(this::mapEntityToDto)</span>
+<span class="fc" id="L70">                .toList();</span>
+    }
+
+    @Override
+    public ServiceDto save(ServiceDto dto) {
+<span class="fc" id="L75">        dto.setServiceType(serviceUtils.getServiceType(dto.getComponentId()));</span>
+
+<span class="fc" id="L77">        ServiceEntity entity = getEntity(dto);</span>
+
+<span class="fc" id="L79">        entity = save(entity);</span>
+
+<span class="fc" id="L81">        return mapEntityToDto(entity);</span>
+    }
+
+    public ServiceDto startService(long serviceId) {
+<span class="fc" id="L85">        ServiceEntity entity = findWithActionCheck(serviceId, ServiceActionType.START.name());</span>
+<span class="fc" id="L86">        entity = processService.execute(ProcessExecutionContext.&lt;ServiceEntity, ServiceDto&gt;builder()</span>
+<span class="fc" id="L87">                .target(entity)</span>
+<span class="fc" id="L88">                .actionType(ServiceActionType.START)</span>
+<span class="fc" id="L89">                .build());</span>
+<span class="fc" id="L90">        return mapEntityToDto(entity);</span>
+    }
+
+    public ServiceDto stopService(long serviceId) {
+<span class="fc" id="L94">        ServiceEntity entity = findWithActionCheck(serviceId, ServiceActionType.STOP.name());</span>
+<span class="fc" id="L95">        entity = processService.execute(ProcessExecutionContext.&lt;ServiceEntity, ServiceDto&gt;builder()</span>
+<span class="fc" id="L96">                .target(entity)</span>
+<span class="fc" id="L97">                .actionType(ServiceActionType.STOP)</span>
+<span class="fc" id="L98">                .build());</span>
+<span class="fc" id="L99">        return mapEntityToDto(entity);</span>
+    }
+
+    @SuppressFBWarnings(&quot;EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS&quot;)
+    public boolean run(long serviceId) {
+<span class="fc" id="L104">        ServiceEntity entity = findWithActionCheck(serviceId, ServiceActionType.RUN_ONCE.name());</span>
+
+<span class="fc" id="L106">        BaseInflowNexusService service = serviceFactory.get(entity.getServiceId());</span>
+        try {
+<span class="fc" id="L108">            service.execute();</span>
+<span class="nc" id="L109">        } catch (NexusException e) {</span>
+<span class="nc" id="L110">            throw new NexusRuntimeException(</span>
+<span class="nc" id="L111">                    NexusError.builder().message(&quot;Error executing service once&quot;).build(), e);</span>
+<span class="fc" id="L112">        }</span>
+        // TODO this is a temporary workaround until the process service has a non transactional run method see AB#7476
+        //        processService.execute(
+        //                findWithActionCheck(serviceId, ServiceActionType.RUN_ONCE.name()),
+        // ServiceActionType.RUN_ONCE);
+<span class="fc" id="L117">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

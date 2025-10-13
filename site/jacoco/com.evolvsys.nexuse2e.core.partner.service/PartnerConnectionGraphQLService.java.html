@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PartnerConnectionGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.partner.service</a> &gt; <span class="el_source">PartnerConnectionGraphQLService.java</span></div><h1>PartnerConnectionGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.partner.service;
+
+import com.evolvsys.app.core.exception.GeneralErrorException;
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.app.core.persistence.model.IdDto;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerDto;
+import com.evolvsys.nexuse2e.core.certificate.service.CertificateContainerBatchLoader;
+import com.evolvsys.nexuse2e.core.config.service.ConfigGraphQLService;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import com.evolvsys.nexuse2e.core.partner.model.PartnerConnectionDto;
+import com.evolvsys.nexuse2e.core.partner.model.PartnerDto;
+import com.evolvsys.nexuse2e.core.partner.validation.ValidConnectionHasRoutes;
+import com.evolvsys.nexuse2e.core.service.ServiceBatchLoader;
+import com.evolvsys.nexuse2e.core.service.model.ServiceDto;
+import io.leangen.graphql.annotations.*;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import jakarta.validation.Valid;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
+
+/**
+ * @author Florian Drees
+ * @since 02.01.2024
+ */
+@GraphQLService
+@RequiredArgsConstructor
+<span class="fc" id="L34">@Slf4j</span>
+public class PartnerConnectionGraphQLService {
+    private final PartnerConnectionService partnerConnectionService;
+    private final DataLoaderService dataLoaderService;
+
+    @GraphQLMutation(
+            name = &quot;partnerConnection_update&quot;,
+            description = &quot;Updates an existing or creates a new partner connection&quot;)
+    @GraphQLNonNull
+    public PartnerConnectionDto update(@Valid @GraphQLNonNull PartnerConnectionDto partnerConnectionDto) {
+<span class="fc" id="L44">        return ConfigGraphQLService.notifySubscribers(partnerConnectionService.save(partnerConnectionDto));</span>
+    }
+
+    @GraphQLMutation(name = &quot;partnerConnection_delete&quot;, description = &quot;Deletes a connection&quot;)
+    public boolean delete(@ValidConnectionHasRoutes long partnerConnectionId) {
+        try {
+<span class="fc" id="L50">            partnerConnectionService.delete(partnerConnectionId);</span>
+<span class="fc" id="L51">            ConfigGraphQLService.notifySubscribers();</span>
+<span class="nc" id="L52">        } catch (DataIntegrityViolationException e) {</span>
+<span class="nc" id="L53">            throw new GeneralErrorException(</span>
+                    &quot;Cannot delete partner connection. Entities are referencing to this entity.&quot;, e);
+<span class="fc" id="L55">        }</span>
+<span class="fc" id="L56">        return true;</span>
+    }
+
+    @GraphQLQuery(name = &quot;partnerConnection_getById&quot;, description = &quot;Gets a partner connection&quot;)
+    public Optional&lt;PartnerConnectionDto&gt; getById(long partnerConnectionId) {
+<span class="fc" id="L61">        return partnerConnectionService.getById(partnerConnectionId);</span>
+    }
+
+    @GraphQLQuery(description = &quot;Gets the partner of the provided connection&quot;)
+    public CompletableFuture&lt;PartnerDto&gt; partner(
+            @GraphQLContext PartnerConnectionDto partnerConnectionDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L68">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PartnerBatchLoader.class,
+                partnerConnectionDto,
+                &quot;partnerId&quot;,
+                PartnerConnectionDto::getPartnerId);
+    }
+
+    @GraphQLQuery(description = &quot;Gets the outflow service of the provided connection&quot;)
+    public CompletableFuture&lt;ServiceDto&gt; outflowService(
+            @GraphQLContext PartnerConnectionDto partnerConnectionDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L80">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                ServiceBatchLoader.class,
+                partnerConnectionDto,
+                &quot;outflowServiceId&quot;,
+                PartnerConnectionDto::getOutflowServiceId);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;CertificateContainerDto&gt; certificateContainer(
+            @GraphQLContext PartnerConnectionDto partnerConnectionDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L92">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                CertificateContainerBatchLoader.class,
+                partnerConnectionDto,
+                &quot;certificateContainerId&quot;,
+                PartnerConnectionDto::getCertificateContainerId);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull ParameterDto&gt;&gt; parameters(
+            @GraphQLContext PartnerConnectionDto partnerConnectionDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L104">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PartnerConnectionParameterBatchLoader.class,
+                partnerConnectionDto,
+<span class="fc" id="L108">                Function.identity());</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;List&lt;@GraphQLNonNull Long&gt;&gt; requeueIntervals(
+            @GraphQLContext PartnerConnectionDto partnerConnectionDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L115">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PartnerConnectionRequeueIntervalsBatchLoader.class,
+                partnerConnectionDto,
+                &quot;requeueIntervals&quot;,
+                IdDto::getId);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

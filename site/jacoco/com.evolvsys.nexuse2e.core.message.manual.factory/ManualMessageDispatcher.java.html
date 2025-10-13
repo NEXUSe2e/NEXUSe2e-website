@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ManualMessageDispatcher.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.manual.factory</a> &gt; <span class="el_source">ManualMessageDispatcher.java</span></div><h1>ManualMessageDispatcher.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.manual.factory;
+
+import com.evolvsys.common.mdc.MDCIdGenerator;
+import com.evolvsys.common.mdc.MDCService;
+import com.evolvsys.nexuse2e.core.exception.NexusErrorContainer;
+import com.evolvsys.nexuse2e.core.message.context.ContextFactory;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.dispatcher.OutboundMessageDispatcher;
+import com.evolvsys.nexuse2e.core.message.manual.model.ManualMessageResponseDto;
+import com.evolvsys.nexuse2e.core.message.manual.model.ManualMessageStatus;
+import com.evolvsys.nexuse2e.core.message.state.MessageEventService;
+import com.evolvsys.nexuse2e.core.resolver.ManualMessageResolver;
+import com.evolvsys.nexuse2e.core.resolver.MessageResolverValidator;
+import com.evolvsys.nexuse2e.core.utils.ErrorUtils;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 25.07.2024
+ */
+@Component
+@RequiredArgsConstructor
+public class ManualMessageDispatcher {
+    private final OutboundMessageDispatcher outboundMessageDispatcher;
+    private final MessageEventService messageEventService;
+    private final MessageResolverValidator messageResolverValidator;
+    private final ContextFactory contextFactory;
+    private final MDCService mdcService;
+    private final MDCIdGenerator mdcIdGenerator;
+
+    public ManualMessageResponseDto send(MessageContext messageContext) {
+<span class="fc" id="L34">        ManualMessageResponseDto.ManualMessageResponseDtoBuilder responseBuilder = ManualMessageResponseDto.builder();</span>
+
+<span class="fc" id="L36">        String originalMdcId = mdcService.getId();</span>
+        try {
+<span class="fc" id="L38">            mdcService.setId(mdcIdGenerator.newId());</span>
+
+<span class="fc" id="L40">            ManualMessageResolver manualMessageResolver = new ManualMessageResolver(</span>
+                    MessageType.NORMAL, messageResolverValidator, messageEventService, contextFactory);
+<span class="fc" id="L42">            manualMessageResolver.resolve(messageContext);</span>
+
+<span class="fc" id="L44">            outboundMessageDispatcher.dispatch(messageContext.createExecutionContext(MessageType.NORMAL));</span>
+
+<span class="fc" id="L46">            responseBuilder.status(ManualMessageStatus.SUCCESS);</span>
+<span class="fc" id="L47">            responseBuilder.message(&quot;success&quot;);</span>
+<span class="fc" id="L48">        } catch (Exception e) {</span>
+<span class="fc" id="L49">            responseBuilder.status(ManualMessageStatus.ERROR);</span>
+<span class="pc bpc" id="L50" title="1 of 2 branches missed.">            if (e instanceof NexusErrorContainer errorContainer) {</span>
+<span class="nc" id="L51">                responseBuilder.message(errorContainer.getError().getMessage());</span>
+            } else {
+<span class="fc" id="L53">                responseBuilder.message(e.getMessage());</span>
+            }
+<span class="fc" id="L55">            responseBuilder.messageAggregated(ErrorUtils.aggregate(e));</span>
+        } finally {
+<span class="pc bpc" id="L57" title="1 of 2 branches missed.">            if (originalMdcId != null) {</span>
+<span class="fc" id="L58">                mdcService.setId(originalMdcId);</span>
+            }
+        }
+<span class="fc" id="L61">        return responseBuilder.build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

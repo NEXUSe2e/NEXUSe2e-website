@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextToPayloadPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.common</a> &gt; <span class="el_source">ContextToPayloadPipelet.java</span></div><h1>ContextToPayloadPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.common;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+
+/**
+ * &lt;p&gt;Pipelet zur Umwandlung einer {@link ContextPayload} zur weiteren Verwendung in eine {@link ContextPayload}.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 23.11.2023
+ */
+<span class="fc" id="L18">public class ContextToPayloadPipelet extends Pipelet {</span>
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) {
+<span class="fc" id="L21">        List&lt;ContextPayload&gt; dataAsList = executionContext.getDataAsList();</span>
+<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        if (CollectionUtils.isNotEmpty(dataAsList)) {</span>
+<span class="nc" id="L23">            Message message = executionContext.getMessage();</span>
+<span class="nc bnc" id="L24" title="All 2 branches missed.">            for (ContextPayload contextPayload : dataAsList) {</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">                if (StringUtils.isBlank(contextPayload.getContentId())) {</span>
+<span class="nc" id="L26">                    contextPayload.setContentId(</span>
+<span class="nc" id="L27">                            String.format(&quot;%s_%d&quot;, message.getId(), contextPayload.getSequenceNumber()));</span>
+                }
+<span class="nc" id="L29">                message.getPayloads().add(contextPayload);</span>
+<span class="nc" id="L30">            }</span>
+        }
+<span class="fc" id="L32">        return executionContext;</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L37">        return List.of();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

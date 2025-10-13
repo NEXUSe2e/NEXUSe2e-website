@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringMapperSupportService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.support</a> &gt; <span class="el_source">StringMapperSupportService.java</span></div><h1>StringMapperSupportService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.support;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.util.List;
+import java.util.function.Predicate;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.KeyValue;
+
+/**
+ * Maps string values based on a provided mapping table. Optionally fails if no mapping entry is found for the input value.
+ *
+ * @author SvenBarden
+ * @since 08.08.2025
+ */
+<span class="fc" id="L19">@Slf4j</span>
+<span class="fc" id="L20">public class StringMapperSupportService extends StandardSupportService {</span>
+    public static final String PARAM_MAPPING = &quot;mapping&quot;;
+    public static final String PARAM_FAIL_ON_NOT_FOUND = &quot;fail_on_not_found&quot;;
+    public static final String PARAM_IGNORE_CASE = &quot;ignore_case&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L27">        return List.of(</span>
+<span class="fc" id="L28">                ParameterDefinition.builder()</span>
+<span class="fc" id="L29">                        .name(PARAM_MAPPING)</span>
+<span class="fc" id="L30">                        .displayName(&quot;Mapping&quot;)</span>
+<span class="fc" id="L31">                        .description(&quot;The mapping table to use. &quot;)</span>
+<span class="fc" id="L32">                        .required(true)</span>
+<span class="fc" id="L33">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L34">                        .build(),</span>
+<span class="fc" id="L35">                ParameterDefinition.builder()</span>
+<span class="fc" id="L36">                        .name(PARAM_FAIL_ON_NOT_FOUND)</span>
+<span class="fc" id="L37">                        .displayName(&quot;Fail on not found&quot;)</span>
+<span class="fc" id="L38">                        .description(</span>
+                                &quot;If true, the service throws an error if no mapping was provided for the given input.&quot;)
+<span class="fc" id="L40">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L41">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L42">                        .build(),</span>
+<span class="fc" id="L43">                ParameterDefinition.builder()</span>
+<span class="fc" id="L44">                        .name(PARAM_IGNORE_CASE)</span>
+<span class="fc" id="L45">                        .displayName(&quot;Ignore case&quot;)</span>
+<span class="fc" id="L46">                        .description(</span>
+                                &quot;If true, ignores the case for the mapping. Note that if the same key in multiple cases is provided there is no guarantee which mapping will be used.&quot;)
+<span class="fc" id="L48">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L49">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L50">                        .build());</span>
+    }
+
+    private Predicate&lt;KeyValue&lt;String, String&gt;&gt; match(String input) {
+<span class="fc" id="L54">        boolean ignoreCase = parameters.value(PARAM_IGNORE_CASE);</span>
+
+<span class="fc bfc" id="L56" title="All 2 branches covered.">        return ignoreCase</span>
+<span class="fc" id="L57">                ? keyValue -&gt; keyValue.getKey().equalsIgnoreCase(input)</span>
+<span class="fc" id="L58">                : keyValue -&gt; keyValue.getKey().equals(input);</span>
+    }
+
+    public String map(String input) throws NexusException {
+<span class="fc" id="L62">        List&lt;KeyValue&lt;String, String&gt;&gt; mapping = parameters.value(PARAM_MAPPING);</span>
+<span class="fc" id="L63">        boolean failOnNotFound = parameters.value(PARAM_FAIL_ON_NOT_FOUND);</span>
+
+<span class="fc" id="L65">        String mappedValue = CollectionUtils.emptyIfNull(mapping).stream()</span>
+<span class="fc" id="L66">                .filter(match(input))</span>
+<span class="fc" id="L67">                .map(KeyValue::getValue)</span>
+<span class="fc" id="L68">                .findFirst()</span>
+<span class="fc" id="L69">                .orElse(null);</span>
+
+        String result;
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (mappedValue == null) {</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (failOnNotFound) {</span>
+<span class="fc" id="L74">                LOGGER.trace(&quot;no mapping entries found, throwing exception&quot;);</span>
+<span class="fc" id="L75">                throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L76">                        .message(&quot;No mapping entry found&quot;)</span>
+<span class="fc" id="L77">                        .extension(&quot;key&quot;, input)</span>
+<span class="fc" id="L78">                        .extension(</span>
+                                &quot;entries&quot;,
+<span class="fc" id="L80">                                mapping.stream().map(KeyValue::getKey).toList())</span>
+<span class="fc" id="L81">                        .build());</span>
+            } else {
+<span class="fc" id="L83">                LOGGER.trace(&quot;no mapping entries found for {}, returning input as is&quot;, input);</span>
+<span class="fc" id="L84">                result = input;</span>
+            }
+        } else {
+<span class="fc" id="L87">            result = mappedValue;</span>
+<span class="fc" id="L88">            LOGGER.trace(&quot;mapping entry found, returning mapped value: {}&quot;, result);</span>
+        }
+
+<span class="fc" id="L91">        return result;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

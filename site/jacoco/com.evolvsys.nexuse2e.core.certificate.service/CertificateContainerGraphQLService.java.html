@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateContainerGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificateContainerGraphQLService.java</span></div><h1>CertificateContainerGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerDto;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerFilter;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateDto;
+import com.evolvsys.nexuse2e.core.certificate.validation.ValidCertificateContainerHasCertificates;
+import com.evolvsys.nexuse2e.core.certificate.validation.ValidCertificateContainerHasRoutes;
+import com.evolvsys.nexuse2e.core.partner.model.PartnerDto;
+import com.evolvsys.nexuse2e.core.partner.service.PartnerBatchLoader;
+import io.leangen.graphql.annotations.*;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import jakarta.validation.Valid;
+import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+/**
+ * @author SvenBarden
+ * @since 07.02.2024
+ */
+@GraphQLService
+@RequiredArgsConstructor
+public class CertificateContainerGraphQLService {
+    private final DataLoaderService dataLoaderService;
+    private final CertificateContainerService certificateContainerService;
+
+    @GraphQLMutation(name = &quot;certificateContainer_delete&quot;)
+    public boolean delete(
+            @ValidCertificateContainerHasCertificates @ValidCertificateContainerHasRoutes long certificateContainerId) {
+<span class="fc" id="L35">        certificateContainerService.delete(certificateContainerId);</span>
+<span class="fc" id="L36">        return true;</span>
+    }
+
+    @GraphQLMutation(name = &quot;certificateContainer_update&quot;)
+    @GraphQLNonNull
+    public CertificateContainerDto update(@GraphQLNonNull @Valid CertificateContainerDto certificateContainer) {
+<span class="fc" id="L42">        return certificateContainerService.save(certificateContainer);</span>
+    }
+
+    @GraphQLQuery(name = &quot;certificateContainer_getById&quot;)
+    public Optional&lt;CertificateContainerDto&gt; getById(long id) {
+<span class="fc" id="L47">        return certificateContainerService.getById(id);</span>
+    }
+
+    @GraphQLQuery(name = &quot;certificateContainer_list&quot;)
+    @GraphQLNonNull
+    public Page&lt;@GraphQLNonNull CertificateContainerDto&gt; list(Pageable pageable, CertificateContainerFilter filter) {
+<span class="fc" id="L53">        return certificateContainerService.list(pageable, filter);</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull CertificateDto&gt;&gt; certificates(
+            @GraphQLContext CertificateContainerDto certificateContainerDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L60">        return dataLoaderService.loadRelation(</span>
+                resolutionEnvironment, CertificateContainerCertificatesBatchLoader.class, certificateContainerDto);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;PartnerDto&gt; partner(
+            @GraphQLContext CertificateContainerDto certificateContainerDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L68">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                PartnerBatchLoader.class,
+                certificateContainerDto,
+                &quot;partnerId&quot;,
+                CertificateContainerDto::getPartnerId);
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;CertificateDto&gt; activeCertificate(
+            @GraphQLContext CertificateContainerDto certificateContainerDto,
+            @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="fc" id="L80">        return dataLoaderService.load(</span>
+                resolutionEnvironment,
+                CertificateContainerActiveCertificateBatchLoader.class,
+                certificateContainerDto,
+                CertificateContainerDto::getId);
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageRequeueAction.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.action</a> &gt; <span class="el_source">MessageRequeueAction.java</span></div><h1>MessageRequeueAction.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.action;
+
+import com.evolvsys.app.core.process.*;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.manualaction.service.MessageActionManualActionService;
+import com.evolvsys.nexuse2e.core.message.repository.MessageRepository;
+import com.evolvsys.nexuse2e.core.message.service.MessageSenderService;
+import com.evolvsys.nexuse2e.core.model.entity.MessageEntity;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 22.05.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L22">@Slf4j</span>
+public class MessageRequeueAction implements ProcessAction&lt;MessageEntity&gt; {
+<span class="fc" id="L24">    public static final ProcessParameter&lt;Long&gt; MANUAL_ACTION_ID = new ProcessParameter&lt;&gt;() {};</span>
+    private final MessageRepository messageRepository;
+    private final MessageSenderService messageSenderService;
+    private final MessageActionManualActionService messageActionManualActionService;
+
+    @Override
+    @SuppressFBWarnings(&quot;EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS&quot;)
+    public MessageEntity execute(MessageEntity entity, ProcessActionChain chain, ProcessParameters processParameters) {
+<span class="fc" id="L32">        entity.setRetries(0);</span>
+<span class="fc" id="L33">        entity.setLastTry(null);</span>
+<span class="fc" id="L34">        entity = messageRepository.save(entity);</span>
+
+<span class="fc" id="L36">        Long manualActionId = processParameters.get(MANUAL_ACTION_ID);</span>
+<span class="fc" id="L37">        manualActionId = messageActionManualActionService.requeue(manualActionId, entity);</span>
+<span class="fc" id="L38">        chain.addOutput(MANUAL_ACTION_ID.of(manualActionId));</span>
+        try {
+<span class="fc" id="L40">            messageSenderService.resend(entity.getMessageId());</span>
+<span class="nc" id="L41">        } catch (NexusException e) {</span>
+<span class="nc" id="L42">            throw new NexusRuntimeException(</span>
+<span class="nc" id="L43">                    NexusError.builder()</span>
+<span class="nc" id="L44">                            .message(&quot;Could not requeue message&quot;)</span>
+<span class="nc" id="L45">                            .extension(&quot;messageId&quot;, entity.getMessageId())</span>
+<span class="nc" id="L46">                            .build(),</span>
+                    e);
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">        return entity;</span>
+    }
+
+    @Override
+    public ProcessActionConditions conditions(MessageEntity entity, ProcessParameters processParameters) {
+<span class="nc" id="L54">        return ProcessActionConditions.EMPTY;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

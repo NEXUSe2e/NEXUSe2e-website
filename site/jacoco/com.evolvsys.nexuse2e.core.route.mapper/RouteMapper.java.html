@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RouteMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.route.mapper</a> &gt; <span class="el_source">RouteMapper.java</span></div><h1>RouteMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.route.mapper;
+
+import com.evolvsys.app.core.mapper.BaseDtoEntityMapper;
+import com.evolvsys.app.core.mapper.DefaultMapperConfiguration;
+import com.evolvsys.app.core.mapper.interceptor.InterceptingMappingContext;
+import com.evolvsys.app.core.persistence.model.IdDto;
+import com.evolvsys.nexuse2e.core.certificate.mapper.CertificateContainerMapper;
+import com.evolvsys.nexuse2e.core.model.entity.RouteEntity;
+import com.evolvsys.nexuse2e.core.partner.mapper.PartnerConnectionMapper;
+import com.evolvsys.nexuse2e.core.partner.mapper.PartnerMapper;
+import com.evolvsys.nexuse2e.core.pipeline.mapper.PipelineMapper;
+import com.evolvsys.nexuse2e.core.route.model.RouteDto;
+import com.evolvsys.nexuse2e.core.route.repository.RouteRepository;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * &lt;p&gt;Mapper für {@link RouteEntity} und {@link RouteDto}.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 22.12.2023
+ */
+@Mapper(
+        config = DefaultMapperConfiguration.class,
+        uses = {
+            PartnerConnectionMapper.class,
+            PartnerMapper.class,
+            CertificateContainerMapper.class,
+            PipelineMapper.class
+        })
+<span class="fc" id="L35">public abstract class RouteMapper extends BaseDtoEntityMapper&lt;RouteDto, RouteEntity&gt; {</span>
+    private RouteRepository routeRepository;
+
+    @Autowired
+    protected void config(RouteRepository routeRepository) {
+<span class="fc" id="L40">        this.routeRepository = routeRepository;</span>
+<span class="fc" id="L41">    }</span>
+
+    @Override
+    public RouteEntity idToEntity(Long id, @Context InterceptingMappingContext interceptingMappingContext) {
+<span class="nc" id="L45">        return idToEntity(id, interceptingMappingContext, routeRepository::findById);</span>
+    }
+
+    @Mapping(target = &quot;secondPartnerId&quot;, source = &quot;secondPartner.id&quot;)
+    @Mapping(target = &quot;secondPartnerConnectionId&quot;, source = &quot;secondPartnerConnection.id&quot;)
+    @Mapping(target = &quot;secondNexusCertificateContainerId&quot;, source = &quot;secondNexusCertificateContainer.id&quot;)
+    @Mapping(target = &quot;firstPartnerId&quot;, source = &quot;firstPartner.id&quot;)
+    @Mapping(target = &quot;firstPartnerConnectionId&quot;, source = &quot;firstPartnerConnection.id&quot;)
+    @Mapping(target = &quot;firstNexusCertificateContainerId&quot;, source = &quot;firstNexusCertificateContainer.id&quot;)
+    @Mapping(target = &quot;firstInflowPipelineId&quot;, source = &quot;firstInflowPipeline.id&quot;)
+    @Mapping(target = &quot;secondInflowPipelineId&quot;, source = &quot;secondInflowPipeline.id&quot;)
+    @InheritConfiguration
+    @Override
+    protected abstract RouteDto entityToDto(
+            RouteEntity entity, @Context InterceptingMappingContext interceptingMappingContext);
+
+    @Mapping(target = &quot;secondPartnerConnection&quot;, source = &quot;secondPartnerConnectionId&quot;)
+    @Mapping(target = &quot;secondPartner&quot;, source = &quot;secondPartnerId&quot;)
+    @Mapping(target = &quot;secondNexusCertificateContainer&quot;, source = &quot;secondNexusCertificateContainerId&quot;)
+    @Mapping(target = &quot;firstPartnerConnection&quot;, source = &quot;firstPartnerConnectionId&quot;)
+    @Mapping(target = &quot;firstPartner&quot;, source = &quot;firstPartnerId&quot;)
+    @Mapping(target = &quot;firstNexusCertificateContainer&quot;, source = &quot;firstNexusCertificateContainerId&quot;)
+    @Mapping(target = &quot;firstInflowPipeline&quot;, source = &quot;firstInflowPipelineId&quot;)
+    @Mapping(target = &quot;secondInflowPipeline&quot;, source = &quot;secondInflowPipelineId&quot;)
+    @InheritConfiguration
+    @Override
+    protected abstract void updateEntity(
+            RouteDto dto,
+            @MappingTarget RouteEntity entity,
+            @Context InterceptingMappingContext interceptingMappingContext);
+
+    public void updateList(
+            Collection&lt;RouteDto&gt; routeDtos,
+            @MappingTarget Collection&lt;RouteEntity&gt; routeEntities,
+            @Context InterceptingMappingContext interceptingMappingContext) {
+<span class="nc" id="L80">        Set&lt;Long&gt; routeIds =</span>
+<span class="nc" id="L81">                routeDtos.stream().map(IdDto::getId).filter(Objects::nonNull).collect(Collectors.toSet());</span>
+
+<span class="nc bnc" id="L83" title="All 2 branches missed.">        routeEntities.removeIf(routeEntity -&gt; routeIds.contains(routeEntity.getId()) == false);</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (RouteDto routeDto : routeDtos) {</span>
+<span class="nc" id="L86">            RouteEntity routeEntity = routeEntities.stream()</span>
+<span class="nc bnc" id="L87" title="All 4 branches missed.">                    .filter(p -&gt; routeDto.getId() != null &amp;&amp; p.getId().equals(routeDto.getId()))</span>
+<span class="nc" id="L88">                    .findFirst()</span>
+<span class="nc" id="L89">                    .orElseGet(RouteEntity::new);</span>
+
+<span class="nc bnc" id="L91" title="All 2 branches missed.">            if (routeEntity.getId() == null) {</span>
+<span class="nc" id="L92">                routeEntities.add(routeEntity);</span>
+            }
+
+<span class="nc" id="L95">            updateEntity(routeDto, routeEntity, interceptingMappingContext);</span>
+<span class="nc" id="L96">        }</span>
+<span class="nc" id="L97">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

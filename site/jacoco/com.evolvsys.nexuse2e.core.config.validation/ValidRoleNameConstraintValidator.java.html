@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidRoleNameConstraintValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.validation</a> &gt; <span class="el_source">ValidRoleNameConstraintValidator.java</span></div><h1>ValidRoleNameConstraintValidator.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.validation;
+
+import com.evolvsys.app.core.role.model.RoleEntity;
+import com.evolvsys.app.core.role.repository.RoleRepository;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 29.05.2024
+ */
+@Component
+@RequiredArgsConstructor
+public class ValidRoleNameConstraintValidator implements ConstraintValidator&lt;ValidRoleName, String&gt; {
+    private final RoleRepository roleRepository;
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        boolean valid;
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (StringUtils.isBlank(value)) {</span>
+<span class="fc" id="L26">            valid = true;</span>
+        } else {
+<span class="fc" id="L28">            RoleEntity search = new RoleEntity();</span>
+<span class="fc" id="L29">            search.setInternalName(value);</span>
+<span class="fc" id="L30">            valid = roleRepository.exists(</span>
+<span class="fc" id="L31">                    Example.of(search, ExampleMatcher.matching().withIgnorePaths(&quot;hierarchical&quot;)));</span>
+        }
+<span class="fc" id="L33">        return valid;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

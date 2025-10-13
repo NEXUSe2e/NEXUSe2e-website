@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JsonToMetaDataPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.common</a> &gt; <span class="el_source">JsonToMetaDataPipelet.java</span></div><h1>JsonToMetaDataPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.common;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import java.io.IOException;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Pipelet to copy json field values to the message metadata.
+ * Supports both root arrays and specific field values.
+ *
+ * @author Julian Drees
+ * @since 27.08.2025
+ */
+<span class="fc" id="L23">@Slf4j</span>
+<span class="fc" id="L24">public class JsonToMetaDataPipelet extends Pipelet {</span>
+    public static final String PARAM_META_DATA_CATEGORY = &quot;meta_data_category&quot;;
+    public static final String PARAM_META_DATA_KEYS = &quot;meta_data_keys&quot;;
+    public static final String PARAM_FAIL_ON_ERROR = &quot;fail_on_error&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L31">        return List.of(</span>
+<span class="fc" id="L32">                ParameterDefinition.builder()</span>
+<span class="fc" id="L33">                        .name(PARAM_META_DATA_CATEGORY)</span>
+<span class="fc" id="L34">                        .displayName(&quot;Metadata target category&quot;)</span>
+<span class="fc" id="L35">                        .description(</span>
+                                &quot;The metadata category where the extracted values should be stored in. Use '%s' if you want them to be stored in the default category.&quot;
+<span class="fc" id="L37">                                        .formatted(MetaData.DEFAULT_CATEGORY))</span>
+<span class="fc" id="L38">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L39">                        .defaultValue(MetaData.DEFAULT_CATEGORY)</span>
+<span class="fc" id="L40">                        .build(),</span>
+<span class="fc" id="L41">                ParameterDefinition.builder()</span>
+<span class="fc" id="L42">                        .name(PARAM_META_DATA_KEYS)</span>
+<span class="fc" id="L43">                        .displayName(&quot;Metadata target keys&quot;)</span>
+<span class="fc" id="L44">                        .description(</span>
+                                &quot;The json property and it's metadata key where the value should be stored in. The key is the json field, the value the target metadata key. Use \&quot;\&quot; for a root string array.&quot;)
+<span class="fc" id="L46">                        .type(ParameterType.KEY_VALUE_PAIR_LIST_TRIMMED)</span>
+<span class="fc" id="L47">                        .build(),</span>
+<span class="fc" id="L48">                ParameterDefinition.builder()</span>
+<span class="fc" id="L49">                        .name(PARAM_FAIL_ON_ERROR)</span>
+<span class="fc" id="L50">                        .displayName(&quot;Fail on error&quot;)</span>
+<span class="fc" id="L51">                        .description(&quot;If the processing should stop when one of the payloads could not be read.&quot;)</span>
+<span class="fc" id="L52">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L53">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L54">                        .build());</span>
+    }
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L59">        Message message = executionContext.getMessage();</span>
+<span class="fc" id="L60">        MetaData metaData = message.getMetaData();</span>
+<span class="fc" id="L61">        boolean failOnError = getParameters().value(PARAM_FAIL_ON_ERROR);</span>
+
+<span class="fc" id="L63">        JsonToMetaDataTraversal traversal = JsonToMetaDataTraversal.forInstance(this);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (ContextPayload payload : message.getPayloads()) {</span>
+            try {
+<span class="fc" id="L66">                MetaData additionalMetaData = traversal.resolve(payload);</span>
+<span class="fc" id="L67">                metaData.add(additionalMetaData);</span>
+<span class="fc" id="L68">                LOGGER.info(&quot;Successfully extracted metadata values from payload '{}'.&quot;, payload.getContentId());</span>
+<span class="fc" id="L69">            } catch (IOException ex) {</span>
+<span class="fc" id="L70">                LOGGER.error(&quot;Could not read or extract metadata from payload '{}'.&quot;, payload.getContentId());</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">                if (failOnError) {</span>
+<span class="fc" id="L72">                    throw new NexusException(</span>
+<span class="fc" id="L73">                            NexusError.builder()</span>
+<span class="fc" id="L74">                                    .message(&quot;Could not read json field values from payload &quot; + payload.getContentId())</span>
+<span class="fc" id="L75">                                    .build(),</span>
+                            ex);
+                }
+<span class="fc" id="L78">            }</span>
+<span class="fc" id="L79">        }</span>
+<span class="fc" id="L80">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

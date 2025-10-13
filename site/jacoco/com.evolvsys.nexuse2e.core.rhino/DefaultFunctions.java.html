@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefaultFunctions.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.rhino</a> &gt; <span class="el_source">DefaultFunctions.java</span></div><h1>DefaultFunctions.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.rhino;
+
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Function;
+import org.mozilla.javascript.NativeJavaArray;
+import org.mozilla.javascript.NativeJavaObject;
+
+/**
+ * @author SvenBarden
+ * @since 15.11.2023
+ */
+<span class="fc" id="L20">@Slf4j</span>
+@SuppressFBWarnings({&quot;UP_UNUSED_PARAMETER&quot;, &quot;CLI_CONSTANT_LIST_INDEX&quot;})
+public final class DefaultFunctions {
+
+    private DefaultFunctions() {}
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private static &lt;T&gt; T get(Object object, Class&lt;T&gt; type) {
+        T result;
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        if (type.isInstance(object)) {</span>
+<span class="fc" id="L30">            result = (T) object;</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">        } else if (object instanceof NativeJavaObject nativeJavaObject) {</span>
+<span class="nc" id="L32">            result = get(nativeJavaObject.unwrap(), type);</span>
+        } else {
+<span class="nc" id="L34">            throw new IllegalArgumentException(&quot;object &quot; + object + &quot; is not of type &quot; + type);</span>
+        }
+<span class="fc" id="L36">        return result;</span>
+    }
+
+    private static String asStringInternal(Object object, Object[] args) throws IOException {
+<span class="pc bpc" id="L40" title="3 of 5 branches missed.">        return switch (object) {</span>
+<span class="nc" id="L41">            case InputStream inputStream -&gt; IOUtils.toString(inputStream, (String) args[1]);</span>
+<span class="nc" id="L42">            case byte[] bytes -&gt; IOUtils.toString(bytes, (String) args[1]);</span>
+<span class="fc" id="L43">            case ContextPayload payload -&gt;</span>
+<span class="fc" id="L44">                asStringInternal(</span>
+<span class="fc" id="L45">                        payload.getContent(),</span>
+<span class="fc" id="L46">                        new Object[] {payload.getContent().getByteArray(), payload.getEncoding()});</span>
+<span class="fc" id="L47">            case PayloadContent payloadContent -&gt; payloadContent.getString(Charset.forName((String) args[1]));</span>
+<span class="nc" id="L48">            default -&gt; throw new IllegalArgumentException(&quot;unknown argument of type &quot; + object.getClass());</span>
+        };
+    }
+
+    public static String asString(Context context, Object[] args, Function function, boolean inNewExp)
+            throws IOException {
+<span class="pc bpc" id="L54" title="2 of 3 branches missed.">        return switch (args[0]) {</span>
+<span class="nc" id="L55">            case NativeJavaArray array -&gt; new String((byte[]) array.unwrap(), Charset.forName((String) args[1]));</span>
+<span class="fc" id="L56">            case NativeJavaObject nativeJavaObject -&gt; asStringInternal(nativeJavaObject.unwrap(), args);</span>
+<span class="nc" id="L57">            default -&gt; throw new IllegalArgumentException(&quot;unknown argument of type &quot; + args[0].getClass());</span>
+        };
+    }
+
+    @SuppressFBWarnings(value = &quot;BED_BOGUS_EXCEPTION_DECLARATION&quot;, justification = &quot;false positive&quot;)
+    public static void setContent(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">        if (args.length != 2) {</span>
+<span class="nc" id="L64">            throw new IllegalArgumentException(&quot;set content requires 2 args, but got &quot; + args.length);</span>
+        }
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (args[0] instanceof NativeJavaObject nativeJavaObject) {</span>
+<span class="pc bpc" id="L67" title="1 of 2 branches missed.">            if (nativeJavaObject.unwrap() instanceof ContextPayload payload) {</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">                if (args[1] instanceof String content) {</span>
+<span class="fc" id="L69">                    PayloadContent payloadContent =</span>
+<span class="fc" id="L70">                            PayloadContent.of(content.getBytes(Charset.forName(payload.getEncoding())));</span>
+<span class="fc" id="L71">                    LOGGER.trace(&quot;updating payload {} from script to {}&quot;, payload.getContentId(), content);</span>
+<span class="fc" id="L72">                    payload.setContent(payloadContent);</span>
+<span class="fc" id="L73">                    payload.setSize(payloadContent.getSize());</span>
+<span class="fc" id="L74">                } else {</span>
+<span class="nc" id="L75">                    throw new IllegalArgumentException(</span>
+                            &quot;invalid argument type for content value, String expected but got &quot; + args[1]);
+                }
+            } else {
+<span class="nc" id="L79">                throw new IllegalArgumentException(</span>
+                        &quot;Payload has invalid type, ContextPayload required, but got &quot; + args[0]);
+            }
+        } else {
+<span class="nc" id="L83">            throw new IllegalArgumentException(&quot;Payload object is no java type, but &quot; + args[0]);</span>
+        }
+<span class="fc" id="L85">    }</span>
+
+    public static void logError(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="nc" id="L88">        LOGGER.error(get(args[0], String.class));</span>
+<span class="nc" id="L89">    }</span>
+
+    public static void logWarn(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="nc" id="L92">        LOGGER.warn(get(args[0], String.class));</span>
+<span class="nc" id="L93">    }</span>
+
+    public static void logInfo(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="fc" id="L96">        LOGGER.info(get(args[0], String.class));</span>
+<span class="fc" id="L97">    }</span>
+
+    public static void logDebug(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="nc" id="L100">        LOGGER.debug(get(args[0], String.class));</span>
+<span class="nc" id="L101">    }</span>
+
+    public static void logTrace(Context context, Object[] args, Function function, boolean isNewExp) {
+<span class="nc" id="L104">        LOGGER.trace(get(args[0], String.class));</span>
+<span class="nc" id="L105">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageActionManualActionService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.manualaction.service</a> &gt; <span class="el_source">MessageActionManualActionService.java</span></div><h1>MessageActionManualActionService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.manualaction.service;
+
+import com.evolvsys.app.core.auth.service.CurrentUserService;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.logging.model.ForMessageLoggingContext;
+import com.evolvsys.nexuse2e.core.manualaction.model.MessageActionManualActionEntity;
+import com.evolvsys.nexuse2e.core.manualaction.model.MessageActionManualActionType;
+import com.evolvsys.nexuse2e.core.manualaction.repository.MessageActionManualActionRepository;
+import com.evolvsys.nexuse2e.core.model.entity.MessageEntity;
+import com.evolvsys.nexuse2e.core.utils.LoggingUtils;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author SvenBarden
+ * @since 05.08.2024
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L22">@Slf4j</span>
+public class MessageActionManualActionService {
+    private final MessageActionManualActionRepository manualActionRepository;
+    private final CurrentUserService currentUserService;
+
+    private Long saveEntity(Long manualActionId, MessageEntity messageEntity, MessageActionManualActionType type) {
+        MessageActionManualActionEntity manualAction;
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        if (manualActionId == null) {</span>
+<span class="fc" id="L30">            manualAction = new MessageActionManualActionEntity();</span>
+        } else {
+<span class="fc" id="L32">            manualAction = manualActionRepository</span>
+<span class="fc" id="L33">                    .findById(manualActionId)</span>
+<span class="pc" id="L34">                    .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L35">                            .message(&quot;Manual action not found&quot;)</span>
+<span class="nc" id="L36">                            .extension(&quot;manualActionId&quot;, manualActionId)</span>
+<span class="nc" id="L37">                            .build()));</span>
+        }
+<span class="fc" id="L39">        manualAction.setActionType(type);</span>
+<span class="fc" id="L40">        manualAction.getMessages().add(messageEntity);</span>
+<span class="fc" id="L41">        manualAction = manualActionRepository.save(manualAction);</span>
+
+<span class="fc" id="L43">        return manualAction.getId();</span>
+    }
+
+    public Long requeue(Long manualActionId, MessageEntity messageEntity) {
+<span class="fc" id="L47">        manualActionId = saveEntity(manualActionId, messageEntity, MessageActionManualActionType.REQUEUE);</span>
+<span class="fc" id="L48">        LoggingUtils.forMessageWrapper(LOGGER, ForMessageLoggingContext.forEntity(messageEntity))</span>
+<span class="fc" id="L49">                .info(</span>
+                        &quot;{} {} requeued message {}&quot;,
+<span class="fc" id="L51">                        currentUserService.getCurrentUser().getFirstName(),</span>
+<span class="fc" id="L52">                        currentUserService.getCurrentUser().getLastName(),</span>
+<span class="fc" id="L53">                        messageEntity.getMessageId());</span>
+<span class="fc" id="L54">        return manualActionId;</span>
+    }
+
+    public Long stop(Long manualActionId, MessageEntity messageEntity) {
+<span class="fc" id="L58">        manualActionId = saveEntity(manualActionId, messageEntity, MessageActionManualActionType.STOP);</span>
+<span class="fc" id="L59">        LoggingUtils.forMessageWrapper(LOGGER, ForMessageLoggingContext.forEntity(messageEntity))</span>
+<span class="fc" id="L60">                .info(</span>
+                        &quot;{} {} stopped message {}&quot;,
+<span class="fc" id="L62">                        currentUserService.getCurrentUser().getFirstName(),</span>
+<span class="fc" id="L63">                        currentUserService.getCurrentUser().getLastName(),</span>
+<span class="fc" id="L64">                        messageEntity.getMessageId());</span>
+<span class="fc" id="L65">        return manualActionId;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

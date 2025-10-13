@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificatePemWriter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificatePemWriter.java</span></div><h1>CertificatePemWriter.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Collection;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.bouncycastle.openssl.PKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
+import org.bouncycastle.openssl.jcajce.JcaPKCS8Generator;
+import org.bouncycastle.openssl.jcajce.JceOpenSSLPKCS8EncryptorBuilder;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.lang.Nullable;
+
+/**
+ * @author Florian Drees
+ * @since 04.06.2024
+ */
+@UtilityClass
+<span class="fc" id="L28">@Slf4j</span>
+public class CertificatePemWriter {
+    private static final String CARRIAGE_RETURN = &quot;\r&quot;;
+
+    public static String toEncryptedPrivateKey(PrivateKey privateKey, @Nullable String password) throws NexusException {
+        StringWriter stringWriter;
+<span class="fc bfc" id="L34" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(password)) {</span>
+<span class="fc" id="L35">            stringWriter = new StringWriter();</span>
+<span class="fc" id="L36">            try (JcaPEMWriter pemWriter = new JcaPEMWriter(stringWriter)) {</span>
+<span class="fc" id="L37">                pemWriter.writeObject(new JcaPKCS8Generator(</span>
+                        privateKey,
+                        new JceOpenSSLPKCS8EncryptorBuilder(PKCS8Generator.DES3_CBC)
+<span class="fc" id="L40">                                .setPassword(password.toCharArray())</span>
+<span class="fc" id="L41">                                .build()));</span>
+<span class="nc" id="L42">            } catch (IOException | OperatorCreationException e) {</span>
+<span class="nc" id="L43">                throw new NexusException(</span>
+<span class="nc" id="L44">                        NexusError.builder()</span>
+<span class="nc" id="L45">                                .message(&quot;Private key could not be encrypted or written&quot;)</span>
+<span class="nc" id="L46">                                .build(),</span>
+                        e);
+<span class="fc" id="L48">            }</span>
+        } else {
+<span class="fc" id="L50">            LOGGER.trace(&quot;Writing unencrypted private key of keystore as pem format&quot;);</span>
+<span class="fc" id="L51">            stringWriter = toPem(privateKey.getEncoded(), &quot;PRIVATE KEY&quot;);</span>
+        }
+<span class="fc" id="L53">        return stringWriter.toString().replace(CARRIAGE_RETURN, &quot;&quot;);</span>
+    }
+
+    public static String toCertificate(X509Certificate certificate) throws NexusException {
+        try {
+<span class="fc" id="L58">            return toPem(certificate.getEncoded(), &quot;CERTIFICATE&quot;).toString().replace(CARRIAGE_RETURN, &quot;&quot;);</span>
+<span class="nc" id="L59">        } catch (CertificateEncodingException e) {</span>
+<span class="nc" id="L60">            throw new NexusException(</span>
+<span class="nc" id="L61">                    NexusError.builder()</span>
+<span class="nc" id="L62">                            .message(&quot;Certificate could not be encoded&quot;)</span>
+<span class="nc" id="L63">                            .extension(&quot;certificate&quot;, certificate)</span>
+<span class="nc" id="L64">                            .build(),</span>
+                    e);
+        }
+    }
+
+    public static String toCertificateChain(Collection&lt;X509Certificate&gt; certificateChain) throws NexusException {
+<span class="fc" id="L70">        StringBuilder stringBuilder = new StringBuilder();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (X509Certificate certificate : certificateChain) {</span>
+<span class="fc" id="L72">            stringBuilder.append(toCertificate(certificate));</span>
+<span class="fc" id="L73">        }</span>
+<span class="fc" id="L74">        return stringBuilder.toString().replace(CARRIAGE_RETURN, &quot;&quot;);</span>
+    }
+
+    private static void toPem(StringWriter stringWriter, byte[] content, String type) throws NexusException {
+<span class="fc" id="L78">        try (PemWriter pemWriter = new PemWriter(stringWriter)) {</span>
+<span class="fc" id="L79">            pemWriter.writeObject(new PemObject(type, content));</span>
+<span class="nc" id="L80">        } catch (IOException e) {</span>
+<span class="nc" id="L81">            throw new NexusException(</span>
+<span class="nc" id="L82">                    NexusError.builder()</span>
+<span class="nc" id="L83">                            .message(&quot;Content could not be transformed into a string&quot;)</span>
+<span class="nc" id="L84">                            .extension(&quot;type&quot;, type)</span>
+<span class="nc" id="L85">                            .build(),</span>
+                    e);
+<span class="fc" id="L87">        }</span>
+<span class="fc" id="L88">    }</span>
+
+    private static StringWriter toPem(byte[] content, String type) throws NexusException {
+<span class="fc" id="L91">        StringWriter stringWriter = new StringWriter();</span>
+<span class="fc" id="L92">        toPem(stringWriter, content, type);</span>
+<span class="fc" id="L93">        return stringWriter;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

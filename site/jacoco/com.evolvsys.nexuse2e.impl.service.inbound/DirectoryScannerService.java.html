@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DirectoryScannerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.inbound</a> &gt; <span class="el_source">DirectoryScannerService.java</span></div><h1>DirectoryScannerService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.inbound;
+
+import com.evolvsys.nexuse2e.core.constants.FileConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.message.MessageStatus;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.parameter.model.ActionInfo;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingService;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingServiceAware;
+import com.evolvsys.nexuse2e.core.schedule.provider.ScheduleProvider;
+import com.evolvsys.nexuse2e.core.service.StandardNexusInflowService;
+import com.evolvsys.nexuse2e.core.utils.LoggingUtils;
+import com.evolvsys.nexuse2e.core.utils.NEXUSe2eFileUtils;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.regex.Pattern;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.tika.Tika;
+
+/**
+ * @author SvenBarden
+ * @since 06.10.2023
+ */
+<span class="fc" id="L46">@Slf4j</span>
+@Setter
+<span class="fc" id="L48">public class DirectoryScannerService extends StandardNexusInflowService implements SchedulingServiceAware {</span>
+
+    private static final String PARAM_TARGET_PARTNER_ID = &quot;target_partner_id&quot;;
+    private static final String PARAM_CHOREOGRAPHY_ACTION = &quot;choreography_action&quot;;
+    private static final String PARAM_RECURSIVE_SCAN = &quot;recursive_scan&quot;;
+
+    private static final String PARAM_DIRECTORY = &quot;directory&quot;;
+    private static final String PARAM_FILE_PATTERN = &quot;file_pattern&quot;;
+    private static final String PARAM_DELETE_FILE = &quot;delete_file&quot;;
+    private static final String PARAM_ARCHIVE_FILE = &quot;archive_file&quot;;
+    private static final String PARAM_ARCHIVE_DIRECTORY = &quot;archive_directory&quot;;
+    private static final String PARAM_FILES_PER_RUN = &quot;files_per_run&quot;;
+
+    private SchedulingService schedulingService;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L65">        return List.of(</span>
+<span class="fc" id="L66">                ParameterDefinition.builder()</span>
+<span class="fc" id="L67">                        .name(PARAM_DIRECTORY)</span>
+<span class="fc" id="L68">                        .displayName(&quot;Directory&quot;)</span>
+<span class="fc" id="L69">                        .description(&quot;Directory to be scanned by this service&quot;)</span>
+<span class="fc" id="L70">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L71">                        .required(true)</span>
+<span class="fc" id="L72">                        .build(),</span>
+<span class="fc" id="L73">                ParameterDefinition.builder()</span>
+<span class="fc" id="L74">                        .name(PARAM_FILE_PATTERN)</span>
+<span class="fc" id="L75">                        .displayName(&quot;Filename Pattern&quot;)</span>
+<span class="fc" id="L76">                        .description(&quot;An optional pattern to filter the file names within the given directory&quot;)</span>
+<span class="fc" id="L77">                        .type(ParameterType.REGEX_PATTERN)</span>
+<span class="fc" id="L78">                        .required(false)</span>
+<span class="fc" id="L79">                        .build(),</span>
+<span class="fc" id="L80">                ParameterDefinition.builder()</span>
+<span class="fc" id="L81">                        .name(PARAM_DELETE_FILE)</span>
+<span class="fc" id="L82">                        .displayName(&quot;Delete file&quot;)</span>
+<span class="fc" id="L83">                        .description(&quot;Deletes the file after creating a message&quot;)</span>
+<span class="fc" id="L84">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L85">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L86">                        .build(),</span>
+<span class="fc" id="L87">                ParameterDefinition.builder()</span>
+<span class="fc" id="L88">                        .name(PARAM_ARCHIVE_FILE)</span>
+<span class="fc" id="L89">                        .displayName(&quot;Archive file&quot;)</span>
+<span class="fc" id="L90">                        .description(&quot;Archives processed files after creating a message&quot;)</span>
+<span class="fc" id="L91">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L92">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L93">                        .build(),</span>
+<span class="fc" id="L94">                ParameterDefinition.builder()</span>
+<span class="fc" id="L95">                        .name(PARAM_ARCHIVE_DIRECTORY)</span>
+<span class="fc" id="L96">                        .displayName(&quot;Archive Directory&quot;)</span>
+<span class="fc" id="L97">                        .description(&quot;The archive directory to use when \&quot;Archive Files\&quot; is enabled&quot;)</span>
+<span class="fc" id="L98">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L99">                        .build(),</span>
+<span class="fc" id="L100">                ParameterDefinition.builder()</span>
+<span class="fc" id="L101">                        .name(PARAM_RECURSIVE_SCAN)</span>
+<span class="fc" id="L102">                        .displayName(&quot;Recursive Scan&quot;)</span>
+<span class="fc" id="L103">                        .description(&quot;Whether the directory should be searched recursively or not&quot;)</span>
+<span class="fc" id="L104">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L105">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L106">                        .build(),</span>
+<span class="fc" id="L107">                ParameterDefinition.builder()</span>
+<span class="fc" id="L108">                        .name(PARAM_FILES_PER_RUN)</span>
+<span class="fc" id="L109">                        .type(ParameterType.LONG)</span>
+<span class="fc" id="L110">                        .displayName(&quot;Files per run&quot;)</span>
+<span class="fc" id="L111">                        .description(&quot;Number of files to send per run.&quot;)</span>
+<span class="fc" id="L112">                        .defaultValue(20L)</span>
+<span class="fc" id="L113">                        .build(),</span>
+<span class="fc" id="L114">                createCronPatternScheduleParameter(),</span>
+<span class="fc" id="L115">                createHourMinuteScheduleParameter(),</span>
+<span class="fc" id="L116">                createDurationScheduleParameter(),</span>
+<span class="fc" id="L117">                createMisfireScheduleParameter(),</span>
+<span class="fc" id="L118">                ParameterDefinition.builder()</span>
+<span class="fc" id="L119">                        .name(PARAM_TARGET_PARTNER_ID)</span>
+<span class="fc" id="L120">                        .displayName(&quot;Target Partner Id&quot;)</span>
+<span class="fc" id="L121">                        .description(&quot;Optional static target partner id for all messages created by this service.&quot;)</span>
+<span class="fc" id="L122">                        .type(ParameterType.STRING)</span>
+<span class="fc" id="L123">                        .required(false)</span>
+<span class="fc" id="L124">                        .build(),</span>
+<span class="fc" id="L125">                ParameterDefinition.builder()</span>
+<span class="fc" id="L126">                        .name(PARAM_CHOREOGRAPHY_ACTION)</span>
+<span class="fc" id="L127">                        .displayName(&quot;Choreography &amp; Action&quot;)</span>
+<span class="fc" id="L128">                        .description(&quot;Optional static action id used for all messages.&quot;)</span>
+<span class="fc" id="L129">                        .type(ParameterType.ACTION_NAME)</span>
+<span class="fc" id="L130">                        .required(false)</span>
+<span class="fc" id="L131">                        .build());</span>
+    }
+
+    @Override
+    protected List&lt;MessageContext&gt; buildMessageContexts() throws NexusException {
+<span class="fc" id="L136">        String directory = parameters.value(PARAM_DIRECTORY);</span>
+
+<span class="fc" id="L138">        LOGGER.debug(&quot;building message context for directory {}&quot;, directory);</span>
+
+<span class="fc" id="L140">        boolean recursive = parameters.value(PARAM_RECURSIVE_SCAN);</span>
+
+<span class="fc" id="L142">        Collection&lt;File&gt; files = NEXUSe2eFileUtils.getFiles(directory, recursive);</span>
+
+<span class="fc" id="L144">        String filePattern = parameters.value(PARAM_FILE_PATTERN);</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">        if (StringUtils.isNotBlank(filePattern)) {</span>
+<span class="fc" id="L146">            Pattern pattern = Pattern.compile(filePattern);</span>
+<span class="fc" id="L147">            files = files.stream()</span>
+<span class="fc" id="L148">                    .filter(file -&gt; pattern.matcher(file.getName()).matches())</span>
+<span class="fc" id="L149">                    .toList();</span>
+        }
+
+<span class="fc" id="L152">        long filesPerRun = parameters.value(PARAM_FILES_PER_RUN);</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">        if (filesPerRun &lt; 0) {</span>
+<span class="nc" id="L154">            LOGGER.trace(&quot;create messages for all {} files&quot;, files.size());</span>
+        } else {
+<span class="fc" id="L156">            LOGGER.trace(&quot;fetched {} files, the max batch size is {} messages per run.&quot;, files.size(), filesPerRun);</span>
+<span class="fc" id="L157">            files = files.stream().limit(filesPerRun).toList();</span>
+        }
+
+<span class="fc" id="L160">        Tika tika = new Tika();</span>
+
+<span class="fc" id="L162">        String partnerId = parameters.value(PARAM_TARGET_PARTNER_ID);</span>
+<span class="fc" id="L163">        ActionInfo choreographyAndAction = parameters.value(PARAM_CHOREOGRAPHY_ACTION);</span>
+
+<span class="fc" id="L165">        List&lt;MessageContext&gt; contexts = new ArrayList&lt;&gt;();</span>
+
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        for (File file : files) {</span>
+<span class="fc" id="L168">            LOGGER.trace(&quot;found file {}&quot;, file);</span>
+            try {
+<span class="fc" id="L170">                try (FileInputStream fileInputStream = FileUtils.openInputStream(file)) {</span>
+<span class="fc" id="L171">                    long fileLength = file.length();</span>
+<span class="fc" id="L172">                    MessageContext messageContext = contextFactory.createNew();</span>
+
+                    // file_path is required for deletion after resolving
+<span class="fc" id="L175">                    messageContext.getMetaData().add(FileConstants.FILE_PATH, file.getAbsolutePath());</span>
+<span class="fc" id="L176">                    messageContext.getMetaData().add(FileConstants.FILE_NAME, file.getName());</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">                    if (StringUtils.isNoneEmpty(partnerId)) {</span>
+<span class="fc" id="L178">                        messageContext.setTargetPartnerId(partnerId);</span>
+                    }
+<span class="fc bfc" id="L180" title="All 2 branches covered.">                    if (choreographyAndAction != null) {</span>
+<span class="pc bpc" id="L181" title="1 of 2 branches missed.">                        if (StringUtils.isNoneEmpty(choreographyAndAction.getChoreographyId())) {</span>
+<span class="fc" id="L182">                            messageContext.setChoreographyId(choreographyAndAction.getChoreographyId());</span>
+                        }
+<span class="pc bpc" id="L184" title="1 of 2 branches missed.">                        if (StringUtils.isNoneEmpty(choreographyAndAction.getActionId())) {</span>
+<span class="fc" id="L185">                            messageContext.setActionId(choreographyAndAction.getActionId());</span>
+                        }
+                    }
+
+<span class="fc" id="L189">                    Message message = new Message();</span>
+<span class="fc" id="L190">                    message.setMessageStatus(MessageStatus.CREATED);</span>
+<span class="fc" id="L191">                    message.setType(MessageType.NORMAL);</span>
+<span class="fc" id="L192">                    long fileLastModified = file.lastModified();</span>
+<span class="pc bpc" id="L193" title="1 of 2 branches missed.">                    if (fileLastModified &gt; 0) {</span>
+<span class="fc" id="L194">                        message.setOriginalCreated(</span>
+<span class="fc" id="L195">                                Instant.ofEpochMilli(fileLastModified).atZone(ZoneId.of(&quot;UTC&quot;)));</span>
+                    }
+<span class="fc" id="L197">                    message.getPayloads()</span>
+<span class="fc" id="L198">                            .add(ContextPayload.builder()</span>
+<span class="fc" id="L199">                                    .content(PayloadContent.of(fileInputStream, fileLength))</span>
+<span class="fc" id="L200">                                    .size(fileLength)</span>
+<span class="fc" id="L201">                                    .encoding(&quot;utf-8&quot;)</span>
+<span class="fc" id="L202">                                    .contentType(tika.detect(file.getName()))</span>
+<span class="fc" id="L203">                                    .metaData(new MetaData()</span>
+<span class="fc" id="L204">                                            .set(FileConstants.FILE_NAME, file.getName())</span>
+<span class="fc" id="L205">                                            .set(FileConstants.FILE_SIZE, fileLength)</span>
+<span class="fc" id="L206">                                            .set(FileConstants.FILE_PATH, file.getAbsolutePath())</span>
+<span class="fc" id="L207">                                            .set(FileConstants.LAST_MODIFIED, fileLastModified))</span>
+<span class="fc" id="L208">                                    .build());</span>
+<span class="fc" id="L209">                    messageContext.setSourceMessage(message);</span>
+
+<span class="fc" id="L211">                    LOGGER.debug(&quot;creating message context for file {}&quot;, file);</span>
+
+<span class="fc" id="L213">                    contexts.add(messageContext);</span>
+                }
+<span class="nc" id="L215">            } catch (IOException e) {</span>
+<span class="nc" id="L216">                throw new NexusException(</span>
+<span class="nc" id="L217">                        NexusError.builder()</span>
+<span class="nc" id="L218">                                .message(String.format(&quot;Could not read contents from file %s&quot;, file))</span>
+<span class="nc" id="L219">                                .code(&quot;FILE_ERROR&quot;)</span>
+<span class="nc" id="L220">                                .build(),</span>
+                        e);
+<span class="fc" id="L222">            }</span>
+<span class="fc" id="L223">        }</span>
+
+<span class="fc" id="L225">        return contexts;</span>
+    }
+
+    @Override
+    @SuppressFBWarnings(&quot;PATH_TRAVERSAL_IN&quot;)
+    protected void afterResolving(MessageContext messageContext) {
+<span class="fc" id="L231">        super.afterResolving(messageContext);</span>
+
+<span class="pc bpc" id="L233" title="1 of 2 branches missed.">        if (messageContext.isNewContext() == false) {</span>
+<span class="nc" id="L234">            LoggingUtils.globalWrapper(LOGGER)</span>
+<span class="nc" id="L235">                    .error(</span>
+                            &quot;Message with id {} from file {} already exists and cannot be created&quot;,
+<span class="nc" id="L237">                            messageContext.getSourceMessage().getId(),</span>
+<span class="nc" id="L238">                            messageContext.getMetaData().getFirstOrNull(FileConstants.FILE_PATH));</span>
+        } else {
+<span class="fc bfc" id="L240" title="All 2 branches covered.">            if (parameters.value(PARAM_ARCHIVE_FILE)) {</span>
+<span class="fc" id="L241">                String archiveDirectory = parameters.value(PARAM_ARCHIVE_DIRECTORY);</span>
+<span class="fc" id="L242">                String fullPath = messageContext.getMetaData().getFirstOrNull(FileConstants.FILE_PATH);</span>
+<span class="fc" id="L243">                String fileName = messageContext.getMetaData().getFirstOrNull(FileConstants.FILE_NAME);</span>
+<span class="pc bpc" id="L244" title="1 of 2 branches missed.">                if (fullPath == null) {</span>
+<span class="nc" id="L245">                    LOGGER.error(</span>
+                            &quot;no file path metaData found for message {}, message is not archived!&quot;,
+<span class="nc" id="L247">                            messageContext.getSourceMessage().getId());</span>
+                } else {
+<span class="fc" id="L249">                    LOGGER.trace(&quot;archiving file {} to {}&quot;, fileName, archiveDirectory);</span>
+<span class="fc" id="L250">                    Path original = Path.of(fullPath);</span>
+<span class="fc" id="L251">                    Path archiveDir = Path.of(archiveDirectory);</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">                    if (Files.exists(archiveDir) == false) {</span>
+<span class="fc" id="L253">                        LOGGER.error(</span>
+                                &quot;the archive directory {} does not exist. Please create the directory manually, the message {} is not archived!&quot;,
+                                archiveDir,
+                                fileName);
+                    } else {
+<span class="fc" id="L258">                        archiveFile(archiveDir, fileName, original);</span>
+                    }
+                }
+            }
+
+<span class="fc bfc" id="L263" title="All 2 branches covered.">            if (parameters.value(PARAM_DELETE_FILE)) {</span>
+<span class="fc" id="L264">                String path = messageContext.getMetaData().getFirstOrNull(FileConstants.FILE_PATH);</span>
+
+<span class="pc bpc" id="L266" title="1 of 2 branches missed.">                if (path == null) {</span>
+<span class="nc" id="L267">                    LOGGER.error(</span>
+                            &quot;no file path metaData found for message {}&quot;,
+<span class="nc" id="L269">                            messageContext.getSourceMessage().getId());</span>
+                } else {
+<span class="fc" id="L271">                    LOGGER.trace(&quot;deleting file {}&quot;, path);</span>
+
+<span class="fc" id="L273">                    File file = new File(path);</span>
+<span class="fc" id="L274">                    boolean deleted = file.delete();</span>
+<span class="pc bpc" id="L275" title="1 of 2 branches missed.">                    if (deleted) {</span>
+<span class="fc" id="L276">                        LOGGER.trace(&quot;file {} successfully deleted&quot;, path);</span>
+                    } else {
+<span class="nc" id="L278">                        LOGGER.error(&quot;file {} could not be deleted&quot;, path);</span>
+                    }
+                }
+            }
+        }
+<span class="fc" id="L283">    }</span>
+
+    private void archiveFile(Path archiveDir, String fileName, Path original) {
+
+<span class="fc" id="L287">        Path archiveFile = archiveDir.resolve(fileName);</span>
+<span class="fc" id="L288">        int versionCount = 0;</span>
+<span class="fc" id="L289">        String extension = FilenameUtils.getExtension(fileName);</span>
+<span class="fc" id="L290">        String baseName = FilenameUtils.getBaseName(fileName);</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">        while (Files.exists(archiveFile)) {</span>
+<span class="fc" id="L292">            versionCount++;</span>
+<span class="fc" id="L293">            archiveFile = archiveDir.resolve(baseName + &quot;_v&quot; + versionCount + &quot;.&quot; + extension);</span>
+        }
+        try {
+<span class="fc" id="L296">            Files.copy(original, archiveFile);</span>
+<span class="fc" id="L297">            LOGGER.info(&quot;Archived file {} to {}&quot;, original, archiveFile);</span>
+<span class="nc" id="L298">        } catch (IOException e) {</span>
+<span class="nc" id="L299">            LOGGER.error(&quot;Could not archive file {} to {}&quot;, original, archiveFile);</span>
+<span class="fc" id="L300">        }</span>
+<span class="fc" id="L301">    }</span>
+
+    @Override
+    public void start() {
+<span class="nc" id="L305">        ScheduleProvider&lt;?&gt; scheduleProvider =</span>
+<span class="nc" id="L306">                createScheduleProvider(parameters).orElse(null);</span>
+
+<span class="nc bnc" id="L308" title="All 2 branches missed.">        if (scheduleProvider != null) {</span>
+<span class="nc" id="L309">            schedulingService.register(this, scheduleProvider);</span>
+        } else {
+<span class="nc" id="L311">            LOGGER.error(</span>
+                    &quot;Unable to start service '{}' ({}) as no ScheduleProvider supports the given schedule.&quot;,
+<span class="nc" id="L313">                    getServiceId(),</span>
+<span class="nc" id="L314">                    getClass().getSimpleName());</span>
+<span class="nc" id="L315">            throw new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L316">                    .message(&quot;Unable to start service '&quot; + getServiceId()</span>
+                            + &quot;' as no ScheduleProvider supports the given schedule.&quot;)
+<span class="nc" id="L318">                    .build());</span>
+        }
+<span class="nc" id="L320">    }</span>
+
+    @Override
+    public void stop() {
+<span class="fc" id="L324">        schedulingService.deregister(this);</span>
+<span class="fc" id="L325">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

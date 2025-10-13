@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MetaDataConverterService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.metadata</a> &gt; <span class="el_source">MetaDataConverterService.java</span></div><h1>MetaDataConverterService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.metadata;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.model.MetaDataType;
+import com.evolvsys.nexuse2e.core.model.entity.MetaDataEntity;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author SvenBarden
+ * @since 31.01.2024
+ */
+@Service
+@RequiredArgsConstructor
+<span class="fc" id="L20">@Slf4j</span>
+public class MetaDataConverterService {
+    private final List&lt;MetaDataConverter&gt; metaDataConverters;
+
+    private Optional&lt;MetaDataConverter&gt; getConverter(MetaDataType metaDataType) {
+<span class="fc" id="L25">        return metaDataConverters.stream()</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">                .filter(metaDataConverter -&gt; metaDataConverter.type() == metaDataType)</span>
+<span class="fc" id="L27">                .findFirst();</span>
+    }
+
+    private Optional&lt;MetaDataConverter&gt; getConverter(Object value) {
+<span class="fc" id="L31">        return metaDataConverters.stream()</span>
+<span class="fc" id="L32">                .filter(metaDataConverter -&gt; metaDataConverter.supports(value.getClass()))</span>
+<span class="fc" id="L33">                .findFirst();</span>
+    }
+
+    private void updateNullValue(MetaDataEntity metaDataEntity) {
+<span class="fc" id="L37">        metaDataEntity.setLongValue(null);</span>
+<span class="fc" id="L38">        metaDataEntity.setStringValue(null);</span>
+<span class="fc" id="L39">        metaDataEntity.setDateTimeValue(null);</span>
+<span class="fc" id="L40">        metaDataEntity.setBinaryValue(null);</span>
+<span class="fc" id="L41">        metaDataEntity.setBooleanValue(null);</span>
+<span class="fc" id="L42">        metaDataEntity.setBigDecimalValue(null);</span>
+<span class="fc" id="L43">    }</span>
+
+    public void updateEntity(Object value, MetaDataEntity metaDataEntity) {
+<span class="fc" id="L46">        Validate.notNull(value, &quot;value must not be null&quot;);</span>
+<span class="fc" id="L47">        Validate.notNull(metaDataEntity, &quot;metaDataEntity must not be null&quot;);</span>
+
+<span class="fc" id="L49">        updateNullValue(metaDataEntity);</span>
+<span class="fc" id="L50">        MetaDataConverter metaDataConverter = getConverter(value)</span>
+<span class="pc" id="L51">                .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L52">                        .message(&quot;no metaDataConverter for class found&quot;)</span>
+<span class="nc" id="L53">                        .extension(&quot;class&quot;, value.getClass().getName())</span>
+<span class="nc" id="L54">                        .build()));</span>
+<span class="fc" id="L55">        LOGGER.trace(&quot;converting {} with {}&quot;, value.getClass(), metaDataConverter);</span>
+
+<span class="fc" id="L57">        metaDataConverter.updateEntity(value, metaDataEntity);</span>
+<span class="fc" id="L58">        metaDataEntity.setType(metaDataConverter.type());</span>
+<span class="fc" id="L59">    }</span>
+
+    public Object getValue(MetaDataEntity metaDataEntity) {
+<span class="fc" id="L62">        return getConverter(metaDataEntity.getType())</span>
+<span class="fc" id="L63">                .map(metaDataConverter -&gt; metaDataConverter.getValue(metaDataEntity))</span>
+<span class="pc" id="L64">                .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L65">                        .message(&quot;no metaDataConverter found for type&quot;)</span>
+<span class="nc" id="L66">                        .extension(&quot;type&quot;, metaDataEntity.getType().name())</span>
+<span class="nc" id="L67">                        .build()));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

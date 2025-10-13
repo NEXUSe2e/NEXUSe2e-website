@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CustomServiceRepositoryImpl.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.service.repository</a> &gt; <span class="el_source">CustomServiceRepositoryImpl.java</span></div><h1>CustomServiceRepositoryImpl.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.service.repository;
+
+import com.evolvsys.nexuse2e.core.model.entity.QParameterEntity;
+import com.evolvsys.nexuse2e.core.model.entity.QServiceEntity;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.service.ServiceType;
+import com.querydsl.jpa.JPQLQueryFactory;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
+
+/**
+ * @author SvenBarden
+ * @since 21.02.2024
+ */
+@Repository
+@RequiredArgsConstructor
+class CustomServiceRepositoryImpl implements CustomServiceRepository {
+    private final JPQLQueryFactory queryFactory;
+
+    @Override
+    public List&lt;ServiceEntity&gt; getByTypeAndParameterValue(
+            ServiceType serviceType, String parameterName, String parameterValue) {
+<span class="fc" id="L24">        QServiceEntity serviceEntity = QServiceEntity.serviceEntity;</span>
+<span class="fc" id="L25">        QParameterEntity parameterEntity = QParameterEntity.parameterEntity;</span>
+
+<span class="fc" id="L27">        return queryFactory</span>
+<span class="fc" id="L28">                .selectFrom(serviceEntity)</span>
+<span class="fc" id="L29">                .join(serviceEntity.parameters, parameterEntity)</span>
+<span class="fc" id="L30">                .on(parameterEntity.name.eq(parameterName), parameterEntity.stringValue.eq(parameterValue))</span>
+<span class="fc" id="L31">                .where(serviceEntity.enabled.isTrue())</span>
+<span class="fc" id="L32">                .fetch();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

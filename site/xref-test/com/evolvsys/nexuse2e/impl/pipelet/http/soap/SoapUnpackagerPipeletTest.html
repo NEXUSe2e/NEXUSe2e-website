@@ -1,0 +1,92 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>SoapUnpackagerPipeletTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../../testapidocs/com/evolvsys/nexuse2e/impl/pipelet/http/soap/SoapUnpackagerPipeletTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.impl.pipelet.http.soap;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.assertj.core.api.Assertions.assertThat;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.exception.NexusException;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.context.TestMessageContext;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.ContextPayload;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.Message;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.internal.MessageType;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.test.ComponentTestUtils;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.io.IOException;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> java.nio.charset.Charset;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.apache.commons.io.IOUtils;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.BeforeEach;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> org.junit.platform.commons.util.StringUtils;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> org.junitpioneer.jupiter.cartesian.CartesianTest;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> org.xmlunit.assertj3.XmlAssert;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment"> * Test for {@link SoapUnpackagerPipelet}.</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <em class="jxr_javadoccomment"> * @author SvenBarden</em>
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment"> * @since 25.07.2025</em>
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  @SuppressWarnings(<span class="jxr_string">"PMD.TestClassWithoutTestCases"</span>) <em class="jxr_comment">// carthesian test false positive</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">class</strong> <a name="SoapUnpackagerPipeletTest" href="../../../../../../../com/evolvsys/nexuse2e/impl/pipelet/http/soap/SoapUnpackagerPipeletTest.html#SoapUnpackagerPipeletTest">SoapUnpackagerPipeletTest</a> {
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> SoapUnpackagerPipelet pipelet = <strong class="jxr_keyword">new</strong> SoapUnpackagerPipelet();
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a name="TestMessageContext" href="../../../../../../../com/evolvsys/nexuse2e/core/message/context/TestMessageContext.html#TestMessageContext">TestMessageContext</a> testMessageContext = <strong class="jxr_keyword">new</strong> <a name="TestMessageContext" href="../../../../../../../com/evolvsys/nexuse2e/core/message/context/TestMessageContext.html#TestMessageContext">TestMessageContext</a>();
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>      @BeforeEach
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>      <strong class="jxr_keyword">void</strong> setUp() {
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>          testMessageContext.setSourceMessage(<strong class="jxr_keyword">new</strong> Message());
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>      }
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>      @CartesianTest
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>      <strong class="jxr_keyword">void</strong> execute(
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>              @CartesianTest.Values(strings = {<span class="jxr_string">"utf-8"</span>, <span class="jxr_string">"iso-8859-1"</span>}) String sourceEncoding,
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>              @CartesianTest.Values(strings = {<span class="jxr_string">"utf-8"</span>, <span class="jxr_string">"iso-8859-1"</span>, <span class="jxr_string">""</span>}) String targetEncoding)
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>              <strong class="jxr_keyword">throws</strong> NexusException, IOException {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>          PayloadContent payloadContent =
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>                  PayloadContent.of(IOUtils.resourceToByteArray(<span class="jxr_string">"/soap/soap_inbound_message_"</span> + sourceEncoding + <span class="jxr_string">".xml"</span>));
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>          testMessageContext.setSourceData(ContextPayload.builder()
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>                  .contentType(<span class="jxr_string">"text/xml"</span>)
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>                  .encoding(sourceEncoding)
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                  .content(payloadContent)
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                  .size(payloadContent.getSize())
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>                  .build());
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>  
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>          ComponentTestUtils.applyParameters(pipelet, Map.of(<span class="jxr_string">"encoding"</span>, targetEncoding));
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          ExecutionContext execute = pipelet.execute(testMessageContext.createExecutionContext(MessageType.NORMAL));
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>          <strong class="jxr_keyword">if</strong> (StringUtils.isBlank(targetEncoding)) {
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>              targetEncoding = sourceEncoding;
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          }
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>  
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>          assertThat(execute).isNotNull();
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>          assertThat(testMessageContext.getSourceMessage().getPayloads()).hasSize(1);
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>          assertThat(testMessageContext
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>                          .getSourceMessage()
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>                          .getPayloads()
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>                          .getFirst()
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>                          .getEncoding())
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>                  .isEqualTo(targetEncoding);
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>          XmlAssert.assertThat(testMessageContext
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                          .getSourceMessage()
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>                          .getPayloads()
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>                          .getFirst()
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                          .getContent()
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>                          .getString(Charset.forName(targetEncoding)))
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>                  .and(IOUtils.resourceToString(
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>                          <span class="jxr_string">"/soap/soap_payload_"</span> + targetEncoding + <span class="jxr_string">".xml"</span>, Charset.forName(targetEncoding)))
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                  .ignoreWhitespace()
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                  .areSimilar();
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>      }
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>  }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

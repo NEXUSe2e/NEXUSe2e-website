@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServiceConfigMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.handler.mapper</a> &gt; <span class="el_source">ServiceConfigMapper.java</span></div><h1>ServiceConfigMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.handler.mapper;
+
+import com.evolvsys.nexuse2e.core.config.model.ServiceConfig;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.service.ServiceUtils;
+import com.evolvsys.nexuse2e.core.service.repository.ServiceRepository;
+import java.util.Optional;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * @author SvenBarden
+ * @since 27.11.2023
+ */
+@Mapper(
+        config = DefaultConfigMapperConfig.class,
+        uses = {PipelineConfigMapper.class, ParameterConfigMapper.class})
+<span class="fc" id="L18">public abstract class ServiceConfigMapper {</span>
+    private ParameterConfigMapper parameterConfigMapper;
+    private ServiceRepository serviceRepository;
+    private ServiceUtils serviceUtils;
+
+    @Autowired
+    protected void config(
+            ParameterConfigMapper parameterConfigMapper,
+            ServiceRepository serviceRepository,
+            ServiceUtils serviceUtils) {
+<span class="fc" id="L28">        this.parameterConfigMapper = parameterConfigMapper;</span>
+<span class="fc" id="L29">        this.serviceRepository = serviceRepository;</span>
+<span class="fc" id="L30">        this.serviceUtils = serviceUtils;</span>
+<span class="fc" id="L31">    }</span>
+
+    @Mapping(target = &quot;parameters&quot;, ignore = true)
+    @Mapping(target = &quot;serviceType&quot;, ignore = true)
+    @Mapping(target = &quot;description&quot;, source = &quot;description&quot;, qualifiedByName = &quot;toTrimmedString_service&quot;)
+    @InheritConfiguration
+    public abstract void updateEntity(ServiceConfig serviceConfig, @MappingTarget ServiceEntity serviceEntity);
+
+    @Named(&quot;toTrimmedString_service&quot;)
+    protected String toTrimmedString(String stringToTrim) {
+<span class="fc" id="L41">        return Optional.ofNullable(stringToTrim).map(String::trim).orElse(stringToTrim);</span>
+    }
+
+    @AfterMapping
+    public void afterUpdateEntity(ServiceConfig serviceConfig, @MappingTarget ServiceEntity serviceEntity) {
+<span class="fc" id="L46">        serviceEntity.setServiceType(serviceUtils.getServiceType(serviceEntity.getComponentId()));</span>
+<span class="fc" id="L47">        parameterConfigMapper.updateEntities(</span>
+<span class="fc" id="L48">                serviceConfig.getParameters(), serviceEntity.getParameters(), serviceConfig.getComponentId());</span>
+<span class="fc" id="L49">    }</span>
+
+    public abstract ServiceConfig toConfig(ServiceEntity serviceEntity);
+
+    public abstract void merge(ServiceConfig newConfig, @MappingTarget ServiceConfig oldConfig);
+
+    public ServiceEntity idToEntity(String serviceId) {
+<span class="fc" id="L56">        return serviceRepository.findByServiceId(serviceId).orElse(null);</span>
+    }
+
+    public String entityToId(ServiceEntity entity) {
+<span class="fc" id="L60">        return Optional.ofNullable(entity).map(ServiceEntity::getServiceId).orElse(null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

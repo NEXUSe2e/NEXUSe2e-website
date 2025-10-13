@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateCrudService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificateCrudService.java</span></div><h1>CertificateCrudService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import com.evolvsys.app.core.auth.service.CurrentUserService;
+import com.evolvsys.app.core.service.BaseService;
+import com.evolvsys.app.core.service.ListService;
+import com.evolvsys.nexuse2e.core.certificate.mapper.CertificateMapper;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateDto;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateFilter;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateType;
+import com.evolvsys.nexuse2e.core.certificate.repository.CertificateRepository;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 07.02.2024
+ */
+@Service
+<span class="fc" id="L27">@Slf4j</span>
+public class CertificateCrudService extends BaseService&lt;CertificateDto, CertificateEntity, CertificateRepository&gt; {
+    private final ListService listService;
+
+    public CertificateCrudService(
+            CertificateMapper mapper,
+            CertificateRepository repository,
+            CurrentUserService currentUserService,
+            ListService listService) {
+<span class="fc" id="L36">        super(mapper, repository, currentUserService);</span>
+<span class="fc" id="L37">        this.listService = listService;</span>
+<span class="fc" id="L38">    }</span>
+
+    @Override
+    @Transactional
+    public CertificateDto save(CertificateDto dto) {
+<span class="nc" id="L43">        CertificateEntity entity = getEntity(dto);</span>
+
+<span class="nc bnc" id="L45" title="All 2 branches missed.">        if (dto.getWriteMetaData().getChangedProperties().contains(&quot;active&quot;)) {</span>
+<span class="nc" id="L46">            LOGGER.debug(&quot;changing active state for certificate {}&quot;, dto);</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">            if (dto.isActive()) {</span>
+<span class="nc" id="L48">                enable(entity);</span>
+            } else {
+<span class="nc" id="L50">                disable(entity);</span>
+            }
+        }
+<span class="nc" id="L53">        entity = save(entity);</span>
+
+<span class="nc" id="L55">        return mapEntityToDto(entity);</span>
+    }
+
+    @Override
+    protected CertificateEntity createEntity() {
+<span class="nc" id="L60">        return new CertificateEntity();</span>
+    }
+
+    public List&lt;CertificateDto&gt; getAll() {
+<span class="nc" id="L64">        return getRepository().findAll().stream().map(this::mapEntityToDto).toList();</span>
+    }
+
+    public Page&lt;CertificateDto&gt; list(Pageable pageable, CertificateFilter certificateFilter) {
+<span class="nc" id="L68">        return listService.list(pageable, certificateFilter, this).map(this::mapEntityToDto);</span>
+    }
+
+    @SuppressFBWarnings(&quot;UAA_USE_ADD_ALL&quot;)
+    private void enable(CertificateEntity entity) {
+<span class="nc" id="L73">        List&lt;CertificateEntity&gt; entitiesToPersist = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L74">        entitiesToPersist.add(entity);</span>
+
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (entity.getType() == CertificateType.LOCAL) {</span>
+<span class="nc" id="L77">            List&lt;CertificateEntity&gt; otherEntities =</span>
+<span class="nc" id="L78">                    getRepository().findByCertificateContainerAndActive(entity.getCertificateContainer(), true);</span>
+
+<span class="nc bnc" id="L80" title="All 2 branches missed.">            for (CertificateEntity otherEntity : otherEntities) {</span>
+<span class="nc" id="L81">                otherEntity.setActive(false);</span>
+<span class="nc" id="L82">                otherEntity.setDisabled(ZonedDateTime.now());</span>
+<span class="nc" id="L83">                entitiesToPersist.add(otherEntity);</span>
+<span class="nc" id="L84">            }</span>
+        }
+
+<span class="nc" id="L87">        entity.setEnabled(ZonedDateTime.now());</span>
+<span class="nc" id="L88">        entity.setActive(true);</span>
+
+<span class="nc" id="L90">        getRepository().saveAll(entitiesToPersist);</span>
+<span class="nc" id="L91">    }</span>
+
+    private void disable(CertificateEntity entity) {
+<span class="nc" id="L94">        entity.setDisabled(ZonedDateTime.now());</span>
+<span class="nc" id="L95">        entity.setActive(false);</span>
+
+<span class="nc" id="L97">        getRepository().save(entity);</span>
+<span class="nc" id="L98">    }</span>
+
+    @Transactional
+    public void enable(long certificateId) {
+<span class="nc" id="L102">        CertificateEntity entity = findOrThrow(certificateId);</span>
+
+<span class="nc" id="L104">        enable(entity);</span>
+<span class="nc" id="L105">    }</span>
+
+    public void disable(long certificateId) {
+<span class="nc" id="L108">        CertificateEntity entity = findOrThrow(certificateId);</span>
+
+<span class="nc" id="L110">        disable(entity);</span>
+<span class="nc" id="L111">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

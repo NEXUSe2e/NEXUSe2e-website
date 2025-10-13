@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StringListTypeConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.parameter.converter</a> &gt; <span class="el_source">StringListTypeConverter.java</span></div><h1>StringListTypeConverter.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.parameter.converter;
+
+import com.evolvsys.nexuse2e.core.keyvalue.KeyValueLookup;
+import com.evolvsys.nexuse2e.core.model.entity.ParameterEntity;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.model.ParameterDto;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author Florian Drees
+ * @since 15.01.2024
+ */
+@Component
+<span class="fc" id="L19">public class StringListTypeConverter implements TypeConverter&lt;List&lt;String&gt;, List&lt;String&gt;&gt; {</span>
+
+    @Override
+    public Function&lt;ParameterDto, List&lt;String&gt;&gt; getDtoGetter() {
+<span class="fc" id="L23">        return ParameterDto::getStringValues;</span>
+    }
+
+    @Override
+    public BiFunction&lt;ParameterDto, List&lt;String&gt;, ParameterDto&gt; getDtoSetter() {
+<span class="fc" id="L28">        return ParameterDto::setStringValues;</span>
+    }
+
+    @Override
+    public BiFunction&lt;ParameterDto, List&lt;String&gt;, ParameterDto&gt; getDtoDefaultSetter() {
+<span class="fc" id="L33">        return ParameterDto::setDefaultStringValues;</span>
+    }
+
+    @Override
+    public Function&lt;ParameterDefinition, List&lt;String&gt;&gt; getDefinitionDefaultGetter() {
+        //noinspection unchecked
+<span class="fc" id="L39">        return parameterDefinition -&gt; (List&lt;String&gt;) parameterDefinition.getDefaultValue();</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toDtoValue(ParameterEntity parameterEntity) {
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        return CollectionUtils.isEmpty(parameterEntity.getStringValues())</span>
+<span class="fc" id="L45">                ? new ArrayList&lt;&gt;()</span>
+<span class="fc" id="L46">                : new ArrayList&lt;&gt;(</span>
+                        parameterEntity
+<span class="fc" id="L48">                                .getStringValues()); // entity may contain a persistence proxy, so we copy to be safe</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toConfigValue(ParameterEntity parameterEntity) {
+<span class="fc" id="L53">        return toDtoValue(parameterEntity);</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toContextValue(ParameterEntity parameterEntity) {
+<span class="fc" id="L58">        return toDtoValue(parameterEntity).stream().map(KeyValueLookup::lookup).toList();</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toDtoValue(List&lt;String&gt; value) {
+<span class="fc" id="L63">        return value;</span>
+    }
+
+    // CPD-OFF
+    @Override
+    public void updateFromDto(ParameterEntity parameterEntity, List&lt;String&gt; dtoValue) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (parameterEntity.getStringValues() == null) {</span>
+<span class="fc" id="L70">            parameterEntity.setStringValues(new ArrayList&lt;&gt;());</span>
+        }
+<span class="fc" id="L72">        parameterEntity.getStringValues().clear();</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">        if (dtoValue != null) {</span>
+<span class="fc" id="L74">            parameterEntity.getStringValues().addAll(dtoValue);</span>
+        }
+<span class="fc" id="L76">    }</span>
+
+    @Override
+    public void updateFromConfig(ParameterEntity parameterEntity, List&lt;String&gt; configValue) {
+<span class="fc" id="L80">        updateFromDto(parameterEntity, configValue);</span>
+<span class="fc" id="L81">    }</span>
+
+    @Override
+    public Class&lt;?&gt; getDtoValueType() {
+<span class="fc" id="L85">        return List.class;</span>
+    }
+    // CPD-ON
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

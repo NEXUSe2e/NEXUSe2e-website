@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageUnpackagerPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http</a> &gt; <span class="el_source">MessageUnpackagerPipelet.java</span></div><h1>MessageUnpackagerPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.ebxml.EbxmlConstants;
+import com.evolvsys.nexuse2e.core.ebxml.EbxmlUtils;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ObjectUtils;
+import org.springframework.http.MediaType;
+
+<span class="fc" id="L24">@Slf4j</span>
+<span class="fc" id="L25">public class MessageUnpackagerPipelet extends Pipelet {</span>
+<span class="fc" id="L26">    private static final Pattern CONTENT_ID_PATTERN = Pattern.compile(&quot;&lt;(.+)&gt;&quot;);</span>
+
+    @Override
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="pc bpc" id="L30" title="1 of 2 branches missed.">        if (CollectionUtils.isEmpty(executionContext.getSourceData())) {</span>
+<span class="nc" id="L31">            throw new NexusException(</span>
+<span class="nc" id="L32">                    NexusError.builder().message(&quot;No ebxml content provided&quot;).build());</span>
+        }
+
+<span class="fc" id="L35">        String encoding = EbxmlUtils.getEncoding(executionContext).orElse(null);</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if (encoding == null) {</span>
+<span class="nc" id="L37">            throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L38">                    .message(&quot;Encoding of content was not provided&quot;)</span>
+<span class="nc" id="L39">                    .build());</span>
+        }
+<span class="fc" id="L41">        Charset charset = Charset.forName(encoding);</span>
+
+<span class="fc" id="L43">        MediaType contentType = executionContext.getMetaData().getFirstOrThrows(HttpConstants.CONTENT_TYPE);</span>
+<span class="pc bpc" id="L44" title="1 of 3 branches missed.">        switch (contentType.getType()) {</span>
+            case &quot;multipart&quot; -&gt; {
+<span class="pc bpc" id="L46" title="1 of 2 branches missed.">                if (executionContext.getSourceData().isEmpty()) {</span>
+<span class="nc" id="L47">                    throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L48">                            .message(&quot;MIME message contains no body parts!&quot;)</span>
+<span class="nc" id="L49">                            .build());</span>
+                }
+            }
+<span class="fc" id="L52">            case &quot;text&quot; -&gt; {}</span>
+            default -&gt;
+<span class="nc" id="L54">                throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L55">                        .message(&quot;MIME message doesn't seem to be of type multipart: &quot; + contentType)</span>
+<span class="nc" id="L56">                        .build());</span>
+        }
+
+<span class="fc" id="L59">        executionContext.getMessage().getMetaData().set(HttpConstants.ENCODING, encoding);</span>
+
+<span class="fc" id="L61">        decodeMessageHeader(executionContext.getSourceData().getFirst(), executionContext, charset);</span>
+
+<span class="fc" id="L63">        List&lt;ContextPayload&gt; messagePayloads = executionContext</span>
+<span class="fc" id="L64">                .getSourceData()</span>
+<span class="fc" id="L65">                .subList(1, executionContext.getSourceData().size());</span>
+
+<span class="fc" id="L67">        decodeMessagePayloads(messagePayloads, executionContext, charset);</span>
+<span class="fc" id="L68">        return executionContext;</span>
+    }
+
+    private void decodeMessageHeader(
+            ContextPayload contextPayload, ExecutionContext executionContext, Charset encoding) {
+<span class="pc bpc" id="L73" title="1 of 2 branches missed.">        if (LOGGER.isTraceEnabled()) {</span>
+<span class="nc" id="L74">            LOGGER.trace(</span>
+<span class="nc" id="L75">                    &quot;Message-Header: {}&quot;, new String(contextPayload.getContent().getByteArray(), encoding));</span>
+<span class="nc" id="L76">            LOGGER.trace(&quot;Message-Header Content Type: {}&quot;, contextPayload.getContentType());</span>
+        }
+
+<span class="fc" id="L79">        executionContext.getMessage().getMetaData().set(EbxmlConstants.HEADER_DATA, contextPayload);</span>
+<span class="fc" id="L80">    }</span>
+
+    private void decodeMessagePayloads(
+            List&lt;ContextPayload&gt; messagePayloads, ExecutionContext executionContext, Charset encoding) {
+<span class="fc" id="L84">        List&lt;ContextPayload&gt; payloads = new ArrayList&lt;&gt;(messagePayloads.size());</span>
+
+<span class="fc" id="L86">        LOGGER.debug(&quot;decode message payloads&quot;);</span>
+
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        for (ContextPayload contextPayload : messagePayloads) {</span>
+<span class="fc" id="L89">            String bodyPartMimeType =</span>
+<span class="fc" id="L90">                    EbxmlUtils.extractMimeType(contextPayload.getContentType()).orElseThrow();</span>
+<span class="fc" id="L91">            LOGGER.trace(&quot;BodyPart Mimetype: {}&quot;, bodyPartMimeType);</span>
+
+            PayloadContent payloadContent;
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            if (EbxmlUtils.isBinaryType(bodyPartMimeType)) {</span>
+<span class="fc" id="L95">                payloadContent = PayloadContent.of(</span>
+<span class="fc" id="L96">                        Base64.getDecoder().decode(contextPayload.getContent().getByteArray()));</span>
+            } else {
+<span class="fc" id="L98">                payloadContent = contextPayload.getContent();</span>
+            }
+
+<span class="fc" id="L101">            ContextPayload payload = ContextPayload.builder()</span>
+<span class="fc" id="L102">                    .contentType(bodyPartMimeType)</span>
+<span class="fc" id="L103">                    .size(payloadContent.getSize())</span>
+<span class="fc" id="L104">                    .encoding(encoding.name())</span>
+<span class="fc" id="L105">                    .contentId(getContentId(ObjectUtils.defaultIfNull(contextPayload.getContentId(), &quot;&quot;)))</span>
+<span class="fc" id="L106">                    .sequenceNumber(messagePayloads.indexOf(contextPayload) + 1)</span>
+<span class="fc" id="L107">                    .content(payloadContent)</span>
+<span class="fc" id="L108">                    .build();</span>
+<span class="fc" id="L109">            payloads.add(payload);</span>
+<span class="fc" id="L110">        }</span>
+<span class="fc" id="L111">        executionContext.getMessage().setPayloads(payloads);</span>
+<span class="fc" id="L112">        LOGGER.debug(&quot;added {} payloads to message&quot;, payloads.size());</span>
+<span class="fc" id="L113">    }</span>
+
+    private String getContentId(String rawContentId) {
+<span class="fc" id="L116">        Matcher matcher = CONTENT_ID_PATTERN.matcher(rawContentId);</span>
+<span class="pc bpc" id="L117" title="1 of 2 branches missed.">        if (matcher.matches()) {</span>
+<span class="fc" id="L118">            return matcher.group(1);</span>
+        }
+<span class="nc" id="L120">        return rawContentId;</span>
+    }
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L125">        return List.of();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

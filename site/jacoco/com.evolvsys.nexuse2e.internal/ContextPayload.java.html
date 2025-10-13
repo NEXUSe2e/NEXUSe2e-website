@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextPayload.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.internal</a> &gt; <span class="el_source">ContextPayload.java</span></div><h1>ContextPayload.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.internal;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import lombok.*;
+
+/**
+ * @author SvenBarden
+ * @since 27.10.2023
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class ContextPayload {
+    private Long id;
+
+    private String contentId;
+
+    @ToString.Exclude
+    private PayloadContent content;
+
+    private String contentType;
+    private long size;
+    private String encoding;
+    private int sequenceNumber;
+
+    @Builder.Default
+    private MetaData metaData = new MetaData();
+
+    /**
+     * Creates a copy of the ContextPayload. The content is copied to ensure that the original content is not modified. The metaData is also copied to
+     * maintain the original state.
+     *
+     * @return a new ContextPayload instance with copied content
+     * @throws NexusException if there is an error during the content copy process
+     * @see MetaData#copy()
+     */
+    public ContextPayload copy() throws NexusException {
+        PayloadContent contentCopy;
+<span class="fc" id="L46">        try (PayloadContentOutputStream outputStream = PayloadContent.createOutputStream();</span>
+<span class="fc" id="L47">                InputStream inputStream = content.getInputStream()) {</span>
+<span class="fc" id="L48">            inputStream.transferTo(outputStream);</span>
+<span class="fc" id="L49">            contentCopy = outputStream.finish();</span>
+<span class="nc" id="L50">        } catch (IOException e) {</span>
+<span class="nc" id="L51">            throw new NexusException(</span>
+<span class="nc" id="L52">                    NexusError.builder()</span>
+<span class="nc" id="L53">                            .message(&quot;Could not copy content for payload&quot;)</span>
+<span class="nc" id="L54">                            .extension(&quot;contentId&quot;, contentId)</span>
+<span class="nc" id="L55">                            .extension(&quot;id&quot;, id)</span>
+<span class="nc" id="L56">                            .build(),</span>
+                    e);
+<span class="fc" id="L58">        }</span>
+<span class="fc" id="L59">        return toBuilder()</span>
+<span class="fc" id="L60">                .id(null)</span>
+<span class="fc" id="L61">                .content(contentCopy)</span>
+<span class="fc" id="L62">                .metaData(metaData.copy())</span>
+<span class="fc" id="L63">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

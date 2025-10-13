@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XmlUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.util</a> &gt; <span class="el_source">XmlUtils.java</span></div><h1>XmlUtils.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.util;
+
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.io.InputStream;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import lombok.experimental.UtilityClass;
+import org.w3c.dom.Document;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+
+/**
+ * Utility class for XML operations.
+ *
+ * @author SvenBarden
+ * @since 24.07.2025
+ */
+@UtilityClass
+public class XmlUtils {
+
+    /**
+     * Creates an XML-Document from the given ContextPayload.
+     *
+     * @param payload the ContextPayload containing the XML content
+     * @return a Document object representing the XML content
+     * @throws ParserConfigurationException if a DocumentBuilder cannot be created which satisfies the configuration requested
+     * @throws SAXException                 if any parse errors occur while parsing the XML content
+     * @throws IOException                  if an I/O error occurs while reading the XML content
+     */
+    @SuppressFBWarnings(&quot;XXE_DOCUMENT&quot;)
+    public static Document getDocument(ContextPayload payload)
+            throws ParserConfigurationException, SAXException, IOException {
+<span class="fc" id="L37">        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L38">        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, &quot;&quot;);</span>
+<span class="fc" id="L39">        builderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, &quot;&quot;);</span>
+
+<span class="fc" id="L41">        DocumentBuilder builder = builderFactory.newDocumentBuilder();</span>
+<span class="fc" id="L42">        try (InputStream inputStream = payload.getContent().getInputStream()) {</span>
+<span class="fc" id="L43">            InputSource inputSource = new InputSource(inputStream);</span>
+<span class="fc" id="L44">            inputSource.setEncoding(payload.getEncoding());</span>
+<span class="fc" id="L45">            return builder.parse(inputSource);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

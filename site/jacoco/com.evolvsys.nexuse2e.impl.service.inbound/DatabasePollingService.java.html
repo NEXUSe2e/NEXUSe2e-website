@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DatabasePollingService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.service.inbound</a> &gt; <span class="el_source">DatabasePollingService.java</span></div><h1>DatabasePollingService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.service.inbound;
+
+import static com.evolvsys.nexuse2e.core.database.DatabaseUtils.enquoteIdentifier;
+
+import com.evolvsys.nexuse2e.core.component.SupportService;
+import com.evolvsys.nexuse2e.core.database.DatabaseFetchContext;
+import com.evolvsys.nexuse2e.core.database.DatabaseUtils;
+import com.evolvsys.nexuse2e.core.database.Order;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.MessageStatus;
+import com.evolvsys.nexuse2e.core.message.MetaData;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingService;
+import com.evolvsys.nexuse2e.core.schedule.SchedulingServiceAware;
+import com.evolvsys.nexuse2e.core.service.SingleContextNexusService;
+import com.evolvsys.nexuse2e.impl.service.support.DatabaseConnectionSupportService;
+import com.evolvsys.nexuse2e.impl.util.SchedulingUtils;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import javax.sql.DataSource;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.JdbcAccessor;
+
+/**
+ * &lt;p&gt;Service to poll data from a provided database and table for further processing.&lt;/p&gt;
+ *
+ * @author Florian Drees
+ * @since 26.06.2024
+ */
+<span class="fc" id="L51">@Slf4j</span>
+@Setter
+<span class="fc" id="L53">public abstract class DatabasePollingService extends SingleContextNexusService implements SchedulingServiceAware {</span>
+    private static final String PARAMETER_DATABASE_CONNECTION_SUPPORT_SERVICE = &quot;database_connection_support_service&quot;;
+
+    public static final String CATEGORY = &quot;database&quot;;
+
+    private SchedulingService schedulingService;
+
+    /**
+     * &lt;p&gt;Provides a list of context objects to be used from the {@link DatabasePollingService} to read data from the database.&lt;/p&gt;
+     * &lt;pre&gt;
+     * {@code
+     * DatabaseFetchContext.builder()
+     *          .tableName(&quot;tableName&quot;) // Name of the table
+     *          .rowMapper(new BeanPropertyRowMapper&lt;FetchModel&gt;) // Row Mapper to map the result into an object
+     *          // optional fields
+     *          .contextIdentifier(&quot;products&quot;) // String to identify the content for further processing
+     *          .maxRows(1) // limit rows to be fetched
+     *          .whereClause(&quot;field_name = :field_Name&quot;) // named sql clause
+     *          .whereValue(&quot;field_name&quot;, &quot;column1&quot;) // Provide values for the where clause
+     *          .orderBy(&quot;created&quot;, Order.DESC) // Provide ordering of the fetched results
+     *          .build();
+     * }
+     * &lt;/pre&gt;
+     *
+     * @return List of database fetch contexts
+     */
+    protected abstract List&lt;DatabaseFetchContext&gt; provideFetchingContexts();
+
+    @Override
+    protected MessageContext buildMessageContext() throws NexusException {
+<span class="fc" id="L83">        DatabaseConnectionSupportService databaseConnectionSupportService = getDatabaseConnectionSupportService();</span>
+
+<span class="fc" id="L85">        DataSource dataSource = databaseConnectionSupportService.getDataSource();</span>
+
+<span class="fc" id="L87">        List&lt;DatabaseFetchContext&gt; databaseFetchContext = provideFetchingContexts();</span>
+
+<span class="fc" id="L89">        MessageContext messageContext = getContextFactory().createNew();</span>
+
+<span class="fc" id="L91">        Message sourceMessage = new Message();</span>
+<span class="fc" id="L92">        sourceMessage.setType(MessageType.NORMAL);</span>
+<span class="fc" id="L93">        sourceMessage.setMessageStatus(MessageStatus.CREATED);</span>
+
+<span class="fc" id="L95">        messageContext.setSourceMessage(sourceMessage);</span>
+
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        for (DatabaseFetchContext fetchContext : databaseFetchContext) {</span>
+<span class="fc" id="L98">            buildMessageContext(messageContext, new NamedParameterJdbcTemplate(dataSource), fetchContext);</span>
+<span class="fc" id="L99">        }</span>
+<span class="fc" id="L100">        return messageContext;</span>
+    }
+
+    private void buildMessageContext(
+            MessageContext messageContext,
+            NamedParameterJdbcTemplate namedParameterJdbcTemplate,
+            DatabaseFetchContext fetchContext)
+            throws NexusException {
+
+<span class="fc" id="L109">        LOGGER.debug(&quot;Fetching data from table '{}' with context: {}&quot;, fetchContext.getTableName(), fetchContext);</span>
+
+<span class="fc" id="L111">        ObjectMapper objectMapper = messageContext.getBeanFactory().getBean(ObjectMapper.class);</span>
+
+<span class="fc" id="L113">        int payloadCount = 0;</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        for (Object obj : query(namedParameterJdbcTemplate, fetchContext)) {</span>
+<span class="fc" id="L115">            MetaData metaData = new MetaData();</span>
+<span class="fc" id="L116">            metaData.add(CATEGORY, &quot;table_name&quot;, fetchContext.getTableName());</span>
+<span class="fc" id="L117">            metaData.add(CATEGORY, &quot;context_identifier&quot;, fetchContext.getContextIdentifier());</span>
+
+            try {
+                PayloadContent content;
+<span class="fc" id="L121">                try (PayloadContentOutputStream outputStream = PayloadContent.createOutputStream()) {</span>
+<span class="fc" id="L122">                    objectMapper.writeValue(outputStream, obj);</span>
+<span class="fc" id="L123">                    content = outputStream.finish();</span>
+                }
+<span class="fc" id="L125">                messageContext</span>
+<span class="fc" id="L126">                        .getSourceData()</span>
+<span class="fc" id="L127">                        .add(ContextPayload.builder()</span>
+<span class="fc" id="L128">                                .content(content)</span>
+<span class="fc" id="L129">                                .contentType(MediaType.APPLICATION_JSON_VALUE)</span>
+<span class="fc" id="L130">                                .contentId(String.format(</span>
+                                        &quot;%s_%s_%d&quot;,
+<span class="fc" id="L132">                                        fetchContext.getTableName(),</span>
+<span class="fc" id="L133">                                        fetchContext.getContextIdentifier(),</span>
+<span class="fc" id="L134">                                        payloadCount++))</span>
+<span class="fc" id="L135">                                .encoding(StandardCharsets.UTF_8.name())</span>
+<span class="fc" id="L136">                                .metaData(metaData)</span>
+<span class="fc" id="L137">                                .size(content.getSize())</span>
+<span class="fc" id="L138">                                .build());</span>
+<span class="nc" id="L139">            } catch (IOException e) {</span>
+<span class="nc" id="L140">                throw new NexusException(</span>
+<span class="nc" id="L141">                        NexusError.builder()</span>
+<span class="nc" id="L142">                                .message(&quot;Could not transform object of class '&quot;</span>
+<span class="nc" id="L143">                                        + obj.getClass().getSimpleName() + &quot;' to byte array&quot;)</span>
+<span class="nc" id="L144">                                .build(),</span>
+                        e);
+<span class="fc" id="L146">            }</span>
+<span class="fc" id="L147">        }</span>
+<span class="fc" id="L148">    }</span>
+
+    private String buildSql(NamedParameterJdbcTemplate namedParameterJdbcTemplate, DatabaseFetchContext fetchContext)
+            throws NexusException {
+<span class="fc" id="L152">        DataSource dataSource = Optional.ofNullable(namedParameterJdbcTemplate)</span>
+<span class="fc" id="L153">                .map(NamedParameterJdbcTemplate::getJdbcTemplate)</span>
+<span class="fc" id="L154">                .map(JdbcAccessor::getDataSource)</span>
+<span class="pc" id="L155">                .orElseThrow(() -&gt; new NexusException(NexusError.builder()</span>
+<span class="nc" id="L156">                        .message(&quot;Could not get data source from named parameter jdbc template&quot;)</span>
+<span class="nc" id="L157">                        .build()));</span>
+
+<span class="fc" id="L159">        StringBuilder sqlBuilder = new StringBuilder(17);</span>
+<span class="fc" id="L160">        try (Connection connection = dataSource.getConnection();</span>
+<span class="fc" id="L161">                Statement statement = connection.createStatement()) {</span>
+
+<span class="fc" id="L163">            sqlBuilder.append(</span>
+<span class="fc" id="L164">                    String.format(&quot;SELECT * FROM %s&quot;, enquoteIdentifier(statement, fetchContext.getTableName())));</span>
+
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">            if (StringUtils.isNotEmpty(fetchContext.getWhereClause())) {</span>
+                // Build where clause by quoting the field names
+<span class="fc" id="L168">                sqlBuilder.append(&quot; WHERE &quot;).append(fetchContext.getWhereClause());</span>
+            }
+
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">            if (fetchContext.getOrderBys() != null) {</span>
+<span class="fc" id="L172">                List&lt;String&gt; orderBys =</span>
+<span class="fc" id="L173">                        new ArrayList&lt;&gt;(fetchContext.getOrderBys().size());</span>
+<span class="fc bfc" id="L174" title="All 2 branches covered.">                for (Map.Entry&lt;String, Order&gt; entry : fetchContext.getOrderBys().entrySet()) {</span>
+<span class="fc" id="L175">                    orderBys.add(String.format(</span>
+                            &quot;%s %s&quot;,
+<span class="fc" id="L177">                            DatabaseUtils.enquoteIdentifier(statement, entry.getKey()),</span>
+<span class="fc" id="L178">                            entry.getValue().name()));</span>
+<span class="fc" id="L179">                }</span>
+<span class="fc" id="L180">                sqlBuilder.append(&quot; ORDER BY &quot;).append(String.join(&quot;, &quot;, orderBys));</span>
+            }
+<span class="nc" id="L182">        } catch (SQLException e) {</span>
+<span class="nc" id="L183">            throw new NexusException(</span>
+<span class="nc" id="L184">                    NexusError.builder()</span>
+<span class="nc" id="L185">                            .message(&quot;Could not open jdbc database connection from datasource&quot;)</span>
+<span class="nc" id="L186">                            .build(),</span>
+                    e);
+<span class="fc" id="L188">        }</span>
+<span class="fc" id="L189">        LOGGER.debug(&quot;Select data from table '{}' with sql '{}'&quot;, fetchContext.getTableName(), sqlBuilder);</span>
+<span class="fc" id="L190">        return sqlBuilder.toString();</span>
+    }
+
+    private List&lt;?&gt; query(NamedParameterJdbcTemplate namedParameterJdbcTemplate, DatabaseFetchContext fetchContext)
+            throws NexusException {
+<span class="fc" id="L195">        String sql = buildSql(namedParameterJdbcTemplate, fetchContext);</span>
+
+<span class="fc" id="L197">        MapSqlParameterSource sqlParameterSource = new MapSqlParameterSource();</span>
+
+<span class="pc bpc" id="L199" title="1 of 2 branches missed.">        if (StringUtils.isNotEmpty(fetchContext.getWhereClause())) {</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">            for (Map.Entry&lt;String, Object&gt; entry : fetchContext.getWhereValues().entrySet()) {</span>
+<span class="fc" id="L201">                sqlParameterSource.addValue(entry.getKey(), entry.getValue());</span>
+<span class="fc" id="L202">            }</span>
+        }
+<span class="pc bpc" id="L204" title="1 of 2 branches missed.">        if (fetchContext.getMaxRows() &gt; 0) {</span>
+<span class="nc" id="L205">            LOGGER.debug(</span>
+<span class="nc" id="L206">                    &quot;Limiting the maximum rows returned from the operation to '{}' row(s).&quot;, fetchContext.getMaxRows());</span>
+<span class="nc" id="L207">            namedParameterJdbcTemplate.getJdbcTemplate().setMaxRows(fetchContext.getMaxRows());</span>
+        }
+<span class="fc" id="L209">        return namedParameterJdbcTemplate.query(sql, sqlParameterSource, fetchContext.getRowMapper());</span>
+    }
+
+    private DatabaseConnectionSupportService getDatabaseConnectionSupportService() throws NexusException {
+<span class="fc" id="L213">        SupportService supportService = parameters.value(PARAMETER_DATABASE_CONNECTION_SUPPORT_SERVICE);</span>
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        if (supportService == null) {</span>
+<span class="fc" id="L215">            throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L216">                    .message(&quot;A support service is required for further processing.&quot;)</span>
+<span class="fc" id="L217">                    .extension(&quot;type&quot;, DatabaseConnectionSupportService.class.getSimpleName())</span>
+<span class="fc" id="L218">                    .build());</span>
+        }
+<span class="fc bfc" id="L220" title="All 2 branches covered.">        if (supportService instanceof DatabaseConnectionSupportService databaseConnectionSupportService) {</span>
+<span class="fc" id="L221">            LOGGER.debug(&quot;Using database connection service '{}'&quot;, databaseConnectionSupportService.getServiceId());</span>
+<span class="fc" id="L222">            return databaseConnectionSupportService;</span>
+        } else {
+<span class="fc" id="L224">            throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L225">                    .message(&quot;The configured support service can not be used for this service&quot;)</span>
+<span class="fc" id="L226">                    .extension(&quot;type&quot;, DatabaseConnectionSupportService.class.getSimpleName())</span>
+<span class="fc" id="L227">                    .build());</span>
+        }
+    }
+
+    @Override
+    public void start() {
+<span class="nc" id="L233">        SchedulingUtils.start(this, schedulingService, parameters);</span>
+<span class="nc" id="L234">    }</span>
+
+    @Override
+    public void stop() {
+<span class="fc" id="L238">        schedulingService.deregister(this);</span>
+<span class="fc" id="L239">    }</span>
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L243">        return List.of(</span>
+<span class="fc" id="L244">                ParameterDefinition.builder()</span>
+<span class="fc" id="L245">                        .name(PARAMETER_DATABASE_CONNECTION_SUPPORT_SERVICE)</span>
+<span class="fc" id="L246">                        .displayName(&quot;Database connection support service&quot;)</span>
+<span class="fc" id="L247">                        .description(&quot;The database connection support service to provide the connection&quot;)</span>
+<span class="fc" id="L248">                        .type(ParameterType.SUPPORT_SERVICE)</span>
+<span class="fc" id="L249">                        .required(true)</span>
+<span class="fc" id="L250">                        .build(),</span>
+<span class="fc" id="L251">                createCronPatternScheduleParameter(),</span>
+<span class="fc" id="L252">                createHourMinuteScheduleParameter(),</span>
+<span class="fc" id="L253">                createDurationScheduleParameter(),</span>
+<span class="fc" id="L254">                createMisfireScheduleParameter());</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

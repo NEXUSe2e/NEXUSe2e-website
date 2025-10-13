@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SleepingPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.common</a> &gt; <span class="el_source">SleepingPipelet.java</span></div><h1>SleepingPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.common;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import java.time.Duration;
+import java.util.List;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @author SvenBarden
+ * @since 19.10.2023
+ */
+<span class="fc" id="L17">@Slf4j</span>
+<span class="fc" id="L18">public class SleepingPipelet extends Pipelet {</span>
+    private static final String PARAM_SLEEP_DURATION = &quot;sleep_duration&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L23">        return List.of(ParameterDefinition.builder()</span>
+<span class="fc" id="L24">                .name(PARAM_SLEEP_DURATION)</span>
+<span class="fc" id="L25">                .displayName(&quot;Sleep duration&quot;)</span>
+<span class="fc" id="L26">                .description(&quot;Duration for which the current thread is paused.&quot;)</span>
+<span class="fc" id="L27">                .type(ParameterType.DURATION)</span>
+<span class="fc" id="L28">                .defaultValue(Duration.ofSeconds(5))</span>
+<span class="fc" id="L29">                .build());</span>
+    }
+
+    @Override
+    @SuppressWarnings(&quot;PMD.DoNotUseThreads&quot;)
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+        try {
+<span class="nc" id="L36">            Duration duration = parameters.value(PARAM_SLEEP_DURATION);</span>
+<span class="nc" id="L37">            LOGGER.debug(&quot;waiting in sleep pipelet for {}&quot;, duration);</span>
+<span class="nc" id="L38">            Thread.sleep(duration);</span>
+<span class="nc" id="L39">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L40">            throw new NexusException(</span>
+<span class="nc" id="L41">                    NexusError.builder()</span>
+<span class="nc" id="L42">                            .message(&quot;Sleep pipelet was interrupted&quot;)</span>
+<span class="nc" id="L43">                            .build(),</span>
+                    e);
+<span class="nc" id="L45">        }</span>
+<span class="nc" id="L46">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

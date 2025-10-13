@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TemplateLayout.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.logging</a> &gt; <span class="el_source">TemplateLayout.java</span></div><h1>TemplateLayout.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.logging;
+
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxyUtil;
+import ch.qos.logback.core.LayoutBase;
+import lombok.RequiredArgsConstructor;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
+
+/**
+ * @author SvenBarden
+ * @since 19.03.2024
+ */
+@RequiredArgsConstructor
+public class TemplateLayout extends LayoutBase&lt;ILoggingEvent&gt; {
+    private final SpringTemplateEngine springTemplateEngine;
+
+    @Override
+    public String getContentType() {
+<span class="fc" id="L20">        return &quot;text/html&quot;;</span>
+    }
+
+    @Override
+    public String doLayout(ILoggingEvent event) {
+<span class="fc" id="L25">        Context context = new Context();</span>
+
+        String layout;
+        try {
+<span class="fc bfc" id="L29" title="All 2 branches covered.">            if (event instanceof LoggingEventWrapper loggingEventWrapper) {</span>
+<span class="fc" id="L30">                context.setVariable(&quot;messageContext&quot;, loggingEventWrapper.getMessageContext());</span>
+            }
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">            if (event.getThrowableProxy() != null) {</span>
+<span class="nc" id="L33">                context.setVariable(&quot;stacktrace&quot;, ThrowableProxyUtil.asString(event.getThrowableProxy()));</span>
+            }
+<span class="fc" id="L35">            context.setVariable(&quot;logMessage&quot;, event.getFormattedMessage());</span>
+<span class="fc" id="L36">            layout = springTemplateEngine.process(&quot;error&quot;, context);</span>
+<span class="nc" id="L37">        } catch (Throwable e) {</span>
+<span class="nc" id="L38">            layout = &quot;Could not generate email template: &quot; + e.getMessage();</span>
+<span class="fc" id="L39">        }</span>
+<span class="fc" id="L40">        return layout;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

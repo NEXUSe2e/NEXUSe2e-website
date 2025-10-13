@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ValidPartnerConnectionParametersConstraintValidator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.validation</a> &gt; <span class="el_source">ValidPartnerConnectionParametersConstraintValidator.java</span></div><h1>ValidPartnerConnectionParametersConstraintValidator.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.validation;
+
+import com.evolvsys.nexuse2e.core.component.ComponentRegistry;
+import com.evolvsys.nexuse2e.core.config.model.ConnectionConfig;
+import com.evolvsys.nexuse2e.core.config.model.ParameterConfig;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import java.util.List;
+import java.util.Objects;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 25.04.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L23">@Slf4j</span>
+class ValidPartnerConnectionParametersConstraintValidator
+        implements ConstraintValidator&lt;ValidPartnerConnectionParameters, ConnectionConfig&gt; {
+    private final ComponentRegistry componentRegistry;
+
+    @Override
+    public boolean isValid(ConnectionConfig value, ConstraintValidatorContext context) {
+        boolean isValid;
+<span class="pc bpc" id="L31" title="1 of 2 branches missed.">        if (ValidationContextHolder.exists()) {</span>
+<span class="fc" id="L32">            ValidationContext validationContext = ValidationContextHolder.getContext();</span>
+<span class="fc" id="L33">            List&lt;ParameterConfig&gt; parameters = value.getParameters();</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (CollectionUtils.isEmpty(parameters)) {</span>
+<span class="fc" id="L35">                isValid = true;</span>
+            } else {
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">                if (StringUtils.isBlank(value.getOutflowService())) {</span>
+<span class="nc" id="L38">                    isValid = false;</span>
+                } else {
+<span class="fc" id="L40">                    List&lt;String&gt; parameterNames = validationContext.getConfig().getServices().stream()</span>
+<span class="fc" id="L41">                            .filter(serviceConfig -&gt;</span>
+<span class="fc" id="L42">                                    Objects.equals(serviceConfig.getServiceId(), value.getOutflowService()))</span>
+<span class="fc" id="L43">                            .flatMap(serviceConfig -&gt;</span>
+<span class="fc" id="L44">                                    componentRegistry.getComponent(serviceConfig.getComponentId()).stream())</span>
+<span class="fc" id="L45">                            .flatMap(registeredNexusComponent -&gt;</span>
+<span class="fc" id="L46">                                    registeredNexusComponent.getParameterDefinitions().stream())</span>
+<span class="fc" id="L47">                            .map(ParameterDefinition::getName)</span>
+<span class="fc" id="L48">                            .toList();</span>
+<span class="fc" id="L49">                    isValid = parameters.stream()</span>
+<span class="fc" id="L50">                            .filter(parameterConfig -&gt; StringUtils.isNotBlank(parameterConfig.getName()))</span>
+<span class="fc" id="L51">                            .allMatch(parameterConfig -&gt; parameterNames.contains(parameterConfig.getName()));</span>
+                }
+            }
+<span class="fc" id="L54">        } else {</span>
+<span class="nc" id="L55">            LOGGER.warn(&quot;no context found to validate parameters for connection {}&quot;, value);</span>
+<span class="nc" id="L56">            isValid = true;</span>
+        }
+<span class="fc" id="L58">        return isValid;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

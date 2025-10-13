@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ContextLazyObjectProvider.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.context</a> &gt; <span class="el_source">ContextLazyObjectProvider.java</span></div><h1>ContextLazyObjectProvider.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.context;
+
+import com.evolvsys.nexuse2e.core.action.Action;
+import com.evolvsys.nexuse2e.core.choreography.model.ContextChoreography;
+import com.evolvsys.nexuse2e.core.message.model.ContextConversation;
+import com.evolvsys.nexuse2e.core.partner.model.ContextPartner;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 24.01.2024
+ */
+@Component
+@RequiredArgsConstructor
+public class ContextLazyObjectProvider {
+    private final List&lt;ContextObjectFactory&lt;?, ?&gt;&gt; contextObjectFactories;
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private &lt;K, T&gt; T create(Class&lt;T&gt; valueType, K key) {
+        T result;
+<span class="fc bfc" id="L23" title="All 2 branches covered.">        if (key == null) {</span>
+<span class="fc" id="L24">            result = null;</span>
+        } else {
+<span class="fc" id="L26">            ContextObjectFactory&lt;K, T&gt; factory = (ContextObjectFactory&lt;K, T&gt;) contextObjectFactories.stream()</span>
+<span class="fc" id="L27">                    .filter(contextObjectFactory -&gt;</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">                            contextObjectFactory.getValueType().equals(valueType)</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">                                    &amp;&amp; contextObjectFactory.getKeyType().equals(key.getClass()))</span>
+<span class="fc" id="L30">                    .findFirst()</span>
+<span class="fc" id="L31">                    .orElseThrow(() -&gt; new IllegalArgumentException(</span>
+                            &quot;could not find factory or value for &quot; + valueType + &quot; (&quot; + key + &quot;)&quot;));
+<span class="fc" id="L33">            result = factory.create(key);</span>
+        }
+<span class="fc" id="L35">        return result;</span>
+    }
+
+    public Action getAction(ActionKey actionKey) {
+<span class="fc" id="L39">        return create(Action.class, actionKey);</span>
+    }
+
+    public ContextPartner getPartner(String partnerId) {
+<span class="fc" id="L43">        return create(ContextPartner.class, partnerId);</span>
+    }
+
+    public ContextChoreography getChoreography(String choreographyId) {
+<span class="fc" id="L47">        return create(ContextChoreography.class, choreographyId);</span>
+    }
+
+    public ContextConversation getConversation(String conversationId) {
+<span class="fc" id="L51">        return create(ContextConversation.class, conversationId);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

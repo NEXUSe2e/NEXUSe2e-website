@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NEXUSe2eConfigService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.service</a> &gt; <span class="el_source">NEXUSe2eConfigService.java</span></div><h1>NEXUSe2eConfigService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.service;
+
+import com.evolvsys.app.core.exception.GeneralErrorException;
+import com.evolvsys.app.core.file.model.FileDto;
+import com.evolvsys.nexuse2e.core.config.ConfigValidatorService;
+import com.evolvsys.nexuse2e.core.config.model.ConfigValidationResult;
+import com.evolvsys.nexuse2e.core.config.model.NexusConfig;
+import com.evolvsys.nexuse2e.core.config.model.NexusConfigMerge;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 27.11.2023
+ */
+@Service
+@RequiredArgsConstructor
+public class NEXUSe2eConfigService {
+    private static final String EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS = &quot;EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS&quot;;
+    private static final String COULD_NOT_MERGE_CONFIG = &quot;could not merge config&quot;;
+    private final ConfigParserService configParserService;
+    private final ConfigValidatorService configValidatorService;
+    private final ConfigCrudService configCrudService;
+    private final ConfigImportFileHelper configImportFileHelper;
+    private final ConfigImportEventHandler configImportEventHandler;
+
+    public NexusConfig merge(NexusConfig oldConfig, NexusConfig newConfig) {
+<span class="fc" id="L36">        return configParserService.merge(oldConfig, newConfig);</span>
+    }
+
+    public NexusConfig getCurrentConfig() {
+<span class="fc" id="L40">        return configParserService.exportConfig();</span>
+    }
+
+    public void print(NexusConfig nexusConfig, OutputStream outputStream) throws IOException {
+<span class="fc" id="L44">        configParserService.print(outputStream, nexusConfig);</span>
+<span class="fc" id="L45">    }</span>
+
+    public ConfigValidationResult validate(NexusConfig config) {
+<span class="fc" id="L48">        return configValidatorService.validate(config);</span>
+    }
+
+    @SuppressFBWarnings(EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS)
+    public ConfigValidationResult validate(long fileId) {
+        ConfigValidationResult validationResult;
+<span class="fc" id="L54">        try (InputStream binaryStream = configImportFileHelper.getContent(fileId)) {</span>
+<span class="fc" id="L55">            NexusConfig nexusConfig = configParserService.parse(binaryStream);</span>
+<span class="fc" id="L56">            validationResult = validate(nexusConfig);</span>
+<span class="nc" id="L57">        } catch (Exception e) {</span>
+<span class="nc" id="L58">            throw new GeneralErrorException(COULD_NOT_MERGE_CONFIG, e);</span>
+<span class="fc" id="L59">        }</span>
+<span class="fc" id="L60">        return validationResult;</span>
+    }
+
+    @SuppressWarnings(&quot;PMD.PrematureDeclaration&quot;) // oldConfig needs to be stored before we update the config
+    private NexusConfig importConfig(NexusConfig config, boolean overwrite) throws NexusException {
+<span class="fc" id="L65">        ConfigValidationResult validationResult = configValidatorService.validate(config);</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (validationResult.getFatalCount() &gt; 0) {</span>
+<span class="fc" id="L67">            throw new NexusException(NexusError.builder()</span>
+<span class="fc" id="L68">                    .message(&quot;Config contains fatal errors and cannot be applied.&quot;)</span>
+<span class="fc" id="L69">                    .extension(&quot;messages&quot;, String.join(&quot;, &quot;, validationResult.getMessages()))</span>
+<span class="fc" id="L70">                    .build());</span>
+        }
+<span class="fc" id="L72">        NexusConfig oldConfig = getCurrentConfig();</span>
+<span class="fc" id="L73">        configImportEventHandler.preImport(config, overwrite);</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (overwrite) {</span>
+<span class="fc" id="L75">            configParserService.clear();</span>
+        }
+        try {
+<span class="fc" id="L78">            configCrudService.save(config);</span>
+<span class="nc" id="L79">        } catch (NexusException e) {</span>
+<span class="nc" id="L80">            throw new NexusException(</span>
+<span class="nc" id="L81">                    NexusError.builder().message(COULD_NOT_MERGE_CONFIG).build(), e);</span>
+<span class="fc" id="L82">        }</span>
+<span class="fc" id="L83">        NexusConfig currentConfig = getCurrentConfig();</span>
+<span class="fc" id="L84">        configImportEventHandler.postImport(oldConfig, currentConfig, overwrite);</span>
+<span class="fc" id="L85">        return currentConfig;</span>
+    }
+
+    public NexusConfig merge(NexusConfig config) throws NexusException {
+<span class="fc" id="L89">        return importConfig(config, false);</span>
+    }
+
+    public NexusConfig overwrite(NexusConfig config) throws NexusException {
+<span class="fc" id="L93">        return importConfig(config, true);</span>
+    }
+
+    public NexusConfig overwrite(long fileId) throws NexusException {
+<span class="fc" id="L97">        return overwrite(toConfig(fileId));</span>
+    }
+
+    public NexusConfigMerge merge(long fileId) {
+<span class="fc" id="L101">        NexusConfig currentConfig = getCurrentConfig();</span>
+<span class="fc" id="L102">        NexusConfig nexusConfig = toConfig(fileId);</span>
+<span class="fc" id="L103">        NexusConfig merge = merge(currentConfig, nexusConfig);</span>
+
+<span class="fc" id="L105">        return NexusConfigMerge.builder()</span>
+<span class="fc" id="L106">                .merged(merge)</span>
+<span class="fc" id="L107">                .upload(nexusConfig)</span>
+<span class="fc" id="L108">                .current(getCurrentConfig())</span>
+<span class="fc" id="L109">                .mergedValidationResult(validate(merge))</span>
+<span class="fc" id="L110">                .build();</span>
+    }
+
+    @SuppressFBWarnings(EXS_EXCEPTION_SOFTENING_NO_CONSTRAINTS)
+    public NexusConfig toConfig(long fileId) {
+        NexusConfig nexusConfig;
+<span class="fc" id="L116">        try (InputStream binaryStream = configImportFileHelper.getContent(fileId)) {</span>
+<span class="fc" id="L117">            nexusConfig = configParserService.parse(binaryStream);</span>
+<span class="nc" id="L118">        } catch (Exception e) {</span>
+<span class="nc" id="L119">            throw new GeneralErrorException(COULD_NOT_MERGE_CONFIG, e);</span>
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">        return nexusConfig;</span>
+    }
+
+    @Transactional(rollbackFor = IOException.class)
+    public FileDto currentConfigToFile() throws IOException {
+<span class="fc" id="L126">        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();</span>
+<span class="fc" id="L127">        configParserService.print(outputStream, getCurrentConfig());</span>
+
+<span class="fc" id="L129">        return configImportFileHelper.create(outputStream);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.repository</a> &gt; <span class="el_source">MessageRepository.java</span></div><h1>MessageRepository.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.repository;
+
+import com.evolvsys.nexuse2e.core.message.MessageFilter;
+import com.evolvsys.nexuse2e.core.model.entity.MessageEntity;
+import com.evolvsys.nexuse2e.core.model.entity.QMessageEntity;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.querydsl.QuerydslPredicateExecutor;
+import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
+
+/**
+ * @author SvenBarden
+ * @since 12.10.2023
+ */
+public interface MessageRepository
+        extends JpaRepository&lt;MessageEntity, Long&gt;, QuerydslPredicateExecutor&lt;MessageEntity&gt; {
+
+    Optional&lt;MessageEntity&gt; findByMessageId(String messageId);
+
+    default Page&lt;MessageEntity&gt; findAllToRead(
+            Pageable pageable,
+            @Nullable MessageFilter messageFilter,
+            String timeZone,
+            BooleanExpression securityPredicate) {
+<span class="nc" id="L30">        return findAll(securityPredicate.and(QMessageEntity.messageEntity.filter(messageFilter, timeZone)), pageable);</span>
+    }
+
+    Optional&lt;MessageEntity&gt; findByReferenceMessageAndTypeAndOutboundAcknowledgment(
+            MessageEntity referenceMessage, MessageType messageType, boolean outboundAcknowledgment);
+
+    boolean existsByMessageId(String messageId);
+
+    boolean existsByAction_Id(Long id);
+
+    boolean existsBySourcePartner_IdOrTargetPartner_Id(Long id, Long id1);
+
+    default boolean exists(@Nullable MessageFilter messageFilter, @NonNull String timeZone) {
+<span class="nc" id="L43">        return exists(QMessageEntity.messageEntity.filter(messageFilter, timeZone));</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="" lang="">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>CertificateQueryDelegateTest xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../testapidocs/com/evolvsys/nexuse2e/core/certificate/repository/CertificateQueryDelegateTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> com.evolvsys.nexuse2e.core.certificate.repository;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> com.evolvsys.app.test.AllPropertiesChecker.assertAllNotNull;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.junit.jupiter.api.Assertions.assertEquals;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.mockito.Mockito.mockStatic;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.certificate.model.CertificateFilter;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.certificate.model.CertificateType;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.certificate.model.QCertificateEntity;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> com.evolvsys.nexuse2e.core.filter.BooleanFilterType;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> java.time.ZoneId;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> java.time.ZonedDateTime;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> java.util.EnumSet;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> org.junit.jupiter.api.Test;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> org.mockito.MockedStatic;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> org.mockito.invocation.InvocationOnMock;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <em class="jxr_javadoccomment"> * &lt;p&gt;Test für das {@link CertificateQueryDelegate}.&lt;/p&gt;</em>
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <em class="jxr_javadoccomment"> * @author Florian Drees</em>
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <em class="jxr_javadoccomment"> * @since 11.04.2024</em>
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">class</strong> <a name="CertificateQueryDelegateTest" href="../../../../../../com/evolvsys/nexuse2e/core/certificate/repository/CertificateQueryDelegateTest.html#CertificateQueryDelegateTest">CertificateQueryDelegateTest</a> {
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      @Test
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>      <strong class="jxr_keyword">void</strong> filterTest() {
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>          CertificateFilter filter = CertificateFilter.builder()
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>                  .types(EnumSet.allOf(CertificateType.<strong class="jxr_keyword">class</strong>))
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>                  .valid(BooleanFilterType.TRUE)
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>                  .active(BooleanFilterType.TRUE)
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>                  .sha1Fingerprint(<span class="jxr_string">"a421bd3928af3283"</span>)
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>                  .sha256Fingerprint(<span class="jxr_string">"62ab263810381ab382cd5f"</span>)
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>                  .commonName(<span class="jxr_string">"commonName_value"</span>)
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>                  .organisation(<span class="jxr_string">"organisation_value"</span>)
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>                  .organisationUnit(<span class="jxr_string">"organisationUnit_value"</span>)
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>                  .country(<span class="jxr_string">"country_value"</span>)
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>                  .state(<span class="jxr_string">"state_value"</span>)
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>                  .location(<span class="jxr_string">"location_value"</span>)
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>                  .email(<span class="jxr_string">"email_value"</span>)
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>                  .issuer(<span class="jxr_string">"issuer_value"</span>)
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>                  .selfSigned(BooleanFilterType.FALSE)
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>                  .build();
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>          assertAllNotNull(filter);
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>  
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>          String expectedPredicate =
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>                  <span class="jxr_string">""</span><span class="jxr_string">"
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>                          certificateEntity.info.validFrom &lt; 2024-04-11T15:30:20Z[GMT]
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>                           &amp;&amp; certificateEntity.info.validUntil &gt; 2024-04-11T15:30:20Z[GMT]
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>                           &amp;&amp; certificateEntity.type in [LOCAL, CA, PARTNER]
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>                           &amp;&amp; certificateEntity.active = <strong class="jxr_keyword">true</strong>
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>                           &amp;&amp; contains(certificateEntity.info.sha1Fingerprint,a421bd3928af3283)
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>                           &amp;&amp; contains(certificateEntity.info.sha256Fingerprint,62ab263810381ab382cd5f)
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>                           &amp;&amp; contains(certificateEntity.info.commonName,commonName_value)
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>                           &amp;&amp; contains(certificateEntity.info.organisation,organisation_value)
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>                           &amp;&amp; contains(certificateEntity.info.organisationUnit,organisationUnit_value)
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>                           &amp;&amp; contains(certificateEntity.info.country,country_value)
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>                           &amp;&amp; contains(certificateEntity.info.state,state_value)
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>                           &amp;&amp; contains(certificateEntity.info.location,location_value)
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>                           &amp;&amp; contains(certificateEntity.info.email,email_value)
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>                           &amp;&amp; contains(certificateEntity.info.issuer,issuer_value)
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>                           &amp;&amp; certificateEntity.info.selfSigned = false
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>                          <span class="jxr_string">""</span><span class="jxr_string">"
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>                          .replace(<span class="jxr_string">"\n"</span>, <span class="jxr_string">""</span>);
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>          ZonedDateTime mockedNow = ZonedDateTime.of(2024, 4, 11, 15, 30, 20, 0, ZoneId.of(<span class="jxr_string">"GMT"</span>));
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>          <strong class="jxr_keyword">try</strong> (MockedStatic&lt;ZonedDateTime&gt; mockedStatic =
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                  mockStatic(ZonedDateTime.<strong class="jxr_keyword">class</strong>, InvocationOnMock::callRealMethod)) {
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>              mockedStatic.when(ZonedDateTime::now).thenReturn(mockedNow);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>              assertEquals(
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                      expectedPredicate,
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>                      QCertificateEntity.certificateEntity.filter(filter).toString());
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>          }
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>      }
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  }
+</pre>
+<hr/>
+<div id="footer">© 2022–2025 <a href="https://www.evolvsys.com/">evolving systems consulting GmbH</a></div>
+</body>
+</html>

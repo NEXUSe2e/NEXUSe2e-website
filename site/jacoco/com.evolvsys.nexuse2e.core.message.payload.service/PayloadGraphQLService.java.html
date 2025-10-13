@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PayloadGraphQLService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.payload.service</a> &gt; <span class="el_source">PayloadGraphQLService.java</span></div><h1>PayloadGraphQLService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.payload.service;
+
+import com.evolvsys.app.core.binary.service.BinaryType;
+import com.evolvsys.app.core.graphql.annotation.GraphQLService;
+import com.evolvsys.app.core.graphql.dataloader.DataLoaderService;
+import com.evolvsys.nexuse2e.core.message.model.MetaDataDto;
+import com.evolvsys.nexuse2e.core.message.payload.MetaDataDtoComparator;
+import com.evolvsys.nexuse2e.core.message.payload.PayloadBinaryContentType;
+import com.evolvsys.nexuse2e.core.message.payload.model.PayloadDto;
+import io.leangen.graphql.annotations.GraphQLContext;
+import io.leangen.graphql.annotations.GraphQLEnvironment;
+import io.leangen.graphql.annotations.GraphQLNonNull;
+import io.leangen.graphql.annotations.GraphQLQuery;
+import io.leangen.graphql.execution.ResolutionEnvironment;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.CompletableFuture;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections4.CollectionUtils;
+
+/**
+ * @author Florian Drees
+ * @since 29.02.2024
+ */
+@GraphQLService
+@RequiredArgsConstructor
+public class PayloadGraphQLService {
+    private final DataLoaderService dataLoaderService;
+
+    @GraphQLQuery
+    public String downloadPath(
+            @GraphQLContext PayloadDto payloadDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="nc" id="L34">        return BinaryType.getPath(PayloadBinaryContentType.NAME, String.valueOf(payloadDto.getId()));</span>
+    }
+
+    @GraphQLQuery
+    public CompletableFuture&lt;Set&lt;@GraphQLNonNull MetaDataDto&gt;&gt; metaDatas(
+            @GraphQLContext PayloadDto payloadDto, @GraphQLEnvironment ResolutionEnvironment resolutionEnvironment) {
+<span class="nc" id="L40">        return dataLoaderService</span>
+<span class="nc" id="L41">                .loadRelation(resolutionEnvironment, PayloadMetaDataBatchLoader.class, payloadDto)</span>
+<span class="nc" id="L42">                .thenApply(PayloadGraphQLService::updateMetaDatas);</span>
+    }
+
+    private static Set&lt;MetaDataDto&gt; updateMetaDatas(Set&lt;MetaDataDto&gt; metaDataDtos) {
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (CollectionUtils.isNotEmpty(metaDataDtos)) {</span>
+<span class="nc" id="L47">            SortedSet&lt;MetaDataDto&gt; sorted = new TreeSet&lt;&gt;(MetaDataDtoComparator.INSTANCE);</span>
+<span class="nc" id="L48">            sorted.addAll(metaDataDtos);</span>
+<span class="nc" id="L49">            metaDataDtos = sorted;</span>
+        }
+<span class="nc" id="L51">        return metaDataDtos;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

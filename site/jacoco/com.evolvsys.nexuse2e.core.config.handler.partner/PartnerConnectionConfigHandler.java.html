@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PartnerConnectionConfigHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.handler.partner</a> &gt; <span class="el_source">PartnerConnectionConfigHandler.java</span></div><h1>PartnerConnectionConfigHandler.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.handler.partner;
+
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateContainerEntity;
+import com.evolvsys.nexuse2e.core.certificate.repository.CertificateContainerRepository;
+import com.evolvsys.nexuse2e.core.config.handler.mapper.PartnerConnectionConfigMapper;
+import com.evolvsys.nexuse2e.core.config.model.ConnectionConfig;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.model.entity.PartnerConnectionEntity;
+import com.evolvsys.nexuse2e.core.model.entity.PartnerEntity;
+import com.evolvsys.nexuse2e.core.partner.repository.PartnerRepository;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author SvenBarden
+ * @since 10.04.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L25">@Slf4j</span>
+class PartnerConnectionConfigHandler {
+    private final PartnerRepository partnerRepository;
+    private final PartnerConnectionConfigMapper partnerConnectionConfigMapper;
+    private final CertificateContainerRepository certificateContainerRepository;
+
+    protected PartnerConnectionEntity create(PartnerEntity partnerEntity) {
+<span class="fc" id="L32">        LOGGER.debug(&quot;creating new connection for partner {}&quot;, partnerEntity.getPartnerId());</span>
+<span class="fc" id="L33">        PartnerConnectionEntity partnerConnectionEntity = new PartnerConnectionEntity();</span>
+<span class="fc" id="L34">        partnerConnectionEntity.setPartner(partnerEntity);</span>
+<span class="fc" id="L35">        return partnerConnectionEntity;</span>
+    }
+
+    @Transactional
+    public void update(String partnerId, ConnectionConfig connectionConfig) {
+<span class="fc" id="L40">        LOGGER.trace(&quot;handling connection {}&quot;, connectionConfig);</span>
+
+<span class="fc" id="L42">        PartnerEntity partnerEntity = partnerRepository</span>
+<span class="fc" id="L43">                .findByPartnerId(partnerId)</span>
+<span class="pc" id="L44">                .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L45">                        .message(&quot;Partner for connection not found&quot;)</span>
+<span class="nc" id="L46">                        .extension(&quot;partnerId&quot;, partnerId)</span>
+<span class="nc" id="L47">                        .build()));</span>
+
+<span class="fc" id="L49">        PartnerConnectionEntity partnerConnectionEntity = partnerEntity.getConnections().stream()</span>
+<span class="fc" id="L50">                .filter(c -&gt; c.getConnectionId().equals(connectionConfig.getConnectionId()))</span>
+<span class="fc" id="L51">                .findFirst()</span>
+<span class="fc" id="L52">                .orElseGet(() -&gt; create(partnerEntity));</span>
+
+<span class="fc" id="L54">        partnerConnectionConfigMapper.updateEntity(connectionConfig, partnerConnectionEntity);</span>
+
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (partnerConnectionEntity.getId() == null) {</span>
+<span class="fc" id="L57">            partnerEntity.getConnections().add(partnerConnectionEntity);</span>
+        }
+
+<span class="fc" id="L60">        List&lt;CertificateContainerEntity&gt; certificateContainerEntities =</span>
+<span class="fc" id="L61">                certificateContainerRepository.findByPartner(partnerEntity);</span>
+
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (StringUtils.isNotBlank(connectionConfig.getCertificateContainer())) {</span>
+<span class="fc" id="L64">            CertificateContainerEntity containerEntity = certificateContainerEntities.stream()</span>
+<span class="fc" id="L65">                    .filter(certificateContainerEntity -&gt;</span>
+<span class="fc" id="L66">                            certificateContainerEntity.getName().equals(connectionConfig.getCertificateContainer()))</span>
+<span class="fc" id="L67">                    .findFirst()</span>
+<span class="pc" id="L68">                    .orElseThrow(() -&gt; new NexusRuntimeException(NexusError.builder()</span>
+<span class="nc" id="L69">                            .message(&quot;No certificate container for partner connection found&quot;)</span>
+<span class="nc" id="L70">                            .extension(&quot;container&quot;, connectionConfig.getCertificateContainer())</span>
+<span class="nc" id="L71">                            .extension(&quot;partner&quot;, partnerId)</span>
+<span class="nc" id="L72">                            .build()));</span>
+<span class="fc" id="L73">            partnerConnectionEntity.setCertificateContainer(containerEntity);</span>
+        }
+
+<span class="fc" id="L76">        partnerRepository.save(partnerEntity);</span>
+<span class="fc" id="L77">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

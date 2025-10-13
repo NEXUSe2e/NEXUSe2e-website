@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SupportServiceTypeConverter.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.parameter.converter</a> &gt; <span class="el_source">SupportServiceTypeConverter.java</span></div><h1>SupportServiceTypeConverter.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.parameter.converter;
+
+import com.evolvsys.nexuse2e.core.component.SupportService;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusRuntimeException;
+import com.evolvsys.nexuse2e.core.model.entity.ParameterEntity;
+import com.evolvsys.nexuse2e.core.model.entity.ServiceEntity;
+import com.evolvsys.nexuse2e.core.service.ServiceFactory;
+import com.evolvsys.nexuse2e.core.service.repository.ServiceRepository;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 10.06.2024
+ */
+@Component
+@RequiredArgsConstructor
+<span class="fc" id="L23">@Slf4j</span>
+public class SupportServiceTypeConverter extends BaseStringDtoValueTypeConverter&lt;SupportService&gt; {
+    private final ServiceFactory serviceFactory;
+    private final ServiceRepository serviceRepository;
+
+    private SupportService getService(long id) {
+        try {
+<span class="fc" id="L30">            return serviceFactory.get(id);</span>
+<span class="nc" id="L31">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L32">            LOGGER.error(&quot;support service with id {} could not be found&quot;, id, e);</span>
+<span class="nc" id="L33">            return null;</span>
+        }
+    }
+
+    private Optional&lt;ServiceEntity&gt; getServiceEntity(long id) {
+<span class="fc" id="L38">        return serviceRepository.findById(id);</span>
+    }
+
+    @Override
+    public String toDtoValue(ParameterEntity parameterEntity) {
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        return parameterEntity.getLongValue() == null ? null : String.valueOf(parameterEntity.getLongValue());</span>
+    }
+
+    @Override
+    public List&lt;String&gt; toConfigValue(ParameterEntity parameterEntity) {
+<span class="fc" id="L48">        return Optional.ofNullable(parameterEntity.getLongValue())</span>
+<span class="fc" id="L49">                .flatMap(this::getServiceEntity)</span>
+<span class="fc" id="L50">                .map(ServiceEntity::getServiceId)</span>
+<span class="fc" id="L51">                .stream()</span>
+<span class="fc" id="L52">                .toList();</span>
+    }
+
+    @Override
+    public void updateFromConfig(ParameterEntity parameterEntity, List&lt;String&gt; configValue) {
+<span class="fc bfc" id="L57" title="All 2 branches covered.">        if (CollectionUtils.isEmpty(configValue)) {</span>
+<span class="fc" id="L58">            parameterEntity.setLongValue(null);</span>
+        } else {
+<span class="fc" id="L60">            parameterEntity.setLongValue(serviceRepository</span>
+<span class="fc" id="L61">                    .findByServiceId(configValue.getFirst())</span>
+<span class="fc" id="L62">                    .map(ServiceEntity::getId)</span>
+<span class="fc" id="L63">                    .orElse(null));</span>
+        }
+<span class="fc" id="L65">    }</span>
+
+    @Override
+    public SupportService toContextValue(ParameterEntity parameterEntity) {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        return parameterEntity.getLongValue() == null ? null : getService(parameterEntity.getLongValue());</span>
+    }
+
+    @Override
+    public String toDtoValue(SupportService contextValue) {
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (contextValue != null) {</span>
+<span class="fc" id="L75">            throw new NexusRuntimeException(NexusError.builder()</span>
+<span class="fc" id="L76">                    .message(</span>
+                            &quot;Conversion from context service to dto is not supported. You cannot assign a default value to SupportService types&quot;)
+<span class="fc" id="L78">                    .build());</span>
+        }
+<span class="fc" id="L80">        return null;</span>
+    }
+
+    @Override
+    public void updateFromDto(ParameterEntity parameterEntity, String dtoValue) {
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        parameterEntity.setLongValue(dtoValue == null ? null : Long.valueOf(dtoValue));</span>
+<span class="fc" id="L86">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

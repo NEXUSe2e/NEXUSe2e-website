@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageRunner.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message</a> &gt; <span class="el_source">MessageRunner.java</span></div><h1>MessageRunner.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message;
+
+import com.evolvsys.nexuse2e.core.async.MessageExecutor;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.logging.MessageLogContextHolder;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.function.Supplier;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 18.10.2023
+ */
+@Component
+<span class="fc" id="L20">@Slf4j</span>
+@RequiredArgsConstructor
+public class MessageRunner {
+    @MessageExecutor
+    private final Executor messageExecutor;
+
+    private Supplier&lt;MessageContext&gt; createSupplier(MessageContext messageContext, Supplier&lt;MessageContext&gt; delegate) {
+<span class="fc" id="L27">        return () -&gt; {</span>
+            // assign the message context from the parent thread to the new created thread
+<span class="fc" id="L29">            MessageLogContextHolder.getContext().setMessageContext(messageContext);</span>
+<span class="fc" id="L30">            MessageContext newContext = delegate.get();</span>
+<span class="fc" id="L31">            MessageLogContextHolder.clearContext();</span>
+<span class="fc" id="L32">            return newContext;</span>
+        };
+    }
+
+    public CompletableFuture&lt;MessageContext&gt; createFuture(
+            MessageContext messageContext, Supplier&lt;MessageContext&gt; messageContextSupplier) {
+<span class="nc" id="L38">        LOGGER.debug(&quot;creating future for {}&quot;, messageContext);</span>
+
+<span class="nc" id="L40">        return CompletableFuture.supplyAsync(createSupplier(messageContext, messageContextSupplier), messageExecutor);</span>
+    }
+
+    public CompletableFuture&lt;MessageContext&gt; createWrappedFuture(
+            MessageContext messageContext, SupplierWrapper messageContextSupplier) {
+<span class="fc" id="L45">        LOGGER.debug(&quot;creating future for {}&quot;, messageContext);</span>
+
+<span class="fc" id="L47">        Supplier&lt;MessageContext&gt; supplier = new Supplier&lt;&gt;() {</span>
+<span class="nc" id="L48">            @SneakyThrows</span>
+            @Override
+            public MessageContext get() {
+<span class="fc" id="L51">                return messageContextSupplier.get();</span>
+            }
+        };
+
+<span class="fc" id="L55">        return CompletableFuture.supplyAsync(createSupplier(messageContext, supplier), messageExecutor);</span>
+    }
+
+    @FunctionalInterface
+    public interface SupplierWrapper {
+        MessageContext get() throws NexusException;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

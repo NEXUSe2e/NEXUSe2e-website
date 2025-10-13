@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HttpUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.utils</a> &gt; <span class="el_source">HttpUtils.java</span></div><h1>HttpUtils.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.utils;
+
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpStatusCode;
+
+/**
+ * @author SvenBarden
+ * @since 30.04.2024
+ */
+@UtilityClass
+<span class="fc" id="L16">@Slf4j</span>
+public class HttpUtils {
+<span class="fc" id="L18">    private static final Pattern VALID_STATUS_PATTERN = Pattern.compile(&quot;[\\dx]{3}&quot;);</span>
+<span class="fc" id="L19">    private static final Pattern CONTENT_TYPE_FIX_PATTERN =</span>
+<span class="fc" id="L20">            Pattern.compile(&quot;(?!\\s+;)([A-Za-z0-9]+=)([^\&quot;]+?)($|(;\\s+))&quot;);</span>
+
+    public static String fixContentType(String contentType) {
+<span class="fc" id="L23">        StringBuilder result = new StringBuilder();</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (StringUtils.isNotEmpty(contentType)) {</span>
+<span class="fc" id="L25">            Matcher matcher = CONTENT_TYPE_FIX_PATTERN.matcher(contentType);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            while (matcher.find()) {</span>
+<span class="fc" id="L27">                matcher.appendReplacement(result, matcher.group(1) + &quot;\&quot;&quot; + matcher.group(2) + &quot;\&quot;&quot; + matcher.group(3));</span>
+            }
+<span class="fc" id="L29">            matcher.appendTail(result);</span>
+        }
+<span class="fc" id="L31">        return result.toString();</span>
+    }
+
+    public static boolean validResponseStatus(HttpStatusCode httpStatusCode, List&lt;String&gt; validCodes) {
+<span class="fc" id="L35">        return validCodes.stream().anyMatch(code -&gt; validResponseStatus(httpStatusCode, code));</span>
+    }
+
+    public static boolean validResponseStatus(HttpStatusCode httpStatusCode, String validStatus) {
+        boolean valid;
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if (VALID_STATUS_PATTERN.matcher(validStatus).matches()) {</span>
+<span class="fc" id="L41">            valid = Pattern.compile(validStatus.replace(&quot;x&quot;, &quot;\\d&quot;))</span>
+<span class="fc" id="L42">                    .matcher(String.valueOf(httpStatusCode.value()))</span>
+<span class="fc" id="L43">                    .matches();</span>
+        } else {
+<span class="fc" id="L45">            valid = validStatus.equals(String.valueOf(httpStatusCode.value()));</span>
+        }
+<span class="fc" id="L47">        return valid;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

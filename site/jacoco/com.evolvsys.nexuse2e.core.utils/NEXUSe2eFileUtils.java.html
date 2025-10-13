@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>NEXUSe2eFileUtils.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.utils</a> &gt; <span class="el_source">NEXUSe2eFileUtils.java</span></div><h1>NEXUSe2eFileUtils.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.utils;
+
+import java.io.File;
+import java.net.URL;
+import java.util.Collection;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.regex.Pattern;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.apache.commons.io.filefilter.IOFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+import org.apache.commons.lang3.Validate;
+
+/**
+ * @author SvenBarden
+ * @since 20.11.2023
+ */
+@UtilityClass
+public class NEXUSe2eFileUtils {
+<span class="fc" id="L22">    private static final Pattern INVALID_FILENAME_PATTERN = Pattern.compile(&quot;[^a-zA-Z0-9.\\-_ ]&quot;);</span>
+<span class="fc" id="L23">    private static final Function&lt;String, File&gt; CLASSPATH_DIRECTORY_FINDER = directory -&gt; {</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        if (directory.startsWith(&quot;/&quot;) == false) {</span>
+<span class="fc" id="L25">            throw new IllegalArgumentException(&quot;classpath path &quot; + directory + &quot; must be absolute&quot;);</span>
+        }
+<span class="fc" id="L27">        URL resource = NEXUSe2eFileUtils.class.getResource(directory);</span>
+<span class="fc" id="L28">        return FileUtils.toFile(resource);</span>
+    };
+<span class="fc" id="L30">    private static final Function&lt;String, File&gt; FILE_DIRECTORY_FINDER = File::new;</span>
+<span class="fc" id="L31">    private static final Function&lt;String, File&gt; DEFAULT_DIRECTORY_FINDER = FILE_DIRECTORY_FINDER;</span>
+
+<span class="fc" id="L33">    private static final Map&lt;String, Function&lt;String, File&gt;&gt; FILE_FINDERS =</span>
+<span class="fc" id="L34">            Map.of(&quot;classpath:&quot;, CLASSPATH_DIRECTORY_FINDER, &quot;file:&quot;, FILE_DIRECTORY_FINDER);</span>
+
+    public static Collection&lt;File&gt; getFiles(String directory) {
+<span class="fc" id="L37">        return getFiles(directory, true);</span>
+    }
+
+    public static Collection&lt;File&gt; getFiles(String directory, boolean recursive) {
+<span class="fc" id="L41">        Validate.notNull(directory, &quot;directory must not be null&quot;);</span>
+<span class="fc" id="L42">        File fileDirectory = FILE_FINDERS.entrySet().stream()</span>
+<span class="fc" id="L43">                .filter(entry -&gt; directory.startsWith(entry.getKey()))</span>
+<span class="fc" id="L44">                .findFirst()</span>
+<span class="fc" id="L45">                .map(entry -&gt; entry.getValue()</span>
+<span class="fc" id="L46">                        .apply(directory.substring(entry.getKey().length())))</span>
+<span class="fc" id="L47">                .orElseGet(() -&gt; DEFAULT_DIRECTORY_FINDER.apply(directory));</span>
+
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        IOFileFilter dirFilter = recursive ? TrueFileFilter.TRUE : FalseFileFilter.FALSE;</span>
+<span class="fc" id="L50">        return FileUtils.listFiles(fileDirectory, TrueFileFilter.TRUE, dirFilter);</span>
+    }
+
+    public static String cleanFileName(String fileName, String replacement) {
+<span class="fc" id="L54">        return INVALID_FILENAME_PATTERN.matcher(fileName).replaceAll(replacement);</span>
+    }
+
+    public static String cleanFileName(String fileName) {
+<span class="fc" id="L58">        return cleanFileName(fileName, &quot;_&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

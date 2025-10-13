@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemInfoService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.system</a> &gt; <span class="el_source">SystemInfoService.java</span></div><h1>SystemInfoService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.system;
+
+import com.evolvsys.nexuse2e.core.config.NEXUSe2eConfigurationProperties;
+import com.evolvsys.nexuse2e.core.system.model.LibraryDto;
+import com.evolvsys.nexuse2e.core.system.model.SystemInfoDto;
+import com.evolvsys.nexuse2e.core.system.model.VendorDto;
+import java.lang.management.ManagementFactory;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import one.util.streamex.StreamEx;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.core.env.AbstractEnvironment;
+import org.springframework.core.env.EnumerablePropertySource;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.stereotype.Service;
+
+/**
+ * @author SvenBarden
+ * @since 14.12.2023
+ */
+@Service
+<span class="fc" id="L28">@Slf4j</span>
+@RequiredArgsConstructor
+public class SystemInfoService implements InitializingBean {
+    private SystemInfoDto systemInfoDto;
+    private final NEXUSe2eConfigurationProperties nexuSe2eConfigurationProperties;
+    private final Environment environment;
+
+    private boolean filterProperty(String property) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        return nexuSe2eConfigurationProperties.getInfoIgnoreProperties() == null</span>
+<span class="nc" id="L37">                || nexuSe2eConfigurationProperties.getInfoIgnoreProperties().stream()</span>
+<span class="pc bnc" id="L38" title="All 2 branches missed.">                        .noneMatch(s -&gt; s.equalsIgnoreCase(property));</span>
+    }
+
+    private Map&lt;String, Object&gt; getApplicationProperties() {
+<span class="fc" id="L42">        Map&lt;String, Object&gt; props = new LinkedHashMap&lt;&gt;();</span>
+<span class="fc" id="L43">        MutablePropertySources propertySources = ((AbstractEnvironment) environment).getPropertySources();</span>
+
+<span class="fc" id="L45">        propertySources.stream()</span>
+<span class="fc" id="L46">                .filter(ps -&gt; ps instanceof EnumerablePropertySource)</span>
+<span class="fc" id="L47">                .map(ps -&gt; ((EnumerablePropertySource) ps).getPropertyNames())</span>
+<span class="fc" id="L48">                .flatMap(Arrays::stream)</span>
+<span class="fc" id="L49">                .filter(this::filterProperty)</span>
+<span class="fc" id="L50">                .sorted()</span>
+<span class="fc" id="L51">                .forEach(propName -&gt; props.put(propName, environment.getProperty(propName)));</span>
+<span class="fc" id="L52">        return props;</span>
+    }
+
+    private List&lt;String&gt; getVmArguments() {
+<span class="fc" id="L56">        return ManagementFactory.getRuntimeMXBean().getInputArguments();</span>
+    }
+
+    private String getVendorName(Package p) {
+<span class="fc" id="L60">        return Optional.ofNullable(p.getImplementationVendor())</span>
+<span class="fc" id="L61">                .or(() -&gt; Optional.ofNullable(p.getSpecificationVendor()))</span>
+<span class="fc" id="L62">                .orElse(&quot;UNKNOWN&quot;);</span>
+    }
+
+    private VendorDto toVendor(String vendorName, Collection&lt;Package&gt; packages) {
+<span class="fc" id="L66">        return VendorDto.builder()</span>
+<span class="fc" id="L67">                .name(vendorName)</span>
+<span class="fc" id="L68">                .libraries(packages.stream().map(this::toLibrary).toList())</span>
+<span class="fc" id="L69">                .build();</span>
+    }
+
+    private LibraryDto toLibrary(Package p) {
+<span class="fc" id="L73">        return LibraryDto.builder()</span>
+<span class="fc" id="L74">                .version(p.getImplementationVersion())</span>
+<span class="fc" id="L75">                .name(p.getImplementationTitle())</span>
+<span class="fc" id="L76">                .build();</span>
+    }
+
+    private List&lt;VendorDto&gt; getLibraries() {
+<span class="fc" id="L80">        Package[] packages = Package.getPackages();</span>
+<span class="fc" id="L81">        LOGGER.trace(&quot;found {} packages&quot;, packages.length);</span>
+
+<span class="fc" id="L83">        return StreamEx.of(packages)</span>
+<span class="fc" id="L84">                .filter(p -&gt;</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">                        StringUtils.startsWithAny(p.getName(), &quot;sun.&quot;, &quot;com.sun.&quot;, &quot;jdk.&quot;, &quot;javax.&quot;, &quot;java.&quot;) == false)</span>
+<span class="fc" id="L86">                .filter(p -&gt; StringUtils.isNoneBlank(p.getImplementationTitle(), p.getImplementationVersion()))</span>
+<span class="fc" id="L87">                .groupingBy(this::getVendorName)</span>
+<span class="fc" id="L88">                .entrySet()</span>
+<span class="fc" id="L89">                .stream()</span>
+<span class="fc" id="L90">                .map(vendorDtoListEntry -&gt; toVendor(vendorDtoListEntry.getKey(), vendorDtoListEntry.getValue()))</span>
+<span class="fc" id="L91">                .toList();</span>
+    }
+
+    @SuppressWarnings(&quot;PMD.CloseResource&quot;)
+    private SortedSet&lt;String&gt; getWebJars() {
+<span class="fc" id="L96">        SortedSet&lt;String&gt; jarFileNames = new TreeSet&lt;&gt;();</span>
+
+<span class="fc" id="L98">        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();</span>
+<span class="fc" id="L99">        LOGGER.debug(&quot;get loader {} with parent&quot;, contextClassLoader);</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (contextClassLoader instanceof URLClassLoader urlClassLoader) {</span>
+<span class="nc" id="L101">            URL[] urLs = urlClassLoader.getURLs();</span>
+<span class="nc" id="L102">            LOGGER.info(&quot;found {} urls&quot;, urLs.length);</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">            for (URL url : urLs) {</span>
+<span class="nc" id="L104">                jarFileNames.add(url.getFile());</span>
+            }
+        }
+
+<span class="fc" id="L108">        return jarFileNames;</span>
+    }
+
+    private SortedSet&lt;String&gt; getAppJars() {
+<span class="fc" id="L112">        SortedSet&lt;String&gt; jarFileNames = new TreeSet&lt;&gt;();</span>
+
+<span class="fc" id="L114">        String property = System.getProperty(&quot;java.class.path&quot;);</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">        if (property == null) {</span>
+<span class="nc" id="L116">            LOGGER.debug(&quot;no path info property found&quot;);</span>
+        } else {
+<span class="fc" id="L118">            CollectionUtils.addAll(jarFileNames, property.split(&quot;;&quot;));</span>
+        }
+
+<span class="fc" id="L121">        return jarFileNames;</span>
+    }
+
+    private SystemInfoDto loadSystemInfo() {
+<span class="fc" id="L125">        SystemInfoDto.SystemInfoDtoBuilder builder = SystemInfoDto.builder();</span>
+<span class="fc" id="L126">        builder.properties(getApplicationProperties())</span>
+<span class="fc" id="L127">                .vmArguments(getVmArguments())</span>
+<span class="fc" id="L128">                .vendors(getLibraries());</span>
+
+<span class="fc" id="L130">        SortedSet&lt;String&gt; jarFiles = new TreeSet&lt;&gt;();</span>
+<span class="fc" id="L131">        jarFiles.addAll(getWebJars());</span>
+<span class="fc" id="L132">        jarFiles.addAll(getAppJars());</span>
+
+<span class="fc" id="L134">        builder.jarFiles(jarFiles);</span>
+
+<span class="fc" id="L136">        return builder.build();</span>
+    }
+
+    public SystemInfoDto getSystemInfo() {
+<span class="fc" id="L140">        return systemInfoDto;</span>
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+<span class="fc" id="L145">        LOGGER.info(&quot;loading system infos&quot;);</span>
+<span class="fc" id="L146">        synchronized (this) {</span>
+<span class="fc" id="L147">            systemInfoDto = loadSystemInfo();</span>
+<span class="fc" id="L148">        }</span>
+<span class="fc" id="L149">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

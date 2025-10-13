@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.service</a> &gt; <span class="el_source">CertificateHelper.java</span></div><h1>CertificateHelper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.service;
+
+import com.evolvsys.nexuse2e.core.certificate.CertificateConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import java.io.InputStream;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.SequencedCollection;
+import javax.security.auth.x500.X500Principal;
+import lombok.experimental.UtilityClass;
+import org.apache.commons.lang3.ArrayUtils;
+
+/**
+ * @author SvenBarden
+ * @since 06.02.2024
+ */
+@UtilityClass
+public class CertificateHelper {
+
+    private static void addCertsToChain(
+            SequencedCollection&lt;X509Certificate&gt; chain, SequencedCollection&lt;X509Certificate&gt; caCerts) {
+<span class="fc" id="L28">        X509Certificate x509Certificate = chain.getLast();</span>
+
+<span class="fc" id="L30">        X500Principal issuerX500Principal = x509Certificate.getIssuerX500Principal();</span>
+
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        if (issuerX500Principal.equals(x509Certificate.getSubjectX500Principal())) {</span>
+            // self sign, we are finished
+        } else {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">            for (X509Certificate caCert : caCerts) {</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">                if (issuerX500Principal.equals(caCert.getSubjectX500Principal())) {</span>
+                    try {
+<span class="fc" id="L38">                        x509Certificate.verify(caCert.getPublicKey());</span>
+
+<span class="fc" id="L40">                        chain.add(caCert);</span>
+
+<span class="fc" id="L42">                        addCertsToChain(chain, caCerts);</span>
+<span class="fc" id="L43">                        break;</span>
+<span class="nc" id="L44">                    } catch (CertificateException</span>
+                            | NoSuchAlgorithmException
+                            | InvalidKeyException
+                            | NoSuchProviderException
+                            | SignatureException e) {
+                        // do nothing
+                    }
+                }
+<span class="nc" id="L52">            }</span>
+        }
+<span class="fc" id="L54">    }</span>
+
+    public static List&lt;X509Certificate&gt; buildChain(X509Certificate cert, SequencedCollection&lt;X509Certificate&gt; caCerts) {
+<span class="fc" id="L57">        List&lt;X509Certificate&gt; chain = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L58">        chain.add(cert);</span>
+
+<span class="fc" id="L60">        addCertsToChain(chain, caCerts);</span>
+
+<span class="fc" id="L62">        return chain;</span>
+    }
+
+    public static X509Certificate getCertificate(InputStream inputStream) throws NexusException {
+        X509Certificate certificate;
+        try {
+            java.security.cert.CertificateFactory factory;
+            try {
+<span class="fc" id="L70">                factory = java.security.cert.CertificateFactory.getInstance(</span>
+                        CertificateConstants.DEFAULT_CERT_TYPE, CertificateConstants.DEFAULT_JCE_PROVIDER);
+<span class="nc" id="L72">            } catch (NoSuchProviderException e) {</span>
+<span class="nc" id="L73">                factory =</span>
+<span class="nc" id="L74">                        java.security.cert.CertificateFactory.getInstance(CertificateConstants.DEFAULT_KEY_STORE_TYPE);</span>
+<span class="fc" id="L75">            }</span>
+<span class="fc" id="L76">            certificate = (X509Certificate) factory.generateCertificate(inputStream);</span>
+<span class="nc" id="L77">        } catch (CertificateException e) {</span>
+<span class="nc" id="L78">            throw new NexusException(</span>
+<span class="nc" id="L79">                    NexusError.builder()</span>
+<span class="nc" id="L80">                            .message(&quot;could not create certificate from inputStream&quot;)</span>
+<span class="nc" id="L81">                            .build(),</span>
+                    e);
+<span class="fc" id="L83">        }</span>
+
+<span class="fc" id="L85">        return certificate;</span>
+    }
+
+    public static X509Certificate getPublicCertFromKey(KeyStore keyStore) throws NexusException {
+<span class="fc" id="L89">        X509Certificate certificate = null;</span>
+        try {
+<span class="fc" id="L91">            Enumeration&lt;String&gt; aliases = keyStore.aliases();</span>
+
+<span class="pc bpc" id="L93" title="1 of 2 branches missed.">            if (aliases.hasMoreElements() == false) {</span>
+<span class="nc" id="L94">                throw new NexusException(</span>
+<span class="nc" id="L95">                        NexusError.builder().message(&quot;keystore has no aliases&quot;).build());</span>
+            }
+
+<span class="pc bpc" id="L98" title="1 of 4 branches missed.">            while (aliases.hasMoreElements() &amp;&amp; certificate == null) {</span>
+<span class="fc" id="L99">                String alias = aliases.nextElement();</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">                if (keyStore.isKeyEntry(alias)) {</span>
+<span class="fc" id="L101">                    Certificate[] certificateChain = keyStore.getCertificateChain(alias);</span>
+<span class="pc bpc" id="L102" title="1 of 2 branches missed.">                    if (ArrayUtils.isNotEmpty(certificateChain)) {</span>
+<span class="fc" id="L103">                        certificate = (X509Certificate) certificateChain[0];</span>
+                    }
+                }
+<span class="fc" id="L106">            }</span>
+
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">            if (certificate == null) {</span>
+<span class="nc" id="L109">                throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L110">                        .message(&quot;no certificate in keystore found&quot;)</span>
+<span class="nc" id="L111">                        .build());</span>
+            }
+
+<span class="nc" id="L114">        } catch (KeyStoreException e) {</span>
+<span class="nc" id="L115">            throw new NexusException(</span>
+<span class="nc" id="L116">                    NexusError.builder()</span>
+<span class="nc" id="L117">                            .message(&quot;could not get certificate from keystore&quot;)</span>
+<span class="nc" id="L118">                            .build(),</span>
+                    e);
+<span class="fc" id="L120">        }</span>
+<span class="fc" id="L121">        return certificate;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

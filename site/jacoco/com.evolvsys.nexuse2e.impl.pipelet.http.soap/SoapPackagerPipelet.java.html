@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SoapPackagerPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.http.soap</a> &gt; <span class="el_source">SoapPackagerPipelet.java</span></div><h1>SoapPackagerPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.http.soap;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.constants.HttpConstants;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContentOutputStream;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
+import java.io.IOException;
+import java.util.List;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import org.springframework.http.HttpHeaders;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+/**
+ * Creates a SOAP message with a SOAP body containing the XML payload from the message. The SOAP message is written to the ExecutionContext's data.
+ *
+ * @author SvenBarden
+ * @since 25.07.2025
+ */
+<span class="fc" id="L32">public class SoapPackagerPipelet extends Pipelet {</span>
+    private static final String SOAP_ACTION = &quot;soap_action&quot;;
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L37">        return List.of(ParameterDefinition.builder()</span>
+<span class="fc" id="L38">                .name(SOAP_ACTION)</span>
+<span class="fc" id="L39">                .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L40">                .displayName(&quot;SOAP Action&quot;)</span>
+<span class="fc" id="L41">                .description(&quot;The SOAP action to set in the HTTP headers.&quot;)</span>
+<span class="fc" id="L42">                .build());</span>
+    }
+
+    @Override
+    @SuppressFBWarnings({&quot;XXE_DOCUMENT&quot;, &quot;CFS_CONFUSING_FUNCTION_SEMANTICS&quot;})
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+
+        SOAPMessage soapMessage;
+        try {
+<span class="fc" id="L51">            soapMessage = MessageFactory.newInstance().createMessage();</span>
+<span class="nc" id="L52">        } catch (SOAPException e) {</span>
+<span class="nc" id="L53">            throw new NexusException(</span>
+<span class="nc" id="L54">                    NexusError.builder()</span>
+<span class="nc" id="L55">                            .message(&quot;Could not create soap message factory&quot;)</span>
+<span class="nc" id="L56">                            .build(),</span>
+                    e);
+<span class="fc" id="L58">        }</span>
+
+        SOAPBody soapBody;
+        try {
+<span class="fc" id="L62">            soapBody = soapMessage.getSOAPBody();</span>
+<span class="nc" id="L63">        } catch (SOAPException e) {</span>
+<span class="nc" id="L64">            throw new NexusException(</span>
+<span class="nc" id="L65">                    NexusError.builder().message(&quot;Could not create soap body&quot;).build(), e);</span>
+<span class="fc" id="L66">        }</span>
+
+<span class="fc" id="L68">        ContextPayload payload = executionContext.getData();</span>
+
+<span class="fc" id="L70">        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();</span>
+<span class="fc" id="L71">        builderFactory.setNamespaceAware(true);</span>
+        Document document;
+        try {
+<span class="fc" id="L74">            document = builderFactory</span>
+<span class="fc" id="L75">                    .newDocumentBuilder()</span>
+<span class="fc" id="L76">                    .parse(payload.getContent().getInputStream());</span>
+<span class="nc" id="L77">        } catch (SAXException | IOException | ParserConfigurationException e) {</span>
+<span class="nc" id="L78">            throw new NexusException(</span>
+<span class="nc" id="L79">                    NexusError.builder()</span>
+<span class="nc" id="L80">                            .message(&quot;Could not create document from message payload&quot;)</span>
+<span class="nc" id="L81">                            .build(),</span>
+                    e);
+<span class="fc" id="L83">        }</span>
+
+        try {
+<span class="fc" id="L86">            soapBody.addDocument(document);</span>
+<span class="nc" id="L87">        } catch (SOAPException e) {</span>
+<span class="nc" id="L88">            throw new NexusException(</span>
+<span class="nc" id="L89">                    NexusError.builder()</span>
+<span class="nc" id="L90">                            .message(&quot;Could not add payload to soap body&quot;)</span>
+<span class="nc" id="L91">                            .build(),</span>
+                    e);
+<span class="fc" id="L93">        }</span>
+
+        PayloadContent payloadContent;
+<span class="fc" id="L96">        try (PayloadContentOutputStream outputStream = PayloadContent.createOutputStream()) {</span>
+            try {
+<span class="fc" id="L98">                soapMessage.writeTo(outputStream);</span>
+<span class="nc" id="L99">            } catch (SOAPException | IOException e) {</span>
+<span class="nc" id="L100">                throw new NexusException(</span>
+<span class="nc" id="L101">                        NexusError.builder()</span>
+<span class="nc" id="L102">                                .message(&quot;Could not write soap message to output stream&quot;)</span>
+<span class="nc" id="L103">                                .build(),</span>
+                        e);
+<span class="fc" id="L105">            }</span>
+
+<span class="fc" id="L107">            payloadContent = outputStream.finish();</span>
+<span class="nc" id="L108">        } catch (IOException e) {</span>
+<span class="nc" id="L109">            throw new NexusException(</span>
+<span class="nc" id="L110">                    NexusError.builder()</span>
+<span class="nc" id="L111">                            .message(&quot;Error while writing soap message&quot;)</span>
+<span class="nc" id="L112">                            .build(),</span>
+                    e);
+<span class="fc" id="L114">        }</span>
+
+<span class="fc" id="L116">        ContextPayload contextPayload = ContextPayload.builder()</span>
+<span class="fc" id="L117">                .size(payloadContent.getSize())</span>
+<span class="fc" id="L118">                .content(payloadContent)</span>
+<span class="fc" id="L119">                .contentType(&quot;text/xml&quot;)</span>
+<span class="fc" id="L120">                .encoding(&quot;utf-8&quot;)</span>
+<span class="fc" id="L121">                .build();</span>
+<span class="fc" id="L122">        executionContext.setData(contextPayload);</span>
+
+<span class="fc" id="L124">        HttpHeaders httpHeaders = new HttpHeaders();</span>
+<span class="fc" id="L125">        httpHeaders.set(&quot;SOAPAction&quot;, parameters.value(SOAP_ACTION));</span>
+<span class="fc" id="L126">        executionContext.getMessage().getMetaData().set(HttpConstants.ADDITIONAL_HEADERS, httpHeaders);</span>
+
+<span class="fc" id="L128">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

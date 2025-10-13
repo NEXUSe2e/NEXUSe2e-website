@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RouteConfigMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.config.handler.mapper</a> &gt; <span class="el_source">RouteConfigMapper.java</span></div><h1>RouteConfigMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.config.handler.mapper;
+
+import com.evolvsys.nexuse2e.core.certificate.mapper.CertificateContainerMapper;
+import com.evolvsys.nexuse2e.core.config.model.RouteConfig;
+import com.evolvsys.nexuse2e.core.model.entity.RouteEntity;
+import org.mapstruct.InheritConfiguration;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+
+/**
+ * @author SvenBarden
+ * @since 29.11.2023
+ */
+@Mapper(
+        config = DefaultConfigMapperConfig.class,
+        uses = {
+            PartnerConnectionConfigMapper.class,
+            PartnerConfigMapper.class,
+            CertificateContainerMapper.class,
+            PipelineConfigMapper.class
+        })
+<span class="fc" id="L23">public abstract class RouteConfigMapper {</span>
+    @Mapping(target = &quot;firstPartner&quot;, ignore = true)
+    @Mapping(target = &quot;firstPartnerConnection&quot;, ignore = true)
+    @Mapping(target = &quot;firstNexusCertificateContainer&quot;, ignore = true)
+    @Mapping(target = &quot;secondPartner&quot;, ignore = true)
+    @Mapping(target = &quot;secondPartnerConnection&quot;, ignore = true)
+    @Mapping(target = &quot;secondNexusCertificateContainer&quot;, ignore = true)
+    @Mapping(target = &quot;allowSamePartnerType&quot;, ignore = true)
+    @InheritConfiguration
+    public abstract void updateEntity(RouteConfig routeConfig, @MappingTarget RouteEntity routeEntity);
+
+    public abstract RouteConfig toConfig(RouteEntity routeEntity);
+
+    public abstract void merge(RouteConfig newConfig, @MappingTarget RouteConfig oldConfig);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

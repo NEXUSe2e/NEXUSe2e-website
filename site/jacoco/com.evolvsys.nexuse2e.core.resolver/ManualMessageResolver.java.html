@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ManualMessageResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.resolver</a> &gt; <span class="el_source">ManualMessageResolver.java</span></div><h1>ManualMessageResolver.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.resolver;
+
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ContextFactory;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.state.MessageEventService;
+import com.evolvsys.nexuse2e.core.message.state.MessageEventType;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageContextValidationGroups;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import jakarta.validation.groups.Default;
+import java.time.ZonedDateTime;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * @author SvenBarden
+ * @since 01.03.2024
+ */
+<span class="fc" id="L22">@Slf4j</span>
+@RequiredArgsConstructor
+public class ManualMessageResolver extends MessageResolver {
+    private final MessageType messageType;
+    private final MessageResolverValidator messageResolverValidator;
+    private final MessageEventService messageEventService;
+    private final ContextFactory contextFactory;
+
+    @Override
+    public MessageContext resolve(MessageContext messageContext) throws NexusException {
+
+<span class="fc" id="L33">        LOGGER.debug(&quot;running manual message resolver&quot;);</span>
+
+<span class="fc" id="L35">        ExecutionContext executionContext = messageContext.createExecutionContext(messageType);</span>
+
+<span class="fc" id="L37">        Message message = executionContext.getMessage();</span>
+
+<span class="fc" id="L39">        messageEventService.trigger(executionContext, MessageEventType.RESOLVING);</span>
+
+<span class="fc" id="L41">        messageResolverValidator.validate(</span>
+                messageContext, Default.class, MessageContextValidationGroups.ManualMessage.class);
+
+<span class="fc" id="L44">        LOGGER.debug(</span>
+                &quot;processed message with {} payloads with messageType {}&quot;,
+<span class="fc" id="L46">                message.getPayloads().size(),</span>
+                messageType);
+
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (contextFactory.exists(message.getId())) {</span>
+<span class="nc" id="L50">            throw new NexusException(NexusError.builder()</span>
+<span class="nc" id="L51">                    .message(&quot;Cannot resend same message with manual message operation&quot;)</span>
+<span class="nc" id="L52">                    .extension(&quot;messageId&quot;, message.getId())</span>
+<span class="nc" id="L53">                    .build());</span>
+        } else {
+<span class="fc" id="L55">            LOGGER.debug(&quot;message is new, triggering resolved&quot;);</span>
+<span class="fc" id="L56">            message.setProcessed(ZonedDateTime.now());</span>
+
+<span class="fc" id="L58">            messageEventService.trigger(executionContext, MessageEventType.RESOLVED);</span>
+        }
+
+<span class="fc" id="L61">        return messageContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

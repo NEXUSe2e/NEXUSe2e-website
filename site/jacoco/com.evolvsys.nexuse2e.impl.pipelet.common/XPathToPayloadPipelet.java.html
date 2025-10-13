@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>XPathToPayloadPipelet.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.impl.pipelet.common</a> &gt; <span class="el_source">XPathToPayloadPipelet.java</span></div><h1>XPathToPayloadPipelet.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.impl.pipelet.common;
+
+import com.evolvsys.nexuse2e.core.component.Pipelet;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ExecutionContext;
+import com.evolvsys.nexuse2e.core.message.payload.content.PayloadContent;
+import com.evolvsys.nexuse2e.core.parameter.ParameterDefinition;
+import com.evolvsys.nexuse2e.core.parameter.ParameterType;
+import com.evolvsys.nexuse2e.impl.util.XmlUtils;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.*;
+import lombok.extern.slf4j.Slf4j;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
+/**
+ * Uses a XPath statement to extract a new payload from the existing payload. The original payload is overwritten and lost after the pipelet.
+ *
+ * @author SvenBarden
+ * @since 24.07.2025
+ */
+<span class="fc" id="L29">@Slf4j</span>
+<span class="fc" id="L30">public class XPathToPayloadPipelet extends Pipelet {</span>
+    private static final String PARAM_XPATH_PATTERN = &quot;xpath_pattern&quot;;
+    private static final String PARAM_PAYLOAD_INDEX = &quot;payload_index&quot;;
+    private static final String PARAM_TRIM_PAYLOAD_CONTENT = &quot;trim_payload_content&quot;;
+    private static final String PARAM_PAYLOAD_CONTENT_TYPE = &quot;payload_content_type&quot;;
+    private static final String PARAM_SAVE_ORIGINAL_PAYLOAD = &quot;save_original_payload&quot;;
+
+<span class="fc" id="L37">    private final XPath xpath = XPathFactory.newInstance().newXPath();</span>
+
+    @Override
+    public List&lt;ParameterDefinition&gt; parameterDefinitions() {
+<span class="fc" id="L41">        return List.of(</span>
+<span class="fc" id="L42">                ParameterDefinition.builder()</span>
+<span class="fc" id="L43">                        .name(PARAM_XPATH_PATTERN)</span>
+<span class="fc" id="L44">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L45">                        .displayName(&quot;XPath Pattern&quot;)</span>
+<span class="fc" id="L46">                        .description(</span>
+                                &quot;The XPath pattern to extract content from the payloads. Only text nodes will be extracted, no full XML nodes.&quot;)
+<span class="fc" id="L48">                        .required(true)</span>
+<span class="fc" id="L49">                        .build(),</span>
+<span class="fc" id="L50">                ParameterDefinition.builder()</span>
+<span class="fc" id="L51">                        .name(PARAM_PAYLOAD_CONTENT_TYPE)</span>
+<span class="fc" id="L52">                        .type(ParameterType.TRIMMED_STRING)</span>
+<span class="fc" id="L53">                        .displayName(&quot;Payload Content Type&quot;)</span>
+<span class="fc" id="L54">                        .description(&quot;The content type of the extracted payloads.&quot;)</span>
+<span class="fc" id="L55">                        .defaultValue(&quot;text/plain&quot;)</span>
+<span class="fc" id="L56">                        .required(true)</span>
+<span class="fc" id="L57">                        .build(),</span>
+<span class="fc" id="L58">                ParameterDefinition.builder()</span>
+<span class="fc" id="L59">                        .name(PARAM_TRIM_PAYLOAD_CONTENT)</span>
+<span class="fc" id="L60">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L61">                        .displayName(&quot;Trim the extracted content&quot;)</span>
+<span class="fc" id="L62">                        .description(</span>
+                                &quot;If set to true, the extracted content will be trimmed before creating the new payload.&quot;)
+<span class="fc" id="L64">                        .defaultValue(Boolean.TRUE)</span>
+<span class="fc" id="L65">                        .build(),</span>
+<span class="fc" id="L66">                ParameterDefinition.builder()</span>
+<span class="fc" id="L67">                        .name(PARAM_PAYLOAD_INDEX)</span>
+<span class="fc" id="L68">                        .type(ParameterType.LONG)</span>
+<span class="fc" id="L69">                        .displayName(&quot;Payload Index&quot;)</span>
+<span class="fc" id="L70">                        .description(&quot;The index of the payload to process. If not set, all payloads will be processed.&quot;)</span>
+<span class="fc" id="L71">                        .build(),</span>
+<span class="fc" id="L72">                ParameterDefinition.builder()</span>
+<span class="fc" id="L73">                        .name(PARAM_SAVE_ORIGINAL_PAYLOAD)</span>
+<span class="fc" id="L74">                        .type(ParameterType.BOOLEAN)</span>
+<span class="fc" id="L75">                        .displayName(&quot;Save original payload&quot;)</span>
+<span class="fc" id="L76">                        .description(&quot;Saves the original payload in the message meta data.&quot;)</span>
+<span class="fc" id="L77">                        .defaultValue(Boolean.FALSE)</span>
+<span class="fc" id="L78">                        .build());</span>
+    }
+
+    @Override
+    @SuppressFBWarnings(&quot;XPATH_INJECTION&quot;)
+    public ExecutionContext execute(ExecutionContext executionContext) throws NexusException {
+<span class="fc" id="L84">        List&lt;ContextPayload&gt; payloads = executionContext.getMessage().getPayloads();</span>
+<span class="fc" id="L85">        Long payloadIndex = parameters.value(PARAM_PAYLOAD_INDEX);</span>
+
+<span class="pc bpc" id="L87" title="1 of 4 branches missed.">        if (payloadIndex != null &amp;&amp; payloadIndex &gt;= 0) {</span>
+<span class="fc" id="L88">            LOGGER.trace(&quot;Processing payload at index: {}&quot;, payloadIndex);</span>
+<span class="fc" id="L89">            payloads = List.of(payloads.get(payloadIndex.intValue()));</span>
+        } else {
+<span class="fc" id="L91">            LOGGER.trace(&quot;Processing all payloads&quot;);</span>
+        }
+
+        XPathExpression xPathExpression;
+        try {
+<span class="fc" id="L96">            xPathExpression = xpath.compile(parameters.value(PARAM_XPATH_PATTERN));</span>
+<span class="nc" id="L97">        } catch (XPathExpressionException e) {</span>
+<span class="nc" id="L98">            throw new NexusException(</span>
+<span class="nc" id="L99">                    NexusError.builder()</span>
+<span class="nc" id="L100">                            .message(&quot;XPath expression could not be compiled&quot;)</span>
+<span class="nc" id="L101">                            .extension(&quot;expression&quot;, parameters.value(PARAM_XPATH_PATTERN))</span>
+<span class="nc" id="L102">                            .build(),</span>
+                    e);
+<span class="fc" id="L104">        }</span>
+
+<span class="fc" id="L106">        boolean saveOriginalPayload = parameters.value(PARAM_SAVE_ORIGINAL_PAYLOAD);</span>
+
+<span class="fc" id="L108">        List&lt;ContextPayload&gt; newPayloads = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L109" title="All 2 branches covered.">        for (ContextPayload payload : payloads) {</span>
+            Document document;
+            try {
+<span class="fc" id="L112">                document = XmlUtils.getDocument(payload);</span>
+<span class="nc" id="L113">            } catch (ParserConfigurationException | SAXException | IOException e) {</span>
+<span class="nc" id="L114">                throw new NexusException(</span>
+<span class="nc" id="L115">                        NexusError.builder()</span>
+<span class="nc" id="L116">                                .message(&quot;Could not create XML document from payload&quot;)</span>
+<span class="nc" id="L117">                                .extension(&quot;contentId&quot;, payload.getContentId())</span>
+<span class="nc" id="L118">                                .extension(&quot;type&quot;, payload.getContentType())</span>
+<span class="nc" id="L119">                                .build(),</span>
+                        e);
+<span class="fc" id="L121">            }</span>
+
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (saveOriginalPayload) {</span>
+<span class="fc" id="L124">                LOGGER.trace(&quot;Saving original payload with contentId: {}&quot;, payload.getContentId());</span>
+<span class="fc" id="L125">                executionContext</span>
+<span class="fc" id="L126">                        .getMessage()</span>
+<span class="fc" id="L127">                        .getMetaData()</span>
+<span class="fc" id="L128">                        .add(&quot;xpath-to-payload&quot;, &quot;original-&quot; + payload.getContentId(), payload.copy());</span>
+            } else {
+<span class="fc" id="L130">                LOGGER.trace(&quot;Not saving original payload with contentId: {}&quot;, payload.getContentId());</span>
+            }
+
+            try {
+                // Serializes all text nodes for that xpath expression and all child nodes
+                // note that all xml text will be striped from serialization.
+                // if we want to extract the xml nodes itself we need to change the extraction from STRING to NODESET
+<span class="fc" id="L137">                String content = (String) xPathExpression.evaluate(document, XPathConstants.STRING);</span>
+
+<span class="fc bfc" id="L139" title="All 2 branches covered.">                if (parameters.value(PARAM_TRIM_PAYLOAD_CONTENT)) {</span>
+<span class="fc" id="L140">                    LOGGER.trace(&quot;Trimming content for payload with contentId: {}&quot;, payload.getContentId());</span>
+<span class="fc" id="L141">                    content = content.trim();</span>
+                }
+
+<span class="fc" id="L144">                PayloadContent payloadContent = PayloadContent.of(content.getBytes(StandardCharsets.UTF_8));</span>
+<span class="fc" id="L145">                ContextPayload newPayload = ContextPayload.builder()</span>
+<span class="fc" id="L146">                        .content(payloadContent)</span>
+<span class="fc" id="L147">                        .size(payloadContent.getSize())</span>
+<span class="fc" id="L148">                        .contentType(parameters.value(PARAM_PAYLOAD_CONTENT_TYPE))</span>
+<span class="fc" id="L149">                        .encoding(payload.getEncoding())</span>
+<span class="fc" id="L150">                        .contentId(payload.getContentId())</span>
+<span class="fc" id="L151">                        .build();</span>
+
+<span class="fc" id="L153">                newPayloads.add(newPayload);</span>
+
+<span class="nc" id="L155">            } catch (XPathExpressionException e) {</span>
+<span class="nc" id="L156">                throw new NexusException(</span>
+<span class="nc" id="L157">                        NexusError.builder()</span>
+<span class="nc" id="L158">                                .message(&quot;Could not evaluate xpath expression on payload&quot;)</span>
+<span class="nc" id="L159">                                .extension(&quot;xpath&quot;, parameters.value(PARAM_XPATH_PATTERN))</span>
+<span class="nc" id="L160">                                .extension(&quot;contentId&quot;, payload.getContentId())</span>
+<span class="nc" id="L161">                                .build(),</span>
+                        e);
+<span class="fc" id="L163">            }</span>
+<span class="fc" id="L164">        }</span>
+
+<span class="fc" id="L166">        executionContext.getMessage().setPayloads(newPayloads);</span>
+
+<span class="fc" id="L168">        return executionContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

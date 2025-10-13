@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ManualMessageFactory.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.message.manual.factory</a> &gt; <span class="el_source">ManualMessageFactory.java</span></div><h1>ManualMessageFactory.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.message.manual.factory;
+
+import com.evolvsys.app.core.exception.GeneralErrorException;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import com.evolvsys.nexuse2e.core.message.context.ContextFactory;
+import com.evolvsys.nexuse2e.core.message.context.MessageContext;
+import com.evolvsys.nexuse2e.core.message.manual.model.ManualMessageDto;
+import com.evolvsys.nexuse2e.internal.ContextPayload;
+import com.evolvsys.nexuse2e.internal.Message;
+import com.evolvsys.nexuse2e.internal.MessageType;
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.UUID;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Component;
+
+/**
+ * @author SvenBarden
+ * @since 25.07.2024
+ */
+@RequiredArgsConstructor
+@Component
+public class ManualMessageFactory {
+    private final ManualMessagePayloadFactory payloadFactory;
+    private final ContextFactory contextFactory;
+    private final List&lt;ManualMessageContextExtender&gt; extenders;
+
+    private MessageContext buildMessageContext(ContextPayload contextPayload) {
+<span class="fc" id="L31">        MessageContext messageContext = contextFactory.createNew();</span>
+
+<span class="fc" id="L33">        messageContext.setSourceMessage(buildMessage(contextPayload));</span>
+<span class="fc" id="L34">        messageContext.setDoReturnPipelines(true);</span>
+
+<span class="fc" id="L36">        return messageContext;</span>
+    }
+
+    private Message buildMessage(ContextPayload contextPayload) {
+<span class="fc" id="L40">        Message message = new Message();</span>
+<span class="fc" id="L41">        message.setId(UUID.randomUUID().toString());</span>
+<span class="fc" id="L42">        message.getPayloads().add(contextPayload);</span>
+<span class="fc" id="L43">        message.setConversationId(UUID.randomUUID().toString());</span>
+<span class="fc" id="L44">        message.setType(MessageType.NORMAL);</span>
+<span class="fc" id="L45">        message.getMetaData().set(&quot;Manual-Message&quot;, Boolean.TRUE);</span>
+<span class="fc" id="L46">        return message;</span>
+    }
+
+    public MessageContext create(ManualMessageDto manualMessageDto) throws SQLException, IOException, NexusException {
+
+        ContextPayload contextPayload;
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (StringUtils.isNotBlank(manualMessageDto.getDefaultPayload())) {</span>
+<span class="fc" id="L53">            contextPayload = payloadFactory.buildContextPayload(manualMessageDto.getDefaultPayload());</span>
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        } else if (manualMessageDto.getPayloadFileId() != null) {</span>
+<span class="fc" id="L55">            contextPayload = payloadFactory.buildContextPayload(manualMessageDto.getPayloadFileId());</span>
+        } else {
+<span class="fc" id="L57">            throw new GeneralErrorException(&quot;either default payload or payload file id must be provided&quot;);</span>
+        }
+
+<span class="fc" id="L60">        MessageContext messageContext = buildMessageContext(contextPayload);</span>
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        for (ManualMessageContextExtender manualMessageContextExtender : extenders) {</span>
+<span class="fc" id="L63">            manualMessageContextExtender.extend(messageContext, manualMessageDto);</span>
+<span class="fc" id="L64">        }</span>
+
+<span class="fc" id="L66">        return messageContext;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

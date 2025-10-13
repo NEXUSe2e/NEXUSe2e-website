@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PipelineService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.pipeline.service</a> &gt; <span class="el_source">PipelineService.java</span></div><h1>PipelineService.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.pipeline.service;
+
+import com.evolvsys.app.core.auth.service.CurrentUserService;
+import com.evolvsys.app.core.process.ProcessExecutionContext;
+import com.evolvsys.app.core.process.ProcessService;
+import com.evolvsys.app.core.service.BaseService;
+import com.evolvsys.app.core.service.ListService;
+import com.evolvsys.nexuse2e.core.pipelet.model.PipeletDto;
+import com.evolvsys.nexuse2e.core.pipeline.PipelineFilter;
+import com.evolvsys.nexuse2e.core.pipeline.action.PipelineActionType;
+import com.evolvsys.nexuse2e.core.pipeline.action.PipelineAddPipeletAction;
+import com.evolvsys.nexuse2e.core.pipeline.action.PipelineRearrangePipeletsAction;
+import com.evolvsys.nexuse2e.core.pipeline.action.PipelineRemovePipeletAction;
+import com.evolvsys.nexuse2e.core.pipeline.mapper.PipelineMapper;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineDto;
+import com.evolvsys.nexuse2e.core.pipeline.model.PipelineEntity;
+import com.evolvsys.nexuse2e.core.pipeline.repository.PipelineRepository;
+import java.util.Comparator;
+import java.util.List;
+import org.apache.commons.lang3.Validate;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * @author Florian Drees
+ * @since 20.11.2023
+ */
+@Service
+public class PipelineService extends BaseService&lt;PipelineDto, PipelineEntity, PipelineRepository&gt; {
+    private final PipelineMapper mapper;
+    private final ListService listService;
+    private final ProcessService processService;
+
+    public PipelineService(
+            PipelineMapper mapper,
+            PipelineRepository repository,
+            CurrentUserService currentUserService,
+            ListService listService,
+            ProcessService processService) {
+<span class="fc" id="L40">        super(mapper, repository, currentUserService);</span>
+<span class="fc" id="L41">        this.mapper = mapper;</span>
+<span class="fc" id="L42">        this.listService = listService;</span>
+<span class="fc" id="L43">        this.processService = processService;</span>
+<span class="fc" id="L44">    }</span>
+
+    @Override
+    protected PipelineEntity createEntity() {
+<span class="nc" id="L48">        return new PipelineEntity();</span>
+    }
+
+    public List&lt;PipelineDto&gt; list(PipelineFilter pipelineFilter) {
+<span class="fc" id="L52">        return listService.list(pipelineFilter, PipelineDto.class, repository::findAll).stream()</span>
+<span class="fc" id="L53">                .sorted(Comparator.comparing(PipelineEntity::getPipelineId))</span>
+<span class="fc" id="L54">                .map(this::mapEntityToDto)</span>
+<span class="fc" id="L55">                .toList();</span>
+    }
+
+    @Transactional
+    public PipelineDto save(PipelineDto pipelineDto, List&lt;PipeletDto&gt; pipeletDtos) {
+<span class="fc" id="L60">        PipelineEntity entity = getEntity(pipelineDto);</span>
+
+<span class="fc" id="L62">        mapper.updatePipelets(pipeletDtos, entity, currentUserService.getCurrentUserData());</span>
+
+<span class="fc" id="L64">        entity = save(entity);</span>
+
+<span class="fc" id="L66">        return mapEntityToDto(entity);</span>
+    }
+
+    public PipelineDto addPipelet(long pipelineId, PipeletDto pipeletDto) {
+<span class="fc" id="L70">        Validate.notNull(pipeletDto, &quot;pipelet dto must not be null&quot;);</span>
+<span class="fc" id="L71">        Validate.notNull(pipeletDto.getComponentId(), &quot;pipelet id must not be null&quot;);</span>
+
+<span class="fc" id="L73">        PipelineEntity pipelineEntity = findWithActionCheck(pipelineId, PipelineActionType.ADD_PIPELET.name());</span>
+<span class="fc" id="L74">        pipelineEntity = processService.execute(ProcessExecutionContext.&lt;PipelineEntity, PipelineDto&gt;builder()</span>
+<span class="fc" id="L75">                .target(pipelineEntity)</span>
+<span class="fc" id="L76">                .actionType(PipelineActionType.ADD_PIPELET)</span>
+<span class="fc" id="L77">                .parameterValue(PipelineAddPipeletAction.PIPELET.of(pipeletDto))</span>
+<span class="fc" id="L78">                .build());</span>
+
+<span class="fc" id="L80">        return mapEntityToDto(pipelineEntity);</span>
+    }
+
+    public PipelineDto removePipelet(long pipelineId, long pipeletId) {
+<span class="fc" id="L84">        PipelineEntity pipelineEntity = findWithActionCheck(pipelineId, PipelineActionType.REMOVE_PIPELET.name());</span>
+<span class="fc" id="L85">        pipelineEntity = processService.execute(ProcessExecutionContext.&lt;PipelineEntity, PipelineDto&gt;builder()</span>
+<span class="fc" id="L86">                .target(pipelineEntity)</span>
+<span class="fc" id="L87">                .actionType(PipelineActionType.REMOVE_PIPELET)</span>
+<span class="fc" id="L88">                .parameterValue(PipelineRemovePipeletAction.PIPELET_ID.of(pipeletId))</span>
+<span class="fc" id="L89">                .build());</span>
+
+<span class="fc" id="L91">        return mapEntityToDto(pipelineEntity);</span>
+    }
+
+    public PipelineDto rearrange(long pipelineId, List&lt;Long&gt; pipeletIdsInOrder) {
+<span class="fc" id="L95">        PipelineEntity pipelineEntity = findWithActionCheck(pipelineId, PipelineActionType.REARRANGE_PIPELETS.name());</span>
+<span class="fc" id="L96">        pipelineEntity = processService.execute(ProcessExecutionContext.&lt;PipelineEntity, PipelineDto&gt;builder()</span>
+<span class="fc" id="L97">                .target(pipelineEntity)</span>
+<span class="fc" id="L98">                .actionType(PipelineActionType.REARRANGE_PIPELETS)</span>
+<span class="fc" id="L99">                .parameterValue(PipelineRearrangePipeletsAction.PIPELET_IDS.of(pipeletIdsInOrder))</span>
+<span class="fc" id="L100">                .build());</span>
+
+<span class="fc" id="L102">        return mapEntityToDto(pipelineEntity);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

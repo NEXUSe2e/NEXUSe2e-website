@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang=""><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CertificateInfoMapper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ng-nexus-core</a> &gt; <a href="index.source.html" class="el_package">com.evolvsys.nexuse2e.core.certificate.mapper</a> &gt; <span class="el_source">CertificateInfoMapper.java</span></div><h1>CertificateInfoMapper.java</h1><pre class="source lang-java linenums">package com.evolvsys.nexuse2e.core.certificate.mapper;
+
+import com.evolvsys.app.core.mapper.DefaultMapperConfiguration;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateEntity;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateInfo;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateInfoDto;
+import com.evolvsys.nexuse2e.core.certificate.model.CertificateValidity;
+import com.evolvsys.nexuse2e.core.certificate.service.CertificateHelper;
+import com.evolvsys.nexuse2e.core.certificate.service.CertificateKeystoreUtils;
+import com.evolvsys.nexuse2e.core.certificate.util.CertificateUtil;
+import com.evolvsys.nexuse2e.core.exception.NexusError;
+import com.evolvsys.nexuse2e.core.exception.NexusException;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+import java.security.KeyStore;
+import java.security.Principal;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.X509Certificate;
+import java.sql.SQLException;
+import java.time.Period;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.Optional;
+import java.util.stream.Stream;
+import javax.security.auth.x500.X500Principal;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+
+/**
+ * @author SvenBarden
+ * @since 08.02.2024
+ */
+@Mapper(config = DefaultMapperConfiguration.class)
+<span class="fc" id="L46">public abstract class CertificateInfoMapper {</span>
+
+    private static final String CERTIFICATE = &quot;certificate&quot;;
+    private static final String STATE = &quot;state&quot;;
+    private static final String PRINCIPAL = &quot;principal&quot;;
+    private static final String LOCATION = &quot;location&quot;;
+    private static final String EMAIL = &quot;email&quot;;
+    private static final String COUNTRY = &quot;country&quot;;
+    private static final String SHA_1_FINGERPRINT = &quot;sha1Fingerprint&quot;;
+    private static final String SHA_256_FINGERPRINT = &quot;sha256Fingerprint&quot;;
+    private static final String COMMON_NAME = &quot;commonName&quot;;
+    private static final String ORGANISATION = &quot;organisation&quot;;
+    private static final String ORGANISATION_UNIT = &quot;organisationUnit&quot;;
+    private static final String SELF_SIGNED = &quot;selfSigned&quot;;
+    private static final String SUBJECT_X_500_PRINCIPAL = &quot;subjectX500Principal&quot;;
+
+    public X509Certificate getPublicCert(CertificateEntity certificateEntity) throws NexusException {
+        try {
+<span class="fc" id="L64">            return CertificateHelper.getCertificate(</span>
+<span class="fc" id="L65">                    certificateEntity.getFile().getFileContent().getContent().getBinaryStream());</span>
+<span class="nc" id="L66">        } catch (SQLException e) {</span>
+<span class="nc" id="L67">            throw new NexusException(</span>
+<span class="nc" id="L68">                    NexusError.builder()</span>
+<span class="nc" id="L69">                            .message(&quot;error loading certificate content from database&quot;)</span>
+<span class="nc" id="L70">                            .extension(&quot;id&quot;, certificateEntity.getId())</span>
+<span class="nc" id="L71">                            .extension(&quot;name&quot;, certificateEntity.getName())</span>
+<span class="nc" id="L72">                            .build(),</span>
+                    e);
+        }
+    }
+
+    public X509Certificate getPrivateCert(CertificateEntity certificateEntity) throws NexusException {
+<span class="nc" id="L78">        return CertificateHelper.getPublicCertFromKey(CertificateKeystoreUtils.toKeyStore(certificateEntity));</span>
+    }
+
+    public CertificateInfoDto entityToInfo(CertificateEntity certificateEntity) throws NexusException {
+<span class="nc" id="L82">        X509Certificate certificate =</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                switch (certificateEntity.getType()) {</span>
+<span class="nc" id="L84">                    case PARTNER, CA -&gt; getPublicCert(certificateEntity);</span>
+<span class="nc" id="L85">                    case LOCAL -&gt; getPrivateCert(certificateEntity);</span>
+                };
+
+<span class="nc" id="L88">        return certificateToDto(certificate);</span>
+    }
+
+    public CertificateInfo privateKeyToInfo(KeyStore keyStore) throws NexusException {
+<span class="nc" id="L92">        return certificateToInfo(CertificateHelper.getPublicCertFromKey(keyStore));</span>
+    }
+
+    @CertInfoMapping
+    @Mapping(target = &quot;remaining&quot;, source = &quot;notAfter&quot;)
+    @Mapping(target = &quot;validity&quot;, source = CERTIFICATE)
+    public abstract CertificateInfoDto certificateToDto(X509Certificate certificate);
+
+    @Mapping(target = &quot;validity&quot;, source = &quot;certificateInfo&quot;)
+    @Mapping(target = &quot;remaining&quot;, source = &quot;validUntil&quot;)
+    public abstract CertificateInfoDto infoToDto(CertificateInfo certificateInfo);
+
+    @CertInfoMapping
+    public abstract CertificateInfo certificateToInfo(X509Certificate certificate);
+
+    @Mapping(target = STATE, source = PRINCIPAL, qualifiedByName = STATE)
+    @Mapping(target = LOCATION, source = PRINCIPAL, qualifiedByName = LOCATION)
+    @Mapping(target = EMAIL, source = PRINCIPAL, qualifiedByName = EMAIL)
+    @Mapping(target = COUNTRY, source = PRINCIPAL, qualifiedByName = COUNTRY)
+    @Mapping(target = SELF_SIGNED, ignore = true)
+    @Mapping(target = &quot;validity&quot;, ignore = true)
+    @Mapping(target = &quot;validUntil&quot;, ignore = true)
+    @Mapping(target = &quot;validFrom&quot;, ignore = true)
+    @Mapping(target = SHA_1_FINGERPRINT, ignore = true)
+    @Mapping(target = SHA_256_FINGERPRINT, ignore = true)
+    @Mapping(target = &quot;remaining&quot;, ignore = true)
+    @Mapping(target = ORGANISATION, source = PRINCIPAL, qualifiedByName = ORGANISATION)
+    @Mapping(target = ORGANISATION_UNIT, source = PRINCIPAL, qualifiedByName = ORGANISATION_UNIT)
+    @Mapping(target = &quot;issuer&quot;, ignore = true)
+    @Mapping(target = COMMON_NAME, source = PRINCIPAL, qualifiedByName = COMMON_NAME)
+    public abstract void updateInfo(
+            X500Principal principal, @MappingTarget CertificateInfoDto.CertificateInfoDtoBuilder builder);
+
+    @Named(SHA_1_FINGERPRINT)
+    protected String mapSha1Fingerprint(X509Certificate x509Certificate) throws CertificateEncodingException {
+<span class="fc" id="L127">        return CertificateUtil.getSha1Fingerprint(x509Certificate);</span>
+    }
+
+    @Named(SHA_256_FINGERPRINT)
+    protected String mapSha256Fingerprint(X509Certificate x509Certificate) throws CertificateEncodingException {
+<span class="fc" id="L132">        return CertificateUtil.getSha256Fingerprint(x509Certificate);</span>
+    }
+
+    @Named(COMMON_NAME)
+    protected String mapCommonName(Principal principal) {
+<span class="fc" id="L137">        return getInfo(new X500Name(principal.getName()), BCStyle.CN).orElse(null);</span>
+    }
+
+    @Named(ORGANISATION)
+    protected String mapOrganisation(Principal principal) {
+<span class="fc" id="L142">        return getInfo(new X500Name(principal.getName()), BCStyle.O).orElse(null);</span>
+    }
+
+    @Named(ORGANISATION_UNIT)
+    protected String mapOrganisationUnit(Principal principal) {
+<span class="fc" id="L147">        return getInfo(new X500Name(principal.getName()), BCStyle.OU).orElse(null);</span>
+    }
+
+    @Named(COUNTRY)
+    protected String mapToCountry(Principal principal) {
+<span class="fc" id="L152">        return getInfo(new X500Name(principal.getName()), BCStyle.C).orElse(null);</span>
+    }
+
+    @Named(EMAIL)
+    protected String mapToEmail(Principal principal) {
+<span class="fc" id="L157">        return getInfo(new X500Name(principal.getName()), BCStyle.E).orElse(null);</span>
+    }
+
+    @Named(LOCATION)
+    protected String mapToLocation(Principal principal) {
+<span class="fc" id="L162">        return getInfo(new X500Name(principal.getName()), BCStyle.L).orElse(null);</span>
+    }
+
+    @Named(STATE)
+    protected String mapToState(Principal principal) {
+<span class="fc" id="L167">        return getInfo(new X500Name(principal.getName()), BCStyle.ST).orElse(null);</span>
+    }
+
+    @Named(SELF_SIGNED)
+    protected boolean mapToSelfSigned(X509Certificate x509Certificate) {
+<span class="fc" id="L172">        return x509Certificate.getSubjectX500Principal().equals(x509Certificate.getIssuerX500Principal());</span>
+    }
+
+    protected Period mapRemaining(ZonedDateTime date) {
+<span class="nc" id="L176">        return Period.between(ZonedDateTime.now().toLocalDate(), date.toLocalDate());</span>
+    }
+
+    protected Period mapRemaining(Date date) {
+<span class="nc" id="L180">        return Period.between(</span>
+<span class="nc" id="L181">                ZonedDateTime.now().toLocalDate(),</span>
+<span class="nc" id="L182">                date.toInstant().atZone(ZoneOffset.UTC).toLocalDate());</span>
+    }
+
+    protected CertificateValidity mapValidity(CertificateInfo certificateInfo) {
+        CertificateValidity validity;
+<span class="nc" id="L187">        ZonedDateTime now = ZonedDateTime.now();</span>
+
+<span class="nc bnc" id="L189" title="All 2 branches missed.">        if (now.isBefore(certificateInfo.getValidFrom())) {</span>
+<span class="nc" id="L190">            validity = CertificateValidity.NOT_YET_VALID;</span>
+<span class="nc bnc" id="L191" title="All 2 branches missed.">        } else if (now.isAfter(certificateInfo.getValidUntil())) {</span>
+<span class="nc" id="L192">            validity = CertificateValidity.EXPIRED;</span>
+        } else {
+<span class="nc" id="L194">            validity = CertificateValidity.VALID;</span>
+        }
+<span class="nc" id="L196">        return validity;</span>
+    }
+
+    protected CertificateValidity mapValidity(X509Certificate certificate) {
+        CertificateValidity validity;
+        try {
+<span class="nc" id="L202">            certificate.checkValidity();</span>
+<span class="nc" id="L203">            validity = CertificateValidity.VALID;</span>
+<span class="nc" id="L204">        } catch (CertificateExpiredException e) {</span>
+<span class="nc" id="L205">            validity = CertificateValidity.EXPIRED;</span>
+<span class="nc" id="L206">        } catch (CertificateNotYetValidException e) {</span>
+<span class="nc" id="L207">            validity = CertificateValidity.NOT_YET_VALID;</span>
+<span class="nc" id="L208">        }</span>
+<span class="nc" id="L209">        return validity;</span>
+    }
+
+    private Optional&lt;String&gt; getInfo(X500Name x500Name, ASN1ObjectIdentifier objectIdentifier) {
+<span class="fc" id="L213">        RDN[] rdNs = x500Name.getRDNs(objectIdentifier);</span>
+
+<span class="fc" id="L215">        return Stream.of(rdNs)</span>
+<span class="fc" id="L216">                .map(rdn -&gt; IETFUtils.valueToString(rdn.getFirst().getValue()))</span>
+<span class="fc" id="L217">                .findFirst();</span>
+    }
+
+    @Mapping(target = STATE, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = STATE)
+    @Mapping(target = LOCATION, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = LOCATION)
+    @Mapping(target = EMAIL, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = EMAIL)
+    @Mapping(target = COUNTRY, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = COUNTRY)
+    @Mapping(target = SHA_1_FINGERPRINT, source = CERTIFICATE, qualifiedByName = SHA_1_FINGERPRINT)
+    @Mapping(target = SHA_256_FINGERPRINT, source = CERTIFICATE, qualifiedByName = SHA_256_FINGERPRINT)
+    @Mapping(target = &quot;validUntil&quot;, source = &quot;notAfter&quot;)
+    @Mapping(target = &quot;validFrom&quot;, source = &quot;notBefore&quot;)
+    @Mapping(target = ORGANISATION, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = ORGANISATION)
+    @Mapping(target = ORGANISATION_UNIT, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = ORGANISATION_UNIT)
+    @Mapping(target = &quot;issuer&quot;, source = &quot;issuerX500Principal&quot;, qualifiedByName = ORGANISATION)
+    @Mapping(target = COMMON_NAME, source = SUBJECT_X_500_PRINCIPAL, qualifiedByName = COMMON_NAME)
+    @Mapping(target = SELF_SIGNED, source = CERTIFICATE, qualifiedByName = SELF_SIGNED)
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.CLASS)
+    protected @interface CertInfoMapping {}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
