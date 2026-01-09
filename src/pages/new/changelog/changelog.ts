@@ -5,6 +5,202 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.3.12] - 2025-12-11
+----------------------
+
+### Added (1 change)
+
+- Added combined choreography and action parameters to the \`PayloadMetadataRoutingPipelet\`.
+
+### Changed (1 change)
+
+- Removed usage of deprecated method in JsonNode.
+
+### Dependency updates (18 changes)
+
+- com.azure:azure-sdk-bom from 1.3.0 to 1.3.3
+- com.evolvsys:esc-app-core-test from 4.3.6 to 4.3.7
+- com.evolvsys:esc-app-core from 4.3.6 to 4.3.7
+- com.evolvsys:esc-common-parent-pom from 6.3.4 to 6.3.5
+- commons-io:commons-io from 2.20.0 to 2.21.0
+- dev.logchange:logchange-maven-plugin from 1.19.11 to 1.19.13
+- net.javacrumbs.json-unit:json-unit-assertj from 5.0.0 to 5.1.0
+- org.apache.wss4j:wss4j-ws-security-dom from 4.0.0 to 4.0.1
+- org.bouncycastle:bcpkix-jdk18on from 1.82 to 1.83
+- org.bouncycastle:bcprov-jdk18on from 1.82 to 1.83
+- org.codehaus.mojo:versions-maven-plugin from 2.19.1 to 2.20.1
+- org.mozilla:rhino-xml from 1.8.0 to 1.8.1
+- org.mozilla:rhino from 1.8.0 to 1.8.1
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.7 to 3.5.8
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.7 to 3.5.8
+- org.springframework.boot:spring-boot-starter-parent from 3.5.7 to 3.5.8
+- org.wiremock:wiremock-jetty12 from 3.13.1 to 3.13.2
+- Updated frontend packages.
+
+
+[10.3.11] - 2025-11-28
+----------------------
+
+### Added (1 change)
+
+- Added \`max_files_per_run\` setting on the \`SftpPollingService\` to limit the files that will be processed per run, despite more matches being present. Defaults to 20.
+
+### Fixed (1 change)
+
+- Fixed an issue, were \`SftpPollingService\` might not complete the post processing operation because the server closed the connection unexpectedly.
+
+
+[10.3.10] - 2025-11-25
+----------------------
+
+### Added (2 changes)
+
+- Added \`core-pool-size\`, \`max-pool-size\`, \`queue-capacity\` and \`thread-name-prefix\` properties to configure the task and message executors.
+- Added the \`PayloadMetadataRoutingPipelet\` to allow overriding the choreography and action of a message to configured values based on presence of configured payload metadata.
+
+
+[10.3.9] - 2025-11-18
+---------------------
+
+### Added (1 change)
+
+- Added a new index to optimize conversation queries.
+
+### Fixed (1 change)
+
+- Changed the log persistence scheduler to run independently on each instance, to avoid missing logs on multi instance setups.
+
+
+[10.3.8] - 2025-10-31
+---------------------
+
+### Dependency updates (28 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 5.23.0 to 6.0.0
+- com.azure:azure-identity-broker from 1.1.16 to 1.1.18
+- com.azure:azure-sdk-bom from 1.2.37 to 1.3.0
+- com.evolvsys:esc-app-core-test from 4.3.3 to 4.3.6
+- com.evolvsys:esc-app-core from 4.3.3 to 4.3.6
+- com.evolvsys:esc-common-parent-pom from 6.2.8 to 6.3.4
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.20.0 to 2.20.1
+- com.google.guava:guava from 33.4.8-jre to 33.5.0-jre
+- com.h2database:h2 from 2.3.232 to 2.4.240
+- com.microsoft.sqlserver:mssql-jdbc from 12.10.2.jre11 to 13.2.1.jre11
+- dev.logchange:logchange-maven-plugin from 1.19.9 to 1.19.11
+- io.github.classgraph:classgraph from 4.8.181 to 4.8.184
+- net.javacrumbs.json-unit:json-unit-assertj from 4.1.1 to 5.0.0
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.5 to 5.5.1
+- org.apache.maven.plugins:maven-antrun-plugin from 3.1.0 to 3.2.0
+- org.bouncycastle:bcpkix-jdk18on from 1.81 to 1.82
+- org.bouncycastle:bcprov-jdk18on from 1.81 to 1.82
+- org.codehaus.mojo:jaxb2-maven-plugin from 3.3.0 to 4.0.0
+- org.codehaus.mojo:versions-maven-plugin from 2.19.0 to 2.19.1
+- org.eclipse.angus:angus-mail from 2.0.4 to 2.0.5
+- org.postgresql:postgresql from 42.7.7 to 42.7.8
+- org.projectlombok:lombok from 1.18.40 to 1.18.42
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.5 to 3.5.7
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.5 to 3.5.7
+- org.springframework.boot:spring-boot-starter-parent from 3.5.5 to 3.5.7
+- org.xmlunit:xmlunit-assertj3 from 2.10.4 to 2.11.0
+- org.xmlunit:xmlunit-core from 2.10.4 to 2.11.0
+- org.xmlunit:xmlunit-matchers from 2.10.4 to 2.11.0
+
+
+[10.3.7] - 2025-10-21
+---------------------
+
+### Changed (1 change)
+
+- Changed the \`KeyValuePairListTrimmedConverter\` to allow blank values in key and value.
+
+
+[10.3.6] - 2025-10-15
+---------------------
+
+### Added (4 changes)
+
+- Added more e2e screenshot tests.
+- Added \`AzureBlobStorageSenderService\` for sending files to Azure Blob Storage.
+- Added more options to configure the \`MetaDataPipelet\`: add/set option for meta data and message/payload option for the meta data target
+- The CsvToJsonSplitterTransformatorService now supports an optional \`Table of Contents\` feature that generates a summary payload for all the split message keys.
+
+### Changed (1 change)
+
+- Filter null values in \`MetaData\` methods \`addAll\` and \`set\`
+
+### Security (1 change)
+
+- Updated @openapitools/openapi-generator-cli to 2.25.0
+
+
+[10.3.5] - 2025-09-17
+---------------------
+
+### Added (2 changes)
+
+- Added the \`JsonToCsvTransformerService\` to transform payload's into csv files using a json field/csv column definition.
+- Added an additional column separator parameter to the \`JsonToCsvTransformerService\`.
+
+### Fixed (1 change)
+
+- Fixed the payload size break point in payload cards in the frontend.
+
+### Dependency updates (19 changes)
+
+- com.evolvsys:esc-app-core-test from 4.3.1 to 4.3.3
+- com.evolvsys:esc-app-core from 4.3.1 to 4.3.3
+- com.evolvsys:esc-common-parent-pom from 6.2.3 to 6.2.8
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.19.2 to 2.20.0
+- com.networknt:json-schema-validator from 1.5.8 to 1.5.9
+- dev.logchange:logchange-maven-plugin from 1.19.8 to 1.19.9
+- jakarta.xml.bind:jakarta.xml.bind-api from 4.0.2 to 4.0.4
+- org.apache.sshd:sshd-scp from 2.15.0 to 2.16.0
+- org.apache.sshd:sshd-sftp from 2.15.0 to 2.16.0
+- org.apache.tika:tika-core from 3.2.2 to 3.2.3
+- org.codehaus.mojo:versions-maven-plugin from 2.18.0 to 2.19.0
+- org.projectlombok:lombok from 1.18.38 to 1.18.40
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.4 to 3.5.5
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.4 to 3.5.5
+- org.springframework.boot:spring-boot-starter-parent from 3.5.4 to 3.5.5
+- org.xmlunit:xmlunit-assertj3 from 2.10.3 to 2.10.4
+- org.xmlunit:xmlunit-core from 2.10.3 to 2.10.4
+- org.xmlunit:xmlunit-matchers from 2.10.3 to 2.10.4
+- Updated frontend packages.
+
+
+[10.3.4] - 2025-09-05
+---------------------
+
+### Added (6 changes)
+
+- Added clear button to datepicker input.
+- message and conversation ids in the message or conversation table can be clicked with middle mouse or right click, to open in an external tab.
+- Datepickers now have a now button to quickly set the current date and time.
+- Added a \`Check for missing payload\` parameter to the \`JsonSchemaRulePipelet\`. If enabled, the pipelet will fail validation if there is not at least one payload. Default true.
+- Added the \`JsonToMetaDataPipelet\` to allow copying json field values to the message metadata.
+- Added the \`MetaDataDuplicationCheckPipelet\` to allow comparing metadata by it's keys and values.
+
+
+[10.3.3] - 2025-08-27
+---------------------
+
+### Added (1 change)
+
+- Added a \`Multipart detection\` parameter to the \`HttpReceiverService\`. This allows automatic detection of multipart content types if the client does not set the correct \`Content-Type\` header.
+
+### Removed (1 change)
+
+- Removed \`Use fixed content-type\` parameter from \`HttpReceiverService\`. The original functionality is now replaced with the new parameter \`Multipart detection\`.
+
+
+[10.3.2] - 2025-08-22
+---------------------
+
+### Added (1 change)
+
+- Added optional parameter to \`HttpReceiverService\` for overriding the content type from the request header with a fixed value
+
+
 [10.3.1] - 2025-08-15
 ---------------------
 
@@ -107,6 +303,10 @@ export const changelog = marked(`
 [10.2.4] - 2025-05-23
 ---------------------
 
+### Dependency updates (1 change)
+
+- com.evolvsys:esc-app-core from 4.1.3 to 4.1.5
+
 
 [10.2.3] - 2025-05-21
 ---------------------
@@ -137,7 +337,7 @@ export const changelog = marked(`
 ### Added (4 changes)
 
 - Added \`CopyPayloadMetaDataPipelet\` to copy payload metadata to the message.
-- Added default key value replacements for \`$\{NOW}\` as current datetime as ISO8601 string, \`$\{NOW_MILLIS}\` as current datetime in milliseconds, and \`$\{NOW_EPOCH}\` as current datetime in epoch time and \`$\{NOW_DATE} as current date in ISO_DATE format.
+- Added default key value replacements for \`\${NOW}\` as current datetime as ISO8601 string, \`\${NOW_MILLIS}\` as current datetime in milliseconds, and \`\${NOW_EPOCH}\` as current datetime in epoch time and \`\${NOW_DATE} as current date in ISO_DATE format.
 - Added \`HttpHeaderPipelet\` to add custom HttpHeaders to message metadata to be later processed by HttpSenderServices.
 - Added \`JsonAggregatorTransformatorService\` as a new transformator support service to aggregate JSON payloads.
 
@@ -629,4 +829,8 @@ export const changelog = marked(`
 - Components are still visible but they are loaded automatically and you cant add them manually any more
 - Actions can refer to context specific pipelines e.g. modifying a specific message type like orders only
 - Partners are split into local and external partners. Local partners are referring to internal connections like storage systems or SAP systems
+
+
+
+
 `)
