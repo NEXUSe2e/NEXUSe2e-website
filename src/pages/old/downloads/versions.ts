@@ -9,6 +9,15 @@ interface Version {
 
 const versions: Version[] = [
   {
+    version: 'NEXUSe2e 5.11.7',
+    md5: 'E920D3FC5B9652647BB9ED8C2F0EADAF',
+    sha256: '34F64307AA3364C34D522214B9B2DDC330BB9F481768AFE39624819D0806BDB1',
+    download: 'v5.11.7/nexuse2e-webapp-5.11.7.war',
+    changes: [
+      'Make sending of client cert for outbound partner connections optional'
+    ]
+  },
+  {
     version: 'NEXUSe2e 5.11.6',
     md5: '1328F4D46D2E19A5AD8D51AA665A53B3',
     sha256: '05426B426FE352FFAD339A02687804EC9B081622ADCAA5D6C4773C5CFA68A985',
