@@ -4,7 +4,6 @@ import Vue from '@vitejs/plugin-vue'
 // Utilities
 import { fileURLToPath, URL } from 'node:url'
 import ViteFonts from 'unplugin-fonts/vite'
-import Components from 'unplugin-vue-components/vite'
 import { defineConfig } from 'vite'
 import Vuetify from 'vite-plugin-vuetify'
 
@@ -37,7 +36,6 @@ export default defineConfig({
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
     Vuetify(),
-    Components(),
     ViteFonts({
       google: {
         families: [
