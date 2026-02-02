@@ -5,6 +5,36 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.3.13] - 2026-01-29
+----------------------
+
+### Added (2 changes)
+
+- added a new application property \`nexuse2e.core.enable-beta-features\` to enable beta features.
+- Added internal mockoon configuration for development purposes.
+
+### Fixed (1 change)
+
+- The server key validation for SFTP servers is fixed to work as expected. Keep in mind, its required to configure the full key, not only the fingerprint.
+
+### Security (1 change)
+
+- Fixed an issue with config export to be visible to all authenticated users. The config is now only displayed for users with the roles \`Report\` and \`Admin\`.
+
+### Dependency updates (10 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 6.0.0 to 6.1.0
+- com.evolvsys:esc-app-core-test from 4.3.7 to 4.4.1
+- com.evolvsys:esc-app-core from 4.3.7 to 4.4.1
+- com.evolvsys:esc-common-parent-pom from 6.3.5 to 6.3.7
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.5.1 to 5.6
+- org.mozilla:rhino-xml from 1.8.1 to 1.9.0
+- org.mozilla:rhino from 1.8.1 to 1.9.0
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.8 to 3.5.9
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.8 to 3.5.9
+- org.springframework.boot:spring-boot-starter-parent from 3.5.8 to 3.5.9
+
+
 [10.3.12] - 2025-12-11
 ----------------------
 
