@@ -5,6 +5,20 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.3.14] - 2026-02-16
+----------------------
+
+### Added (3 changes)
+
+- added caching to \`HttpOauth2AuthenticationSupportService\` and \`OAuth2AuthenticationRulePipelet\` to avoid redundant calls to the oauth server
+- Added a new frontend editor for building nexus assets via drag and drop.
+- Added artifact and license overview to the packaged artifacts. Those are currently not visible in the UI.
+
+### Dependency updates (1 change)
+
+- Updated frontend packages.
+
+
 [10.3.13] - 2026-01-29
 ----------------------
 
