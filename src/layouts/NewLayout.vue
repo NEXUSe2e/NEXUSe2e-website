@@ -12,9 +12,11 @@
           fluid
           style="max-width: 1200px"
         >
-          <v-scroll-x-transition>
-            <router-view />
-          </v-scroll-x-transition>
+          <router-view v-slot="{ Component }">
+            <v-scroll-x-transition>
+              <component :is="Component" />
+            </v-scroll-x-transition>
+          </router-view>
         </v-container>
       </v-main>
     </v-theme-provider>
