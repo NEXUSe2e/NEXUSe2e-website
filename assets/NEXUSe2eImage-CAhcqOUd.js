@@ -1,0 +1,1 @@
+import{d as s,c as r,S as c,o as a,_ as t}from"./index-C0PiF630.js";const o=s({__name:"NEXUSe2eImage",props:{src:{type:String,required:!0}},setup(e){return(n,_)=>(a(),r(c,{class:"nexus-img",src:e.src},null,8,["src"]))}}),m=t(o,[["__scopeId","data-v-edffa986"]]);export{m as N};
