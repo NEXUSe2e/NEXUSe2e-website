@@ -1,18 +1,19 @@
 # Nexus Homepage
 
-## Einrichtung der Dev-Umgebung
+## 🛠️ Setup for development
 
-1. Node.js installieren
-2. Pakete installieren: `npm install`
-3. Hot Module Reload für Entwicklung: `npm run dev`
+1. Install node
+2. Install packages: `npm install`
+3. Hot module reload for development: `npm run dev`
 
-## Preview für Produktion
+## 🖥️ Production preview
 
-1. Projekt bauen: `npm run build`
-2. Gebaute Version im Browser überprüfen: `npm run preview`
-3. Im Ordner `dist` findet sich das gebaute Projekt
+1. Build project: `npm run build`
+2. Run preview version: `npm run preview`
+3. The build project is located in the `dist` folder
 
-## Manuelles Deplyoment
+## 🚀 Manual deployment
 
-1. Projekt bauen: `npm run build`
-2. Projekt nach github deployen: `npm run deploy`
+1. Checkout main branch
+1. Build project: `npm run build`
+1. Deploy to Github Pages: `npm run deploy`
