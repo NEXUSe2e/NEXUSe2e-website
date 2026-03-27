@@ -1,23 +1,5 @@
 import { marked } from 'marked';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const changelog = marked(`
 
 # Changelog
