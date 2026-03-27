@@ -5,6 +5,60 @@ export const changelog = marked(`
 # Changelog
 
 
+[10.3.15] - 2026-03-26
+----------------------
+
+### Important notes
+
+- Due to the new marked for purging approach, the existing detailed purging information in manual actions will be lost. In the future only the count of main entities (logs or conversations) will be stored in the manual action.
+
+### Added (6 changes)
+
+- added archive post processing option to \`SftpPollingService\`
+- Added more frontend tests for stability.
+- Added support for extracting client certificate from a configurable Http header (\`nexuse2e.core.client-certificate-configuration.header-name\`) in the base64 format. This requires \`nexuse2e.core.client-certificate-configuration.source\` to be set to \`BASE64_HEADER\`.
+- Added a parameter to \`EbxmlMultipartToContextPipelet\` how to handle invalid content types.
+- Added a \`PurgeSupportService\` that marks conversations and/or logs for purging based on time thresholds.
+- Added support for multiple xpath expression matches for the \`XPathToMetaDataPipelet\`
+
+### Changed (2 changes)
+
+- Changed content-type parsing in ebxml mimeParts to be more robust.
+- Changed how conversations and logs are purged. Instead of purging them immediately, they are now marked for purging and a background job will handle the actual deletion. This allows for better performance and reliability when purging large amounts of data.
+
+### Fixed (3 changes)
+
+- Prevented services from being executed concurrently. This only affects the same service instance. Multiple instances of the same service can still be executed concurrently, but the same instance will not be executed if it is already running.
+- Fixed an issue where the partnerId was not extracted correctly if the format was a URI during ebXML deserialization.
+- Fixed an issue that prevented saving existing routes in the UI.
+
+### Dependency updates (23 changes)
+
+- com.azure:azure-identity-broker from 1.1.18 to 1.1.19
+- com.azure:azure-sdk-bom from 1.3.3 to 1.3.5
+- com.evolvsys:esc-app-core-test from 4.4.1 to 4.4.2
+- com.evolvsys:esc-app-core from 4.4.1 to 4.4.2
+- com.evolvsys:esc-common-parent-pom from 6.3.7 to 6.3.15
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.20.1 to 2.21.1
+- com.microsoft.sqlserver:mssql-jdbc from 13.2.1.jre11 to 13.4.0.jre11
+- dev.logchange:logchange-maven-plugin from 1.19.13 to 1.19.14
+- jakarta.xml.bind:jakarta.xml.bind-api from 4.0.4 to 4.0.5
+- net.javacrumbs.json-unit:json-unit-assertj from 5.1.0 to 5.1.1
+- net.lingala.zip4j:zip4j from 2.11.5 to 2.11.6
+- org.apache.sshd:sshd-scp from 2.16.0 to 2.17.1
+- org.apache.sshd:sshd-sftp from 2.16.0 to 2.17.1
+- org.codehaus.mojo:jaxb2-maven-plugin from 4.0.0 to 4.1.0
+- org.codehaus.mojo:versions-maven-plugin from 2.20.1 to 2.21.0
+- org.mozilla:rhino-xml from 1.9.0 to 1.9.1
+- org.mozilla:rhino from 1.9.0 to 1.9.1
+- org.postgresql:postgresql from 42.7.8 to 42.7.10
+- org.projectlombok:lombok from 1.18.42 to 1.18.44
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.9 to 3.5.11
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.9 to 3.5.11
+- org.springframework.boot:spring-boot-starter-parent from 3.5.9 to 3.5.11
+- Updated frontend packages.
+
+
 [10.3.14] - 2026-02-16
 ----------------------
 
@@ -873,8 +927,5 @@ export const changelog = marked(`
 - Components are still visible but they are loaded automatically and you cant add them manually any more
 - Actions can refer to context specific pipelines e.g. modifying a specific message type like orders only
 - Partners are split into local and external partners. Local partners are referring to internal connections like storage systems or SAP systems
-
-
-
 
 `)
