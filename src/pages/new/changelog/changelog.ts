@@ -5,6 +5,104 @@ export const changelog = marked(`
 # Changelog
 
 
+[11.0.1] - 2026-06-18
+---------------------
+
+### Added (1 change)
+
+- Added a httpClient option to the RhinoPipelet to allow the creation of http requests from Rhino scripts.
+
+### Changed (1 change)
+
+- Changed liquibase column definitions from \`timestamptz\` to \`timestamp\` to ensure compatibility and same behavior across different database systems.
+
+### Fixed (3 changes)
+
+- Fixed an error during config export.
+- Fixed an bug during startup that caused singleton like services that relied on key value properties to setup correctly.
+- Fixed an certificate error during config merge import.
+
+### Dependency updates (15 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 7.1.0 to 7.3.0
+- com.networknt:json-schema-validator from 3.0.1 to 3.0.3
+- io.github.openfeign.querydsl:querydsl-apt from 7.1 to 7.2
+- net.javacrumbs.json-unit:json-unit-assertj from 5.1.1 to 5.1.2
+- org.apache.sshd:sshd-scp from 2.17.1 to 2.18.0
+- org.apache.sshd:sshd-sftp from 2.17.1 to 2.18.0
+- org.apache.tika:tika-core from 3.3.0 to 3.3.1
+- org.springframework.boot:spring-boot-configuration-processor from 4.0.3 to 4.0.6
+- org.springframework.boot:spring-boot-maven-plugin from 4.0.3 to 4.0.6
+- org.springframework.boot:spring-boot-starter-parent from 4.0.3 to 4.0.6
+- org.xmlunit:xmlunit-assertj3 from 2.11.0 to 2.12.0
+- org.xmlunit:xmlunit-core from 2.11.0 to 2.12.0
+- org.xmlunit:xmlunit-matchers from 2.11.0 to 2.12.0
+- tools.jackson.dataformat:jackson-dataformat-csv from 3.1.0 to 3.1.4
+- Updated frontend packages.
+
+
+[11.0.0] - 2026-05-27
+---------------------
+
+### Important notes
+
+- The required Java version for running the application has been updated to Java 25. Older JDK versions are no longer supported and cannot run the application.
+- The application has been updated to use Spring Boot version 4. This included some other major updates. While the application should still work as before, it is recommended to test the application thoroughly after this update.
+- The required Tomcat version for running the application has been updated to Tomcat 11. If you use NEXUSe2e with a standalone Tomcat server, you will need to update your Tomcat installation to version 11. Older Tomcat versions are no longer supported.
+
+### Changed (2 changes)
+
+- Changed required Java version to 25
+- Changed embedded Tomcat version to 11
+
+### Dependency updates (1 change)
+
+- Updated Spring Boot version to 4 and related dependencies accordingly
+
+
+[10.4.0] - 2026-05-26
+---------------------
+
+### Important notes
+
+- The pipelet \`EbxmlMultipartToContextPipelet\` can be removed from pipelines. If you encounter issues with the new default behavior for incoming multipart data after the update, you can switch to the old behavior by enabling the parameter \`Ignore multipart\` in the \`HttpReceiverService\` and adding the \`LegacyMultipartToContextPipelet\` (replaces the old \`EbxmlMultipartToContextPipelet\`) to the pipeline for the \`HttpReceiverService\`.
+
+### Added (2 changes)
+
+- Added basic support for AS2 (Applicability Statement 2) protocol. This only includes support for AS2 message formatting but no encryption or digital signatures.
+- Added a verbose logging Parameter to \`HttpReceiverService\` and \`HttpSenderServices\`. When enabled, the services will log the full HTTP request and response, including headers and body.
+
+### Changed (1 change)
+
+- Reworked the multipart handling in the \`HttpReceiverService\`. The \`HttpReceiverService\` has now build in support for multipart data. The old \`EbxmlMultipartToContextPipelet\` is now deprecated for removal in future versions.
+
+### Removed (1 change)
+
+- Removed the multipart detection in the http receiver. Multipart body without the multipart content type header parameter will not be processed as multipart data anymore. To enable the old behavior the pipelet \`MultipartDetectionPipelet\` needs to be added to the pipeline for the \`HttpReceiverService\`.
+
+### Dependency updates (19 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 6.1.0 to 6.3.0
+- com.azure:azure-identity-broker from 1.1.19 to 1.1.20
+- com.azure:azure-sdk-bom from 1.3.5 to 1.3.7
+- com.evolvsys:esc-common-parent-pom from 6.3.15 to 6.3.18
+- com.fasterxml.jackson.dataformat:jackson-dataformat-csv from 2.21.1 to 2.21.3
+- com.google.guava:guava from 33.5.0-jre to 33.6.0-jre
+- com.sun.xml.messaging.saaj:saaj-impl from 3.0.4 to 3.0.5
+- commons-io:commons-io from 2.21.0 to 2.22.0
+- dev.logchange:logchange-maven-plugin from 1.19.14 to 1.19.15
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.6 to 5.6.1
+- org.apache.tika:tika-core from 3.2.3 to 3.3.0
+- org.bouncycastle:bcpkix-jdk18on from 1.83 to 1.84
+- org.bouncycastle:bcprov-jdk18on from 1.83 to 1.84
+- org.postgresql:postgresql from 42.7.10 to 42.7.11
+- org.projectlombok:lombok from 1.18.44 to 1.18.46
+- org.springframework.boot:spring-boot-configuration-processor from 3.5.11 to 3.5.14
+- org.springframework.boot:spring-boot-maven-plugin from 3.5.11 to 3.5.14
+- org.springframework.boot:spring-boot-starter-parent from 3.5.11 to 3.5.14
+- Updated frontend packages.
+
+
 [10.3.15] - 2026-03-26
 ----------------------
 
