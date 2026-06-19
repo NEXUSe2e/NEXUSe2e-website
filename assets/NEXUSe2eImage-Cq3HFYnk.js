@@ -1,1 +1,0 @@
-import{Ct as e,W as t,bt as n,ht as r,ut as i}from"./index-XsyDZOvb.js";var a=i(n({__name:`NEXUSe2eImage`,props:{src:{type:String,required:!0}},setup(n){return(i,a)=>(e(),r(t,{class:`nexus-img`,src:n.src},null,8,[`src`]))}}),[[`__scopeId`,`data-v-edffa986`]]);export{a as t};
