@@ -1,11 +1,4 @@
-interface Version {
-  version: string
-  md5: string
-  sha256: string
-  download?: string
-  changes: string[]
-  knownIssues?: string[]
-}
+import type { Version } from '@/utils/types'
 
 const versions: Version[] = [
   {
@@ -13,9 +6,7 @@ const versions: Version[] = [
     md5: 'E920D3FC5B9652647BB9ED8C2F0EADAF',
     sha256: '34F64307AA3364C34D522214B9B2DDC330BB9F481768AFE39624819D0806BDB1',
     download: 'v5.11.7/nexuse2e-webapp-5.11.7.war',
-    changes: [
-      'Make sending of client cert for outbound partner connections optional'
-    ]
+    changes: ['Make sending of client cert for outbound partner connections optional']
   },
   {
     version: 'NEXUSe2e 5.11.6',
@@ -55,9 +46,7 @@ const versions: Version[] = [
     md5: '2D3869567E10047C90CD7729A4B48864',
     sha256: 'C199A51FEA4FC662B682751D2ACA2990DF1E65413BBE24FD85A8AEC208CE6F39',
     download: 'v5.9.15/nexuse2e-webapp-5.9.15.war',
-    changes: [
-      'Added http header folding option to prevent content type from being folded into a new line.'
-    ]
+    changes: ['Added http header folding option to prevent content type from being folded into a new line.']
   },
   {
     version: 'NEXUSe2e 5.9.11',
@@ -68,9 +57,7 @@ const versions: Version[] = [
       'Fixed deadlock when synchronously receiving messages',
       'Fixed backend status'
     ],
-    knownIssues: [
-      '"Synchronous" for incoming messages still does not work properly in combination with "Reliable"'
-    ]
+    knownIssues: ['"Synchronous" for incoming messages still does not work properly in combination with "Reliable"']
   }
 ]
 

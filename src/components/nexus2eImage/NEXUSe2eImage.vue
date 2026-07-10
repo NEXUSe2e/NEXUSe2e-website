@@ -6,12 +6,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-  src: {
-    type: String,
-    required: true
-  }
-})
+const { src } = defineProps<{ src: string }>()
 </script>
 
 <style scoped>
