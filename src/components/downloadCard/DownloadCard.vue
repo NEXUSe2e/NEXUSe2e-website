@@ -81,16 +81,7 @@
 <script setup lang="ts">
 import { marked } from 'marked'
 
-defineProps({
-  version: {
-    type: Object,
-    required: true
-  },
-  latest: {
-    type: Boolean,
-    required: true
-  }
-})
+const { version, latest } = defineProps<{ version: any; latest: boolean }>()
 
 const BASE_URL = 'https://github.com/NEXUSe2e/NEXUSe2e/releases/download'
 
