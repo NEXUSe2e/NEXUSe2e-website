@@ -1,13 +1,9 @@
-// Plugins
 import Vue from '@vitejs/plugin-vue'
 
-// Utilities
 import { fileURLToPath, URL } from 'node:url'
-import ViteFonts from 'unplugin-fonts/vite'
 import { defineConfig } from 'vite'
 import Vuetify from 'vite-plugin-vuetify'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     Vue({
@@ -35,17 +31,7 @@ export default defineConfig({
       }
     }),
     // https://github.com/vuetifyjs/vuetify-loader/tree/master/packages/vite-plugin#readme
-    Vuetify(),
-    ViteFonts({
-      google: {
-        families: [
-          {
-            name: 'Roboto',
-            styles: 'wght@100;300;400;500;700;900'
-          }
-        ]
-      }
-    })
+    Vuetify()
   ],
   build: {
     emptyOutDir: false
