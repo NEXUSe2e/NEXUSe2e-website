@@ -5,6 +5,57 @@ export const changelog = marked(`
 # Changelog
 
 
+[11.1.0] - 2026-09-15
+---------------------
+
+### Added (1 change)
+
+- Added environment name to HTML title. This allows you to easily identify the environment you are working in when multiple environments are open in different tabs.
+
+### Changed (3 changes)
+
+- Changed the way fonts are imported in the project
+- Optimized configuration loading for improved frontend performance.
+- Optimized vue frontend code for better readability
+
+### Fixed (1 change)
+
+- Fixed AS2 header serialization that caused multiple header values on message resend.
+
+### Dependency updates (30 changes)
+
+- com.azure.spring:spring-cloud-azure-dependencies from 7.3.0 to 7.4.0
+- com.azure:azure-identity-broker from 1.1.20 to 1.1.22
+- com.azure:azure-sdk-bom from 1.3.7 to 1.3.8
+- com.evolvsys:esc-app-core-test from 6.0.3 to 6.1.2
+- com.evolvsys:esc-app-core from 6.0.3 to 6.1.2
+- com.evolvsys:esc-common-parent-pom from 6.3.18 to 6.3.24
+- com.google.guava:guava from 33.6.0-jre to 33.7.1-jre
+- com.networknt:json-schema-validator from 3.0.3 to 3.0.7
+- com.sun.xml.messaging.saaj:saaj-impl from 3.0.5 to 3.0.6
+- dev.logchange:logchange-maven-plugin from 1.19.15 to 1.19.16
+- io.github.classgraph:classgraph from 4.8.184 to 4.8.194
+- io.github.openfeign.querydsl:querydsl-apt from 7.2 to 7.6
+- net.javacrumbs.json-unit:json-unit-assertj from 5.1.2 to 6.2.0
+- org.apache.commons:commons-collections4 from 4.5.0 to 4.6.0
+- org.apache.httpcomponents.client5:httpclient5-fluent from 5.6.1 to 5.6.4
+- org.apache.sshd:sshd-scp from 2.18.0 to 2.19.0
+- org.apache.sshd:sshd-sftp from 2.18.0 to 2.19.0
+- org.apache.tika:tika-core from 3.3.1 to 3.3.2
+- org.bouncycastle:bcpkix-jdk18on from 1.84 to 1.85
+- org.bouncycastle:bcprov-jdk18on from 1.84 to 1.85.2
+- org.postgresql:postgresql from 42.7.11 to 42.7.12
+- org.springframework.boot:spring-boot-configuration-processor from 4.0.6 to 4.1.1
+- org.springframework.boot:spring-boot-maven-plugin from 4.0.6 to 4.1.1
+- org.springframework.boot:spring-boot-starter-parent from 4.0.6 to 4.1.1
+- org.wiremock.integrations:wiremock-spring-boot from 4.2.1 to 4.2.2
+- org.xmlunit:xmlunit-assertj3 from 2.12.0 to 2.13.0
+- org.xmlunit:xmlunit-core from 2.12.0 to 2.13.0
+- org.xmlunit:xmlunit-matchers from 2.12.0 to 2.13.0
+- tools.jackson.dataformat:jackson-dataformat-csv from 3.1.4 to 3.2.2
+- Updated frontend packages.
+
+
 [11.0.1] - 2026-06-18
 ---------------------
 
