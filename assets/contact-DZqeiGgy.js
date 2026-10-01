@@ -1,0 +1,1 @@
+import{Ct as e,Ot as t,St as n,Ut as r,en as i,hn as a,kt as o,n as s,t as c}from"./VRow-8QlEuB43.js";import{t as l}from"./LegalTexts-DHwds4VI.js";var u=[`innerHTML`],d=o({__name:`index`,setup(o){let d=l;return(o,l)=>(r(),e(c,null,{default:i(()=>[t(s,{cols:`12`},{default:i(()=>[n(`div`,{innerHTML:a(d)},null,8,u)]),_:1})]),_:1}))}});export{d as default};

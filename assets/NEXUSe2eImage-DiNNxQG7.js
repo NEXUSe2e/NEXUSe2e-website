@@ -1,0 +1,1 @@
+import{_t as e,dt as t,jt as n}from"./VRow-DyRmL_Vx.js";import{L as r,U as i}from"./index-DBnzmR1l.js";var a=i(e({__name:`NEXUSe2eImage`,props:{src:{}},setup(e){return(i,a)=>(n(),t(r,{class:`nexus-img`,src:e.src},null,8,[`src`]))}}),[[`__scopeId`,`data-v-ddc076a6`]]);export{a as t};
