@@ -1,0 +1,6 @@
+import{$t as e,Dn as t,Lt as n,Mt as r,Rt as i,dn as a,jt as o,n as s,t as c}from"./VRow-Y9OI8PVy.js";import{t as l}from"./marked.esm-rWN5bayK.js";var u=[`innerHTML`],d=i({__name:`index`,setup(i){let d=l(`
+  # Recommendations
+  ---
+
+
+`);return(i,l)=>(e(),r(c,null,{default:a(()=>[n(s,{cols:`12`},{default:a(()=>[o(`div`,{innerHTML:t(d)},null,8,u)]),_:1})]),_:1}))}});export{d as default};
